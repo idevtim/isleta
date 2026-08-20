@@ -19,8 +19,8 @@
 Isleta turns the black cutout at the top of your MacBook into a live surface. It stays invisible
 until it has something to say, then says it in the one place on screen that was already dark.
 
-> **Status:** v1.0.0 — feature complete, in testing.
-> No public build yet. Watch this repo or [the site](https://tryisleta.com) for the first download.
+> **Status:** v1.0.0 — released.
+> [Download Isleta 1.0.0](https://github.com/idevtim/isleta/releases/latest) or get it from [the site](https://tryisleta.com).
 
 ---
 
@@ -184,7 +184,7 @@ it doesn't recognise.
 
 ## Support the project
 
-Isleta is a one-person project, free while it's in testing. If it earns its place in your notch:
+Isleta is a one-person project, and free. If it earns its place in your notch:
 
 - ❤️ [**GitHub Sponsors**](https://github.com/sponsors/idevtim) — monthly support
 - ☕ [**Buy Me a Coffee**](https://buymeacoffee.com/idevtim) — one-shot tip
