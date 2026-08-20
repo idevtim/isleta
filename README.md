@@ -16,46 +16,67 @@
 
 </div>
 
-Isleta turns the black cutout at the top of your MacBook into a live surface — what's playing,
-the volume you just changed, the notification that just landed, a file you're carrying from one
-window to another, a greeting when you open the lid. It sits there invisibly until it has
-something to say, and it says it in the one place on the screen that was already dark.
+Isleta turns the black cutout at the top of your MacBook into a live surface. It stays invisible
+until it has something to say, then says it in the one place on screen that was already dark.
 
-> **Status:** version 1.0.0, feature complete and in testing. No public build is published yet —
-> watch this repo or the site for the first download.
+> **Status:** v1.0.0 — feature complete, in testing.
+> No public build yet. Watch this repo or [the site](https://tryisleta.com) for the first download.
 
 ---
 
-## What the island shows
+## Contents
 
-- **Now Playing** — the album cover in the lit sliver to the left of the notch and an equaliser in
-  the sliver to the right, moving while the music plays and frozen mid-stride the moment it pauses.
-  Click in for the track, the artist, a draggable position bar, previous / play-pause / next, and
-  shuffle and repeat. Works with Apple Music, Spotify and anything else that reports to the system.
-  A track change crossfades in place instead of reopening the island.
-- **Volume and mute** — the level you just set, in the notch, right where your eyes already are.
-  It appears and dwells for the same beat Apple's own HUD does, alongside it rather than instead
-  of it.
-- **Notifications** — one incoming banner at a time, briefly, without the banner covering what
-  you're working in.
-- **The shelf** — drop a file on the notch and it stays there until you drag it out somewhere else.
-  A place to put something down while you go and find where it belongs.
-- **Welcome back** — a greeting on wake and unlock, in the right language for the hour and your
-  time zone.
+- [Features](#features)
+- [How you use it](#how-you-use-it)
+- [Where it appears](#where-it-appears)
+- [Settings](#settings)
+- [Requirements](#requirements)
+- [Permissions](#permissions)
+- [Privacy](#privacy)
+- [Known limitations](#known-limitations)
+- [Feedback & links](#feedback--links)
 
-Only one thing is on the island at a time, and the more urgent thing wins: a volume press
-interrupts a track, and the track is still there underneath when the HUD is gone. Anything the
-interruption pushed aside is still queued behind it — swipe across the island to step through
-what's waiting.
+---
+
+## Features
+
+### 🎵 Now Playing
+- Album cover in the sliver left of the notch, equaliser in the sliver right
+- Equaliser moves with the music, freezes mid-stride on pause
+- Click in for: track, artist, draggable position bar, prev / play-pause / next, shuffle, repeat
+- Works with Apple Music, Spotify, and anything else that reports to the system
+- Track changes crossfade in place — the island doesn't reopen
+
+### 🔊 Volume & mute
+- Shows the level you just set, right where your eyes already are
+- Appears and dwells for the same beat as Apple's own HUD — alongside it, not instead of it
+
+### 🔔 Notifications
+- One incoming banner at a time, briefly
+- Doesn't cover what you're working in
+
+### 📂 The shelf
+- Drop a file on the notch, it stays there
+- Drag it out whenever you've found where it belongs
+
+### 👋 Welcome back
+- A greeting on wake and unlock
+- In the right language for the hour and your time zone
+
+### One thing at a time
+- Only one item is on the island at once — the more urgent thing wins
+- A volume press interrupts a track; the track is still there underneath when the HUD goes
+- Anything pushed aside stays queued — **swipe across the island** to step through it
+
+---
 
 ## How you use it
 
-At rest the island is exactly the notch — pure black, filling the cutout, invisible by design.
-Being invisible is the point, so **arriving with the pointer is what announces it**: move the
-pointer onto the notch and the island swells a few points past it while the trackpad taps once
-under your finger.
+At rest the island *is* the notch: pure black, filling the cutout, invisible by design. Being
+invisible is the point, so arriving with the pointer is what announces it — the island swells a
+few points past the notch while the trackpad taps once under your finger.
 
-| | |
+| Do this | Get this |
 |---|---|
 | Move the pointer onto the notch | The island peeks — an invitation to click |
 | Click | It expands |
@@ -63,111 +84,123 @@ under your finger.
 | Drag a file onto it | The shelf opens and takes it |
 | `esc` | It closes |
 | `⌃⌥⌘I` | Open and close it from anywhere (rebindable) |
-| Menu bar icon | Settings, Copy Diagnostics, quit |
+| Menu bar icon | Settings, Copy Diagnostics, Quit |
 
-There's no Dock icon and no window. Isleta lives in the menu bar.
+**Also worth knowing:**
 
-Clicking the island never takes focus from the app you're in — no title bar flicker, no lost
-caret — and the transport controls work from a window that never becomes key.
+- No Dock icon, no window — Isleta lives in the menu bar
+- Clicking the island never steals focus: no title bar flicker, no lost caret
+- Transport controls work from a window that never becomes key
+
+---
 
 ## Where it appears
 
-**On the display with the notch, and nowhere else.** An external monitor has no cutout for the
-island to be continuous with, so an island up there would just be a black rectangle stuck to the
-top of the screen — a different product. Plug in as many displays as you like; the island stays
-on the laptop where it belongs.
+- ✅ **On the display with the notch — and nowhere else.**
+  An external monitor has no cutout for the island to be continuous with, so an island up there
+  would just be a black rectangle stuck to the top of the screen. A different product.
+- ✅ Plug in as many displays as you like — the island stays on the laptop where it belongs.
+- ⚠️ **Exception:** a Mac with no notched display at all (mini, Studio, iMac) gets a floating
+  island pinned to the top of the primary display, because otherwise there'd be nothing to use.
 
-The one exception is a Mac with no notched display at all — a mini, Studio or iMac — which gets a
-floating island pinned to the top of the primary display, because otherwise there'd be nothing to
-use.
+---
 
 ## Settings
 
-- Turn each source on or off independently — Now Playing, HUDs, Notifications, Welcome Back
-- Tune the island: how long the pointer must rest before it peeks, how far it peeks, how long a
-  passing activity stays, how long you have to have been away to be greeted, and the opacity of a
-  floating island on a Mac with no notch
-- Rebind the global shortcut to anything you like (it reads your actual keyboard layout, so a
-  Dvorak or AZERTY user is shown the key they actually pressed)
-- Trackpad haptics on or off
-- Occasional delights on or off
-- Automatic update checks on or off, and a Check Now button
-- Launch at login
-- Reset everything to defaults
+| Setting | What it does |
+|---|---|
+| **Sources** | Turn Now Playing, HUDs, Notifications and Welcome Back on or off independently |
+| **Timing & feel** | Hover delay before it peeks, how far it peeks, how long a passing activity stays, how long away counts as "away", floating-island opacity |
+| **Shortcut** | Rebind `⌃⌥⌘I` to anything (reads your actual keyboard layout — Dvorak and AZERTY users see the key they really pressed) |
+| **Haptics** | Trackpad haptics on or off |
+| **Delights** | Occasional delights on or off |
+| **Updates** | Automatic checks on or off, plus a Check Now button |
+| **Startup** | Launch at login |
+| **Reset** | Everything back to defaults |
+
+---
 
 ## Requirements
 
 - macOS 26 or later
 - Apple silicon
-- A MacBook Pro or MacBook Air with a notch, for the island to live in — see above for other Macs
+- A MacBook Pro or MacBook Air with a notch (see [Where it appears](#where-it-appears) for other Macs)
 
-Isleta is distributed directly, signed with a Developer ID and notarised by Apple. It is not on
-the Mac App Store: reading notifications requires Accessibility, which the App Store sandbox does
-not permit.
+**Distribution:** direct download, signed with a Developer ID and notarised by Apple.
+Not on the Mac App Store — reading notifications requires Accessibility, which the App Store
+sandbox doesn't permit.
 
-## Permissions, and why
+---
+
+## Permissions
 
 Isleta asks for as little as it can get away with, as late as it can.
 
-- **Nothing at all** is needed for volume, mute, the shelf, the wake greeting, hover, haptics or
-  the shortcut.
-- **Accessibility** — only for notifications, so Isleta can see a banner arrive. Decline it and
-  every other feature carries on working.
-- **Automation** (Music / Spotify) — only for the one-shot "what's playing right now?" read when
-  Isleta starts. Live track updates need no permission at all, so declining this costs you the
-  first track of a session and nothing else.
+| Permission | Needed for | If you decline |
+|---|---|---|
+| **None** | Volume, mute, the shelf, wake greeting, hover, haptics, the shortcut | — |
+| **Accessibility** | Notifications only — so Isleta can see a banner arrive | Every other feature carries on working |
+| **Automation** (Music / Spotify) | The one-shot "what's playing right now?" read at launch | You lose the first track of a session, nothing else — live updates need no permission |
 
-Each of these is explained in Settings, next to the switch it belongs to, along with what stops
-working if you say no.
+Each is explained in Settings, next to the switch it belongs to, along with what stops working if
+you say no.
+
+---
 
 ## Privacy
 
-There is no account, no telemetry, no analytics and no crash reporting service. Nothing about you,
-what you play, or what your notifications say is uploaded anywhere.
+- ❌ No account
+- ❌ No telemetry, no analytics, no crash reporting service
+- ❌ Nothing about you, what you play, or what your notifications say is uploaded anywhere
+- ✅ What's playing and what notifications say is read on your Mac, drawn on your Mac, and forgotten
+- ✅ Your settings are a small preferences file in your own user library
+- ✅ Exactly one kind of network request: checking whether a new version exists — a switch in
+  Settings. Turn it off and the app never touches the network at all.
 
-What's playing and what your notifications say is read on your Mac, drawn on your Mac, and
-forgotten. Your settings are a small preferences file in your own user library.
+---
 
-Isleta makes exactly one kind of network request: checking whether a new version exists. It is a
-switch in Settings, and turning it off means the app never touches the network at all.
+## Known limitations
 
-## Not there yet
-
-- **No brightness HUD.** Changing the brightness is behind an entitlement Apple keeps for itself,
-  and nothing in macOS announces it, so there is no supported way for Isleta to know it happened.
-  Apple's own HUD handles brightness and Isleta says so in Settings.
-- **Replacing the system HUDs** rather than appearing alongside them is written, off by default and
-  currently greyed out — the switch goes live on the day there's a mechanism behind it that can be
-  undone reliably if Isleta ever crashes.
+- **No brightness HUD.** Changing brightness is behind an entitlement Apple keeps for itself, and
+  nothing in macOS announces it, so there's no supported way for Isleta to know it happened.
+  Apple's own HUD handles brightness; Isleta says so in Settings.
+- **Replacing the system HUDs** (rather than appearing alongside them) is written, off by default
+  and greyed out. The switch goes live once there's a mechanism behind it that can be undone
+  reliably if Isleta ever crashes.
 - **The open island is a fixed size**, not sized to whatever is inside it.
 
-## Feedback
+---
 
-Bug reports and feature requests are welcome in this repo's
-[issues](https://github.com/idevtim/isleta/issues). Real hardware quirks — a display arrangement
-that confuses it, a music app it doesn't recognise — are especially useful.
+## Feedback & links
 
-## Acknowledgements
+- 🐞 **Bugs** — [GitHub Issues](https://github.com/idevtim/isleta/issues)
+- 💡 **Ideas** — [GitHub Discussions](https://github.com/idevtim/isleta/discussions)
+- 🌐 **Web** — [tryisleta.com](https://tryisleta.com)
 
-Now Playing is read through [mediaremote-adapter](https://github.com/ungive/mediaremote-adapter)
-by Jonas van den Berg and contributors, used under the BSD 3-Clause Licence.
+Real hardware quirks are especially useful — a display arrangement that confuses it, a music app
+it doesn't recognise.
 
-Updates are delivered by [Sparkle](https://github.com/sparkle-project/Sparkle), used under the MIT
-Licence.
+---
 
-## Support the Project
+## Support the project
 
 Isleta is a one-person project, free while it's in testing. If it earns its place in your notch:
 
 - ❤️ [**GitHub Sponsors**](https://github.com/sponsors/idevtim) — monthly support
 - ☕ [**Buy Me a Coffee**](https://buymeacoffee.com/idevtim) — one-shot tip
 
-## Links
+---
 
-- **Bugs** — [GitHub Issues](https://github.com/idevtim/isleta/issues)
-- **Ideas** — [GitHub Discussions](https://github.com/idevtim/isleta/discussions)
-- **Web** — https://tryisleta.com
+## Acknowledgements
+
+- [**mediaremote-adapter**](https://github.com/ungive/mediaremote-adapter) by Jonas van den Berg
+  and contributors — Now Playing, used under the BSD 3-Clause Licence
+- [**Sparkle**](https://github.com/sparkle-project/Sparkle) — updates, used under the MIT Licence
 
 ---
 
-**© 2026 Isleta** • Made by [Timothy Murphy](https://idevtim.com).
+<div align="center">
+
+**© 2026 Isleta** • Made by [Timothy Murphy](https://idevtim.com)
+
+</div>
