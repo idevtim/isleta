@@ -16,8 +16,9 @@
 
 </div>
 
-Isleta turns the black cutout at the top of your MacBook into a live surface. It stays invisible
-until it has something to say, then says it in the one place on screen that was already dark.
+Isleta turns the MacBook notch into a live surface — the Dynamic Island, done properly for the
+Mac. It stays invisible until it has something to say, then says it in the one place on screen
+that was already dark.
 
 > **Status:** v1.0.0 — released.
 > [Download Isleta 1.0.0](https://github.com/idevtim/isleta/releases/latest) or get it from [the site](https://tryisleta.com).
@@ -45,7 +46,7 @@ until it has something to say, then says it in the one place on screen that was 
 - Equaliser moves with the music, freezes mid-stride on pause
 - Click in for: track, artist, draggable position bar, prev / play-pause / next, shuffle, repeat
 - Works with Apple Music, Spotify, and anything else that reports to the system
-- Track changes crossfade in place — the island doesn't reopen
+- Track changes crossfade in place — the Dynamic Island doesn't reopen
 
 ### 🔊 Volume & mute
 - Shows the level you just set, right where your eyes already are
@@ -56,7 +57,7 @@ until it has something to say, then says it in the one place on screen that was 
 - Doesn't cover what you're working in
 
 ### 📂 The shelf
-- Drop a file on the notch, it stays there
+- Drop a file on the MacBook notch, it stays there
 - Drag it out whenever you've found where it belongs
 
 ### 👋 Welcome back
@@ -64,7 +65,7 @@ until it has something to say, then says it in the one place on screen that was 
 - In the right language for the hour and your time zone
 
 ### One thing at a time
-- Only one item is on the island at once — the more urgent thing wins
+- Only one item is on the Dynamic Island at once — the more urgent thing wins
 - A volume press interrupts a track; the track is still there underneath when the HUD goes
 - Anything pushed aside stays queued — **swipe across the island** to step through it
 
@@ -72,13 +73,13 @@ until it has something to say, then says it in the one place on screen that was 
 
 ## How you use it
 
-At rest the island *is* the notch: pure black, filling the cutout, invisible by design. Being
-invisible is the point, so arriving with the pointer is what announces it — the island swells a
-few points past the notch while the trackpad taps once under your finger.
+At rest the Dynamic Island *is* the MacBook notch: pure black, filling the cutout, invisible by
+design. Being invisible is the point, so arriving with the pointer is what announces it — the
+island swells a few points past the notch while the trackpad taps once under your finger.
 
 | Do this | Get this |
 |---|---|
-| Move the pointer onto the notch | The island peeks — an invitation to click |
+| Move the pointer onto the MacBook notch | The Dynamic Island peeks — an invitation to click |
 | Click | It expands |
 | Swipe across it | Step through whatever is queued behind the current activity |
 | Drag a file onto it | The shelf opens and takes it |
@@ -96,12 +97,13 @@ few points past the notch while the trackpad taps once under your finger.
 
 ## Where it appears
 
-- ✅ **On the display with the notch — and nowhere else.**
-  An external monitor has no cutout for the island to be continuous with, so an island up there
-  would just be a black rectangle stuck to the top of the screen. A different product.
+- ✅ **On the display with the MacBook notch — and nowhere else.**
+  An external monitor has no cutout for the Dynamic Island to be continuous with, so an island up
+  there would just be a black rectangle stuck to the top of the screen. A different product.
 - ✅ Plug in as many displays as you like — the island stays on the laptop where it belongs.
 - ⚠️ **Exception:** a Mac with no notched display at all (mini, Studio, iMac) gets a floating
-  island pinned to the top of the primary display, because otherwise there'd be nothing to use.
+  Dynamic Island pinned to the top of the primary display, because otherwise there'd be nothing
+  to use.
 
 ---
 
@@ -124,7 +126,8 @@ few points past the notch while the trackpad taps once under your finger.
 
 - macOS 26 or later
 - Apple silicon
-- A MacBook Pro or MacBook Air with a notch (see [Where it appears](#where-it-appears) for other Macs)
+- A MacBook Pro or MacBook Air with a notch — that notch is where the Dynamic Island lives (see
+  [Where it appears](#where-it-appears) for other Macs)
 
 **Distribution:** direct download, signed with a Developer ID and notarised by Apple.
 Not on the Mac App Store — reading notifications requires Accessibility, which the App Store
@@ -184,7 +187,7 @@ it doesn't recognise.
 
 ## Support the project
 
-Isleta is a one-person project, and free. If it earns its place in your notch:
+Isleta is a one-person project, and free. If it earns its place in your MacBook notch:
 
 - ❤️ [**GitHub Sponsors**](https://github.com/sponsors/idevtim) — monthly support
 - ☕ [**Buy Me a Coffee**](https://buymeacoffee.com/idevtim) — one-shot tip
