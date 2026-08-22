@@ -6,6 +6,8 @@
 
 **The notch, finally doing something.**
 
+A Dynamic Island for macOS.
+
 [tryisleta.com](https://tryisleta.com)
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
@@ -16,9 +18,9 @@
 
 </div>
 
-Isleta turns the MacBook notch into a live surface — the Dynamic Island, done properly for the
-Mac. It stays invisible until it has something to say, then says it in the one place on screen
-that was already dark.
+Isleta turns the MacBook notch into a live surface — a Dynamic Island for macOS, done properly.
+It stays invisible until it has something to say, then says it in the one place on screen that
+was already dark.
 
 > **Status:** v1.0.0 — released.
 > [Download Isleta 1.0.0](https://github.com/idevtim/isleta/releases/latest) or get it from [the site](https://tryisleta.com).
@@ -126,8 +128,8 @@ island swells a few points past the notch while the trackpad taps once under you
 
 - macOS 26 or later
 - Apple silicon
-- A MacBook Pro or MacBook Air with a notch — that notch is where the Dynamic Island lives (see
-  [Where it appears](#where-it-appears) for other Macs)
+- A MacBook Pro or MacBook Air with a notch — that notch is where the Dynamic Island for macOS
+  lives (see [Where it appears](#where-it-appears) for other Macs)
 
 **Distribution:** direct download, signed with a Developer ID and notarised by Apple.
 Not on the Mac App Store — reading notifications requires Accessibility, which the App Store
