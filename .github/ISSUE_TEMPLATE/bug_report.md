@@ -25,17 +25,22 @@ If applicable, add a screenshot or a short recording. Notch behaviour is often e
 show than to describe.
 
 ## Environment
-- **Isleta Version**: [e.g., 1.0.0]
+- **Isleta Version**: [e.g., 2.0.0]
 - **macOS Version**: [e.g., macOS 26.1]
 - **Mac Model**: [e.g., MacBook Pro 14" M3, MacBook Air 15" M2, Mac mini M4]
 - **Notched Display**: [yes / no — a Mac with no notch uses the floating island]
 - **Display Arrangement**: [e.g., laptop only, laptop + one external, lid closed]
 
 ## Feature Involved
+- [ ] Pages (Today, Music, Weather) and the swipe between them
 - [ ] Now Playing
-- [ ] Volume / mute HUD
-- [ ] Notifications
-- [ ] Shelf (file drop)
+- [ ] Volume / mute / brightness HUD
+- [ ] Calendar / meetings
+- [ ] Weather
+- [ ] Shelf (file drop, conversion, transcription)
+- [ ] Bluetooth devices
+- [ ] Timers, battery, calls
+- [ ] Lock screen card
 - [ ] Welcome Back
 - [ ] Hover / peek / expand
 - [ ] Global shortcut
@@ -45,11 +50,12 @@ show than to describe.
 - [ ] Other
 
 ## Diagnostics
-Isleta has **Copy Diagnostics** in the menu bar icon. Paste the output here if you can:
+Isleta has **Export Logs…** in the menu bar icon and in Settings ▸ About. Attach the bundle, or
+paste what matters here:
 ```
 [diagnostics]
 ```
 
 ## Additional Context
-Anything else that might help — a music app that isn't recognised, a permission you declined,
+Anything else that might help — a music app that isn't recognized, a permission you declined,
 whether this started after an update.

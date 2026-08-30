@@ -69,12 +69,13 @@ Now in German, French and Spanish.
   level if the device reports one.
 - **Battery, calls and timers.** The charger going in and out, a low battery, Low Power Mode, a call
   in progress with how long it has been going, and timers you start in Clock.
-- **A first run that asks once.** Five short pages — accessibility, music, calendar, weather and
-  devices — each showing what a permission is for, and which button to press, before it asks. Skip
-  any of them and the rest of Isleta still works.
+- **A first run that asks once.** Eight short screens, five of them permissions — accessibility,
+  music, calendar, weather and devices — each showing what the permission is for, and which button
+  to press, before it asks. Skip any of them and the rest of Isleta still works.
 - **A list of apps the island stays out of entirely**, for full-screen video or a presentation.
-- **Keyboard shortcuts** for opening the island and showing your day, under General. Both are
-  unassigned until you assign them.
+- **Keyboard shortcuts** for opening the island and showing your day, under General. Opening the
+  island ships bound to ⌃⌥⌘I, because Isleta has no Dock icon and its menu bar item can be hidden;
+  showing your day is unassigned until you assign it.
 - **Quick actions in the menu bar** for whatever is on the island right now. The icon can be hidden;
   Quit and Open Setup Guide live in About as well.
 - **German, French and Spanish**, following your Mac's language.

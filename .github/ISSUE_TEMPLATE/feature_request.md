@@ -26,12 +26,16 @@ Any other context, mockups, or screenshots.
 
 ## Area
 Which part of Isleta would this touch?
+- [ ] Pages (Today, Music, Weather)
 - [ ] Now Playing
-- [ ] Volume / mute HUD
-- [ ] Notifications
+- [ ] Volume / mute / brightness HUD
+- [ ] Calendar / meetings
+- [ ] Weather
 - [ ] Shelf
+- [ ] Bluetooth devices
+- [ ] Lock screen card
 - [ ] Welcome Back
-- [ ] Island behaviour (peek, expand, queue, gestures)
+- [ ] Island behavior (peek, expand, queue, gestures)
 - [ ] Settings
 - [ ] Displays / multi-monitor
 - [ ] Permissions
