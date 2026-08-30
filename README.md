@@ -10,7 +10,7 @@ A Dynamic Island for macOS.
 
 [tryisleta.com](https://tryisleta.com)
 
-![Version](https://img.shields.io/badge/version-1.3.1-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-lightgrey.svg)
 ![Silicon](https://img.shields.io/badge/silicon-Apple-black.svg)
 [![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-ff69b4.svg)](https://github.com/sponsors/idevtim)
@@ -22,13 +22,14 @@ Isleta turns the MacBook notch into a live surface — a Dynamic Island for macO
 It stays invisible until it has something to say, then says it in the one place on screen that
 was already dark.
 
-> **Status:** v1.3.1 — released.
-> [Download Isleta 1.3.1](https://github.com/idevtim/isleta/releases/latest) or get it from [the site](https://tryisleta.com).
+> **Status:** v2.0.0 — released.
+> [Download Isleta 2.0.0](https://github.com/idevtim/isleta/releases/latest) or get it from [the site](https://tryisleta.com).
 
 ---
 
 ## Contents
 
+- [Two kinds of thing](#two-kinds-of-thing)
 - [Features](#features)
 - [How you use it](#how-you-use-it)
 - [Where it appears](#where-it-appears)
@@ -41,30 +42,64 @@ was already dark.
 
 ---
 
+## Two kinds of thing
+
+Everything Isleta does is one of two things, and keeping them apart is the whole design.
+
+**Pages** are what you browse. Three of them — **Today**, **Music** and **Weather** — turned with a
+two-finger swipe across an open island, with a small indicator under the cutout saying where you
+are. They wrap, so there is no end to walk into, and they are always all there whether or not
+anything is happening.
+
+**Activities** are what arrives. A volume key, a timer finishing, a call starting, AirPods
+connecting. They take the stage because something happened, and they leave on their own.
+
+A feature that announces something you are already looking at is neither, and doesn't ship.
+
+---
+
 ## Features
 
-### 🎵 Now Playing
-- Album cover in the sliver left of the notch, equaliser in the sliver right
-- Equaliser moves with the music, freezes mid-stride on pause
-- Click in for: track, artist, draggable position bar, prev / play-pause / next, shuffle, repeat
-- Works with Apple Music, Spotify, and anything else that reports to the system
-- Track changes crossfade in place — the Dynamic Island doesn't reopen
+### 📅 Today
+- What's next in your calendar, and what the sky is doing, in one surface
+- A button that joins the meeting — Zoom, Meet, Teams and the rest, read out of the invitation
+- Choose which calendars count, in Settings ▸ Glance
 
-### ⏱ Clock timers
-- Start a timer in Clock and the countdown rides in the sliver beside the notch, drawn as Clock's
-  own ring — orange while it runs, grey while it's paused
-- Music takes the left of the notch and a countdown the right, whichever got there first
-- No permission asked, and nothing polled while no timer exists
-- A finished timer shows itself the way a volume change does, and leaves Clock's own notification
-  to be the thing you click
+### 🌤 Weather
+- Today's high and low against where the temperature sits now, what it feels like, and the chance
+  of rain for each of the next few days
+- Works from your location, or from a city you start typing and pick from the list
+- **When it's raining, it rains in the island** — and the drops land on its bottom edge rather than
+  fading out. Snow falls too. Both stop entirely if you've asked macOS to reduce motion
+
+### 🎵 Music
+- Album cover in the sliver left of the notch, equalizer in the sliver right
+- The equalizer moves with the music and freezes mid-stride on pause
+- Long titles scroll and then settle rather than scrolling forever
+- The album artwork lends the island its color, and the audio format shows as a small badge
+- **Up Next** — the queue your player is actually working through, with the output device,
+  favorite and playback speed. Double-click anything in the list to play it
+- Works with Apple Music, Spotify, and anything else that reports to the system
+- Track changes crossfade in place — the island doesn't reopen
 
 ### 🔊 Volume, mute & brightness
 - Shows the level you just set, right where your eyes already are
-- Display brightness and the keyboard backlight too, since 1.3.0 — both were listed as impossible
-  here for four releases, and neither is: macOS publishes both levels and announces every change,
-  just not through the APIs everyone reaches for first
-- No permission for any of them, and completely idle between changes
-- Appears and dwells for the same beat as Apple's own HUD — alongside it, not instead of it
+- The bar leans off its own edge when you press past the end of the range, so a key that does
+  nothing still says so
+- **Isleta can answer the keys itself.** Turn it on under Sources and the island replaces macOS's
+  own HUD rather than sitting beside it. Volume and brightness are separate switches, both off
+  until you turn them on
+
+### 📂 The shelf
+- Drop a file on the notch and it stays there — drag it out whenever you've found where it belongs
+- **Or drop files on it to convert them:** images, images to PDF, video, audio, Word, RTF, HTML,
+  spreadsheets and presentations
+- **Drop audio or video to transcribe it.** The text lands beside the original. Nothing is
+  uploaded, and no permission is asked
+- **Copy Link** puts a shareable iCloud link on your clipboard. For files outside iCloud Drive the
+  row becomes AirDrop, which is the thing that always works
+- Search the shelf, preview with Space, and look back through everything Isleta has made for you.
+  It survives a restart
 
 ### 🎧 Bluetooth devices
 - Take your AirPods out of the case and the island shows them beside a ring of how much charge is
@@ -75,37 +110,21 @@ was already dark.
 - Two ear pieces report as the lower of the two — the one that runs out first is the one worth
   knowing about
 
-### 🔔 Notifications
-- One incoming banner at a time, in the island rather than over the document you're working in
-- It opens itself and shows the whole message — who it's from and what it says
-- Wears the icon of the app that sent it. Click it and that app comes forward
-- **And the ones you missed:** the last twenty, including the ones that arrived while you were
-  reading another. Five fit; the rest scroll. Clear All, the ✕ and `esc` are the ways out
-- Held in memory only — never written to disk, never in an exported log, gone when Isleta quits
+### 🔒 On the lock screen
+- A card showing what's playing. It arrives when the Mac locks and leaves the moment you unlock it
+- Off until you turn it on
 
-### 📂 The shelf
-- Drop a file on the MacBook notch, it stays there
-- Drag it out whenever you've found where it belongs
+### ⏱ And the rest of what arrives
+- **Timers** started in Clock, counting down in the sliver beside the notch, drawn as Clock's own
+  ring — orange while it runs, gray while it's paused
+- **Battery and power** — the charger going in and out, a low battery, Low Power Mode
+- **A call in progress**, with how long it's been going
+- **Welcome back** — a greeting on wake and unlock, in the right language for the hour and your
+  time zone
+- **Screen sharing**, so you know when you're being watched
 
-### 👋 Welcome back
-- A greeting on wake and unlock
-- In the right language for the hour and your time zone
-
-### ⚫️ And when there's nothing on it
-- Clicking a quiet island used to do nothing. Since 1.3.0 it opens onto the two things the island
-  always has: what you missed, and Settings
-- Which is what makes hiding the menu bar icon free — there's still a way into Settings that needs
-  no shortcut to remember, and since 1.3.1 **Export Logs…** lives in Settings ▸ About rather than
-  only behind the icon
-
-### One thing at a time
-- Only one item is on the Dynamic Island at once — the more urgent thing wins
-- A volume press interrupts a track; the track is still there underneath when the HUD goes
-- One exception, and it's a pair: music left of the notch, a countdown right. Neither needs more
-  than one sliver, and the cutout leaves two
-- Anything pushed aside stays queued — **swipe across the island** to step through it, or
-  **hover an open island** for a row of chips listing everything it's holding. Since 1.3.1 that row
-  carries the gear into Settings on every open island, not just a crowded one
+### 🌍 In four languages
+- English, German, French and Spanish, following your Mac's language
 
 ---
 
@@ -117,27 +136,26 @@ island swells a few points past the notch while the trackpad taps once under you
 
 | Do this | Get this |
 |---|---|
-| Move the pointer onto the MacBook notch | The Dynamic Island peeks — an invitation to click |
-| Click | It expands — onto whatever is on it, or onto Notifications and Settings if nothing is |
-| Hover an open island | A row of chips appears along the bottom — one per thing it's holding, and the gear into Settings |
-| Click a chip | That one comes to the front, and stays there for half a minute |
-| Click a notification in the list | The app it came from comes forward, and the island closes behind it |
-| Swipe across it | Step through whatever is queued behind the current activity |
+| Move the pointer onto the MacBook notch | The island peeks — an invitation to click |
+| Click | It expands, onto Today |
+| **Swipe two fingers across an open island** | **Turn the page — Today, Music, Weather, wrapping** |
 | Drag a file onto it | The shelf opens and takes it |
-| Flick it left or right | It stows out of the way. Click to bring it back |
+| Flick a closed island left or right | Whatever is on stage stows out of the way. Click to bring it back |
 | Swipe up with two fingers | An open island closes. Up is up, whichever way natural scrolling is set |
-| The same flick, with the notification list open | The list scrolls instead — while it's up, the vertical axis belongs to the list |
+| Right-click it | Isleta's own menu, including the way into Settings |
 | `esc` | It closes |
 | `⌃⌥⌘I` | Open and close it from anywhere (rebindable) |
-| Menu bar icon | Open Isleta Settings, Open Setup Guide, Export Logs…, Quit Isleta |
+| Menu bar icon | Show Glance, Show Now Playing, Show Weather, Settings, Setup Guide, Export Logs…, Quit |
 
 **Also worth knowing:**
 
 - No Dock icon, no window — Isleta lives in the menu bar, and the menu bar icon can be hidden
-- The first launch walks you through four screens: what the notch is about to start doing, the one
-  permission Isleta ever asks for, launch at login, and where to find the island
+- The first launch walks you through eight short screens, five of which are permissions — each
+  showing what it's for, and which button to press, before it asks. Skip any of them and the rest
+  of Isleta still works
 - Clicking the island never steals focus: no title bar flicker, no lost caret
 - Transport controls work from a window that never becomes key
+- **A list of apps the island stays out of entirely**, for full-screen video or a presentation
 
 ---
 
@@ -151,23 +169,31 @@ island swells a few points past the notch while the trackpad taps once under you
   Dynamic Island pinned to the top of the primary display, because otherwise there'd be nothing
   to use.
 
+The island is black in a real notch and glass where it floats, and it no longer asks you to choose.
+A notch island has to be optically continuous with the bezel and a floating one has nothing to be
+continuous with — that was never a matter of taste, so it is no longer a setting.
+
 ---
 
 ## Settings
 
-Five pages, not seven — Settings was cut down in 1.1.0, and a switch that could never be turned on
-was removed rather than left in the window making a promise.
+Four panes, not seven — and roughly a third as many controls as 1.x had. What went were the
+settings that were asking you a question Isleta can answer for itself.
 
-| Page | What's on it |
+| Pane | What's on it |
 |---|---|
-| **General** | Launch at login, trackpad haptics, the global shortcut, and whether Isleta shows in the menu bar |
-| **Island** | Hover delay before it peeks and how far, how long a passing activity stays, how long away counts as "away", and island opacity — which appears only if you have a display without a notch, the only place it has ever done anything |
-| **Sources** | Turn Now Playing, HUDs, Notifications, Welcome Back, Timers and Bluetooth devices on or off independently, each with what it needs written beside it |
-| **Updates** | Automatic checks on or off, plus a Check Now button |
-| **About** | Acknowledgements, Export Logs…, and everything back to defaults |
+| **General** | Launch at login, the shortcuts, whether Isleta shows in the menu bar, the lock-screen card, the apps it stays out of, updates, and — on a Mac with no notch — whether the floating island keeps out of the way until something happens |
+| **Sources** | Turn Now Playing, the HUDs, Today, calendar alerts, meetings, timers, Bluetooth devices, power, calls, the shelf, the wake greeting and screen sharing on or off independently — each with what it needs written beside it. Replacing Apple's volume and brightness HUDs lives here too, under the HUD row |
+| **Glance** | Which calendars count, and whether the weather uses your location or a city you type |
+| **About** | Acknowledgements, Export Logs…, Open Setup Guide, Quit, and everything back to defaults |
 
-The shortcut reads your actual keyboard layout, so Dvorak and AZERTY users see the key they really
-pressed.
+Two shortcuts: **Open the island**, which ships bound to `⌃⌥⌘I`, and **Show glance**, which starts
+unassigned. Only the first ships with a key, because Isleta has no Dock icon and its menu bar item
+can be hidden — a user who hides the icon needs one way back in. Everything else is a key taken
+from every other app on your Mac, so nothing else claims one without being asked.
+
+The shortcut recorder reads your actual keyboard layout, so Dvorak and AZERTY users see the key
+they really pressed.
 
 ---
 
@@ -178,22 +204,25 @@ pressed.
 - A MacBook Pro or MacBook Air with a notch — that notch is where the Dynamic Island for macOS
   lives (see [Where it appears](#where-it-appears) for other Macs)
 
-**Distribution:** direct download, signed with a Developer ID and notarised by Apple.
-Not on the Mac App Store — reading notifications requires Accessibility, which the App Store
-sandbox doesn't permit.
+**Distribution:** direct download, signed with a Developer ID and notarized by Apple.
+Not on the Mac App Store — Isleta needs Accessibility and a helper process that reads what's
+playing, neither of which the App Store sandbox permits.
 
 ---
 
 ## Permissions
 
-Isleta asks for as little as it can get away with, as late as it can.
+Isleta asks for as little as it can get away with, as late as it can. Every one of them is asked
+by a button you press, never at launch.
 
 | Permission | Needed for | If you decline |
 |---|---|---|
-| **None** | Volume, mute, display and keyboard brightness, timers, the shelf, wake greeting, hover, haptics, the shortcut | — |
-| **Accessibility** | Notifications only — so Isleta can see a banner arrive | Every other feature carries on working |
-| **Bluetooth** | Hearing a device connect, so AirPods can say hello | No device ever appears; nothing else changes, and the whole source can be switched off in Settings ▸ Sources |
+| **None** | Volume, mute and brightness levels, timers, the shelf, file conversion, transcription, the wake greeting, power, hover, haptics, the shortcut | — |
+| **Accessibility** | The media keys — so Isleta can answer them, and so it can replace Apple's HUD if you ask it to | The island still shows the level; it just can't take the key |
 | **Automation** (Music / Spotify) | The one-shot "what's playing right now?" read at launch | You lose the first track of a session, nothing else — live updates need no permission |
+| **Calendar** | What's next on Today, meeting links, and calendar alerts | Today shows the weather half only |
+| **Location** | Weather where you are | Type a city instead — same weather, no location |
+| **Bluetooth** | Hearing a device connect, so AirPods can say hello | No device ever appears; nothing else changes |
 
 Each is explained in Settings, next to the switch it belongs to, along with what stops working if
 you say no.
@@ -204,48 +233,36 @@ you say no.
 
 - ❌ No account
 - ❌ No telemetry, no analytics, no crash reporting service
-- ❌ Nothing about you, what you play, or what your notifications say is uploaded anywhere
-- ✅ What's playing and what notifications say is read on your Mac, drawn on your Mac, and forgotten
-- ✅ The notifications you missed are held in memory only — never written to disk, never in an
-  exported log, gone when Isleta quits
-- ✅ Isleta keeps a log at `~/Library/Logs/Isleta` — events only, never track titles or notification
-  text, so **Export Logs…** is safe to send to a stranger
+- ❌ Nothing about you, what you play, where you are, or what's in your calendar is uploaded
+  anywhere
+- ✅ What's playing and what's on your calendar is read on your Mac, drawn on your Mac, and
+  forgotten
+- ✅ **Transcription runs entirely on your Mac.** Audio never leaves it, and macOS asks you for
+  nothing to do it
+- ✅ Isleta keeps a log at `~/Library/Logs/Isleta` — events only, never track titles, file names,
+  event titles or serial numbers, so **Export Logs…** is safe to send to a stranger
 - ✅ Your settings are a small preferences file in your own user library
-- ✅ Exactly one kind of network request: checking whether a new version exists — a switch in
-  Settings. Turn it off and the app never touches the network at all.
+- ✅ Exactly two kinds of network request: the weather, and checking whether a new version exists.
+  Both are switches. Turn them off and the app never touches the network at all.
 
 ---
 
 ## Known limitations
 
-- **A burst of notifications opens the island once for each.** The list is where the ones you
-  missed go; grouping them as they arrive is a later release's job.
+- **You cannot see who is calling.** macOS doesn't let apps outside Apple read that, or answer for
+  you. Isleta shows that a call is happening and nothing more.
+- **A connected device's battery is read once, when it connects.** It doesn't tick down while you
+  wear them — macOS gives no signal when the level changes, and Isleta won't poll for one. Most
+  non-Apple headphones report no level at all.
 - **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
-  started by hand in Clock is there immediately. macOS gives no signal for the others, and Isleta
-  won't poll for them.
-- **The battery is a snapshot, not a readout.** It's read once, when the device connects, and the
-  island goes a few seconds later. It doesn't tick down while you wear them — macOS gives no signal
-  when the level changes.
-- **Third-party headphones may show no battery.** Most non-Apple devices don't report a level to
-  macOS at all. They still get their moment in the notch, with no ring beside them.
-- **The keyboard backlight HUD can appear when the room light changes.** macOS adjusts the backlight
-  for ambient light on its own and doesn't say whether a change came from you or from the room.
-  Turn off "Adjust keyboard brightness in low light" if it bothers you.
-- **Apple's own HUDs and banners are not replaced.** Isleta shows its own alongside them. For
-  notifications the only way to hide Apple's banner is the one the system treats as you clearing the
-  notification outright, which would empty your Notification Center as the price of a tidier screen.
-  Not a trade Isleta will make for you.
-- **The island sits above Mission Control.** In a real notch it covers nothing; a synthesized island
-  can cover the centre of the space labels.
-- **The hover target is the notch itself** — 185 × 32 points, and easy to overshoot. The hover delay
-  and peek amount are both adjustable.
-- **Playing music costs more than it should.** About 7.7% CPU against an internal 4% budget for an
-  animating island, and a 250–290 MB footprint against a 60 MB one. It isn't a leak — resident
-  memory is flat and plateaus rather than climbing — and idle is unaffected.
-- **Bluetooth headphones cost something at idle.** With AirPods connected, Isleta sits at about 0.5%
-  of a core with nothing on stage, against an internal 0.3% budget; with none connected it measures
-  0.02%. Under investigation, and not the AirPods *feature* — switching that source off doesn't move
-  the figure.
+  started by hand in Clock is there immediately. macOS gives no signal for the others.
+- **Replacing the system HUDs is off until you turn it on, and it needs Accessibility.** Quitting
+  Isleta hands your keys straight back. If Isleta is force-quit, the system HUD stays out of the
+  way until Isleta next starts. Brightness covers the built-in display only.
+- **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
+  can sit over the middle of the space labels.
+- **The hover target is the notch itself** — about 185 points wide, and easy to overshoot.
+- **Weather needs your location, or a city you type.** Isleta asks for neither until you use it.
 
 ---
 
@@ -256,7 +273,7 @@ you say no.
 - 🌐 **Web** — [tryisleta.com](https://tryisleta.com)
 
 Real hardware quirks are especially useful — a display arrangement that confuses it, a music app
-it doesn't recognise.
+it doesn't recognize.
 
 ---
 
@@ -272,8 +289,8 @@ Isleta is a one-person project, and free. If it earns its place in your MacBook 
 ## Acknowledgements
 
 - [**mediaremote-adapter**](https://github.com/ungive/mediaremote-adapter) by Jonas van den Berg
-  and contributors — Now Playing, used under the BSD 3-Clause Licence
-- [**Sparkle**](https://github.com/sparkle-project/Sparkle) — updates, used under the MIT Licence
+  and contributors — Now Playing, used under the BSD 3-Clause License
+- [**Sparkle**](https://github.com/sparkle-project/Sparkle) — updates, used under the MIT License
 
 ---
 
