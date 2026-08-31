@@ -99,20 +99,6 @@ Now in German, French and Spanish.
 - **Closing Up Next gives the island its height back.** The ✕ used to leave it tall.
 - **AirPods connecting no longer hangs Isleta at launch.**
 
-## Removed
-
-- **Notifications, and everything built on them** — banners in the island, grouping, quick reply,
-  per-app rules, and the list of the ones you missed. macOS offers no way to hide its own banner
-  short of clearing the notification outright, so Isleta was only ever a second banner beside
-  Apple's, announcing something already on your screen.
-- **The app switcher.** ⌘⇥ already moves between apps, and Isleta's version wanted Screen Recording
-  to do the same job with worse pictures. Screen Recording is no longer requested at all.
-- **The player bar**, the floating transport for displays the island does not reach. The island is
-  the product; a second surface was a different one.
-- **Downloads, mounted disks and app updates.** Each announced something the Finder, the Dock or the
-  app itself had already said.
-- **The month grid.** Clicking the date opened a wall planner. What you ask a notch is what is next.
-
 ## Requirements
 
 macOS 26 or later, on Apple Silicon. Displays with a real notch get the island; a Mac without one
