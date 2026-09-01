@@ -36,6 +36,11 @@ workaround: a Debug build has no weather, logs `weatherkit entitlement absent`, 
 calendar alone. To exercise the weather, build Release with the Developer ID identity and
 `Config/Isleta.provisionprofile`; the log says `weatherkit entitled` when it worked.
 
+**That profile is not in the repo** — `.gitignore` excludes `*.provisionprofile`. It is tied to one
+Apple developer account, so a contributor needs their own Developer ID distribution profile for
+their own bundle identifier rather than a copy of this one. Nothing else needs it: `Tools/check.sh`
+and every Debug build work with no profile and no certificate at all.
+
 **One scratch path for every package, and it is why `check.sh` sets `--scratch-path`.** Left to
 itself each package keeps its own build directory with its own cached copy of `IslandKit`, and
 SwiftPM does not invalidate that copy when a *new source file* is added to a path dependency. Adding

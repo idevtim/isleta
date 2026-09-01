@@ -84,9 +84,19 @@ GITHUB_REPO="idevtim/isleta"
 INFO_PLIST="$PROJECT_DIR/Config/Isleta-Info.plist"
 ENTITLEMENTS="$PROJECT_DIR/Config/Isleta.entitlements"
 # The Developer ID *provisioning profile*, which Isleta needs only because it claims an entitlement
-# — WeatherKit — that has to be authorised by one. It is committed rather than kept out of the repo
-# because it ships inside every copy of the app at Contents/embedded.provisionprofile and is
-# therefore public by construction; it carries no private key.
+# — WeatherKit — that has to be authorised by one.
+#
+# **It is not in the repo.** `.gitignore` excludes `*.provisionprofile`, so this path is populated on
+# the maintainer's machine and empty in a fresh clone. That is not a secrecy measure: the profile
+# ships inside every copy of the app at Contents/embedded.provisionprofile and carries no private
+# key, so it is public by construction. It is out of the repo because it is tied to one Apple
+# developer account — it names a team and a signing certificate that nobody else can use, it expires,
+# and a contributor building a Release needs *their own* rather than this one.
+#
+# A clone without it is not stuck: `Tools/check.sh` and every Debug build work with no profile and no
+# certificate at all (Debug claims no `com.apple.developer.*` entitlement, which is why there are two
+# entitlements files). Only this script needs it, and the check below refuses to sign without it
+# rather than producing a bundle that exits 137 on every launch.
 PROFILE="$PROJECT_DIR/Config/Isleta.provisionprofile"
 SIGNING_IDENTITY="Developer ID Application: Tim Murphy ($APPLE_TEAM_ID)"
 
