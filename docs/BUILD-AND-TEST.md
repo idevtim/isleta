@@ -48,6 +48,23 @@ a file to `IslandKit` then makes every dependent package fail with `cannot find 
 naming a type that is right there in the file you just added — until it is built a second time. The
 error names the wrong file and the wrong problem; the shared scratch path is the fix.
 
+**`.build/` records absolute paths, so moving or renaming the checkout breaks it in two ways that
+both look like something else.** Measured 2026-09-01, after the open-sourcing moved the working copy
+from `Sites/isleta-app` to `Sites/isleta`:
+
+- Every `swift build` fails with ``precompiled file '…/SwiftShims-….pcm' was compiled with module
+  cache path '<old path>' … missing required module 'SwiftShims'``. The fix is to delete the
+  `ModuleCache` directories under `.build/*/arm64-apple-macosx/debug/`; nothing else needs clearing.
+- Then the app build fails with `There is no XCFramework found at '<old path>/…/Sparkle.xcframework'`,
+  even though the framework is sitting at the *new* path. SwiftPM stored the resolved artifact's
+  absolute location in `.build/xcode/SourcePackages/workspace-state.json` and does not re-resolve it.
+  Rewrite the `path` value in that file rather than re-downloading 100 MB.
+
+`xcodebuild` then emits a `Stale file … is located outside of the allowed root paths` warning per
+object file from the old tree. Those are noise and the build succeeds through them. **Every one of
+the other `.build/` variants — `verify`, `release`, `xcode-release`, the `agent-*` trees — still
+holds the old path and will fail the same way the first time it is used.**
+
 **Warnings-as-errors lives in `Tools/check.sh`, not in the package manifests.** Xcode compiles
 package dependencies with `-suppress-warnings`, which conflicts with a manifest-level
 `-warnings-as-errors` and fails the app build outright. The script passes

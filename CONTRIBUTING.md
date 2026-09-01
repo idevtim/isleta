@@ -158,6 +158,23 @@ settings control, the shortcut, the strings and the tests all go.
 or say so in the PR. Explaining the reasoning on an architectural fork before writing the code
 saves everyone the review.
 
+## Code of conduct
+
+This project ships a [Code of Conduct](CODE_OF_CONDUCT.md), and taking part means agreeing to it.
+It is the Contributor Covenant, with one addition worth reading: **technical disagreement made in
+good faith is not a code of conduct matter.** Disagreeing with something recorded in `docs/` is
+welcome — bring the measurement, on what OS, against what control.
+
+## Licensing of contributions
+
+Isleta is released under the [MIT License](LICENSE). By opening a pull request you agree that your
+contribution is licensed under those same terms. There is no CLA to sign.
+
+Don't paste in code you didn't write unless its licence permits it and you say where it came from.
+A new third-party dependency is a cost worth naming in the commit that adds one — see the
+dependency note above — and its licence has to be MIT-compatible and reproduced in `Vendor/`, the
+way `mediaremote-adapter` (BSD 3-Clause) and Sparkle (MIT) already are.
+
 ## Questions?
 
 Open an [issue](https://github.com/idevtim/isleta/issues) or a

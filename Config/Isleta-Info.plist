@@ -48,7 +48,7 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2026 Isleta. All rights reserved.</string>
+	<string>Copyright © 2026 Timothy Murphy. Released under the MIT License.</string>
 	<!-- Required, not optional: the Now Playing scripting route asks Music and Spotify what is
 	     playing through /usr/bin/osascript, and TCC attributes that Apple event to Isleta as the
 	     responsible process. Without this key macOS refuses the event outright (errAEEventNotPermitted)

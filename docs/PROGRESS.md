@@ -9,6 +9,10 @@ the work it describes — a progress file that lags the code is worse than none.
 span. The plist is what the target reads and is the authority; the `.xcodeproj`'s `MARKETING_VERSION`
 was corrected to match in 484d21f and is kept in step, but it is still not what ships.
 
+**Isleta is open source under the MIT License as of 2026-09-01**, at `idevtim/isleta`. See the standing
+decision below for what that constrains — chiefly that the repository must stay public, because Sparkle's
+appcast is served from it by raw URL.
+
 ---
 
 ## Status — what exists
@@ -114,6 +118,7 @@ Then, by date. Each line is one or two sentences; the reasoning that outlived th
 | 2026-08-30 | `AudioRouteMonitor` for the reconnects `IOBluetooth` never reports. System HUD suppression measured, and shipped: the event tap consumes the key and `SIGSTOP` freezes `OSDUIHelper`. |
 | 2026-08-30 | **The withdrawn features swept out of the prose in all three repositories.** The 2.0.0 notes are now byte-identical across `release-notes/v2.0.0.md`, both `appcast.xml` seeds and the site's changelog; the 1.x notes stay as the record of what those builds actually shipped. **A release note says what shipped, not what did not** — a `## Removed` section listing the seven withdrawals was written and then taken back out, because a reader of 2.0.0's notes has no reason to be told about features they may never have seen. The withdrawals are recorded here and in each module README's "Will not own". Corrected against the build: two shortcuts, not none bound; eight onboarding screens, not four; four settings panes with no style, size, speed or shadow to pick; the localization key counts in three module READMEs. `RecentsScroll`/`RecentsFormat` renamed in prose to `IslandListScroll`/`IslandListFormat`, and four Swift doc comments naming deleted types (`NotificationSourceDiagnostics`, `applyNotificationPreferences`) fixed. |
 | 2026-09-01 | **Power spells itself in the sliver.** A charger going in or coming out now draws the word beside the glyph — "Charging", "On Battery", "Charged", "Low Battery", "Low Power On/Off" — the way the volume and brightness HUDs draw theirs. It needed a **fourth** flank span (`IslandFlanks.wider`, `widerFlankedWidthGrowth` 274 against the HUD's 216) because power's labels are phrases and its battery glyph is 23pt to a HUD's 20: the owner chose two constants over one shared widest, so the HUD island stays at the 401pt it was measured for. `IslandForm.allCases` is thirteen shapes; `AppDelegate.transition` widens to `.widerFlankedPeekWithLip`, which contains the wide one. Two smaller rules moved with it: `ActivityStage.flanks` now asks the *sliver* whether it carries a word rather than asking the kind alone, and `ActivityKind.power.flankAffinity` moved to `.leading` so a charger going in while music plays keeps the word rather than the bar. |
+| 2026-09-01 | **Isleta is open source, under the MIT License.** `idevtim/isleta` is the public repository and holds the source, the releases and the appcast; `idevtim/isleta-app` became the private archive, keeping the pre-open-source history and the handful of files that are session records rather than documentation. `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, the issue and PR templates and `FUNDING.yml` were written for it, and `Tools/private-sync.sh` was written to keep the archive fed. The cost was borne up front: **61 references from published files to unpublished ones were rewritten or dereferenced**, because a doc that points at `docs/PROBE-*.md` is a dead pointer for everyone but the author. `Tools/sign-debug.sh` became identity-overridable so a contributor can sign with their own team, and `NSHumanReadableCopyright` stopped saying "All rights reserved" beside an MIT license. |
 
 ---
 
@@ -122,6 +127,25 @@ Then, by date. Each line is one or two sentences; the reasoning that outlived th
 These are the standing decisions a later reader must not unknowingly reverse. Each one contradicts
 `CLAUDE.md` or an earlier entry here, and each was taken for a reason that is
 written down beside it. Newest first.
+
+**2026-09-01 — The repository is public, and must stay public.** `CLAUDE.md` described a private
+tree for the whole of 1.x and 2.0. It is now MIT, and the change is not reversible in the way a normal
+decision is: **Sparkle's feed is served by raw URL from `idevtim/isleta`**, so making the repo private
+again 404s the appcast for every installed copy, and "no feed" is indistinguishable from "no update
+available" from the outside. Taking the repo private would silently strand every user on the version
+they have.
+
+Two rules follow and are load-bearing rather than tidiness. **Do not cite an unpublished file from a
+published one** — `docs/PROBES-2.0.md`, `docs/PROBE-*.md`, `docs/PLAN-2.0.md`, `docs/BRIEF.md`,
+`docs/NEXT-SESSION.md` and `.claude/` are gitignored, not deleted, and a citation of one is a dead
+pointer for every reader but the author; cite `docs/PLATFORM-CONSTRAINTS.md` or `docs/TRAPS.md`, where
+the finding actually lives, or state the measurement inline. And **the private half of the EdDSA key,
+the Developer ID certificate and the notarization credentials stay out of the tree** — `.env` is
+gitignored, `.env.example` carries empty placeholders, and `SUPublicEDKey` in `Config/Isleta-Info.plist`
+is public by design.
+
+`CONTRIBUTING.md` and `SECURITY.md` are now public-facing contracts rather than internal notes, and are
+worth keeping true.
 
 **2026-08-30 — Isleta replaces the volume HUD, and `survivesProcessDeath` is true.**
 `SystemHUDSuppression` had said since Milestone 5 that Isleta ships *alongside* Apple's HUD, on five

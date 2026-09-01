@@ -70,8 +70,9 @@ holds the pre-open-source history:
 
 **Do not cite an unpublished file from a published one.** A source comment or a doc that points at
 `docs/PROBE-*.md` is a dead pointer for everyone but you; cite `docs/PLATFORM-CONSTRAINTS.md` or
-`docs/TRAPS.md`, which is where the finding lives, or state the measurement inline. `CONTRIBUTING.md`
-and `SECURITY.md` are the public-facing contracts and are worth keeping true.
+`docs/TRAPS.md`, which is where the finding lives, or state the measurement inline.
+`CONTRIBUTING.md`, `SECURITY.md` and `CODE_OF_CONDUCT.md` are the public-facing contracts and are
+worth keeping true.
 
 ## Architecture
 

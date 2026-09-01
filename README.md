@@ -4,310 +4,300 @@
 
 # Isleta
 
-**The notch, finally doing something.**
+### The notch, finally doing something.
 
-A Dynamic Island for macOS.
+**A Dynamic Island for your Mac — free, private, and open source.**
 
-[tryisleta.com](https://tryisleta.com)
+[tryisleta.com](https://tryisleta.com) &nbsp;·&nbsp; [What's new](release-notes/) &nbsp;·&nbsp; [Contributing](CONTRIBUTING.md)
 
-![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
-![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-lightgrey.svg)
-![Silicon](https://img.shields.io/badge/silicon-Apple-black.svg)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
+![Platform](https://img.shields.io/badge/macOS-26%2B-lightgrey.svg)
+![Silicon](https://img.shields.io/badge/silicon-Apple-black.svg)
+![Price](https://img.shields.io/badge/price-free-brightgreen.svg)
 [![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-ff69b4.svg)](https://github.com/sponsors/idevtim)
-[![Buy Me a Coffee](https://img.shields.io/badge/buy%20me%20a%20coffee-%E2%98%95-ffdd00.svg)](https://buymeacoffee.com/idevtim)
+
+<br>
+
+<img src="assets/screenshots/today.png" alt="The island open on Today — what's playing on the left, the day's calendar on the right" width="720">
 
 </div>
 
-Isleta turns the MacBook notch into a live surface — a Dynamic Island for macOS, done properly.
-It stays invisible until it has something to say, then says it in the one place on screen that
-was already dark.
+---
 
-**Free and open source, under the MIT License.**
+Your MacBook has a black rectangle at the top of the screen that does nothing. Isleta turns it into
+a live surface — your day, your music, your files and your battery, in the one place that was
+already dark.
 
-> **Status:** v2.1.0 — released.
-> [Download Isleta 2.1.0](https://github.com/idevtim/isleta/releases/latest) or get it from [the site](https://tryisleta.com).
+It stays invisible until it has something to say. Move your pointer onto the notch and it wakes up.
+
+**No account. No subscription. No ads. No tracking. Free, and the whole thing is
+[open source under the MIT License](LICENSE).**
+
+<br>
+
+<div align="center">
+
+### [⬇︎  Download Isleta](https://github.com/idevtim/isleta/releases/latest)
+
+macOS 26 or later · Apple silicon
+
+</div>
 
 ---
 
-## Contents
+## What you get
 
-- [Two kinds of thing](#two-kinds-of-thing)
-- [Features](#features)
-- [How you use it](#how-you-use-it)
-- [Where it appears](#where-it-appears)
-- [Settings](#settings)
-- [Requirements](#requirements)
-- [Permissions](#permissions)
-- [Privacy](#privacy)
-- [Known limitations](#known-limitations)
-- [Build from source](#build-from-source)
-- [How it's put together](#how-its-put-together)
-- [Contributing](#contributing)
-- [License](#license)
-- [Feedback & links](#feedback--links)
+### 📅 Today — your day at a glance
 
----
+*(that's the shot at the top of this page)*
 
-## Two kinds of thing
+What's next in your calendar and what the sky is doing, side by side. If the next thing is a
+video call, there's a button that joins it — Zoom, Meet, Teams and the rest, read straight out of
+the invitation. You pick which calendars count.
 
-Everything Isleta does is one of two things, and keeping them apart is the whole design.
+### 🎵 Music — without switching apps
 
-**Pages** are what you browse. Three of them — **Today**, **Music** and **Weather** — turned with a
-two-finger swipe across an open island, with a small indicator under the cutout saying where you
-are. They wrap, so there is no end to walk into, and they are always all there whether or not
-anything is happening.
+<img src="assets/screenshots/music.png" alt="Music page with artwork, scrubber and transport controls" width="640">
 
-**Activities** are what arrives. A volume key, a timer finishing, a call starting, AirPods
-connecting. They take the stage because something happened, and they leave on their own.
+Album art on one side of the notch, an equalizer that actually moves with the music on the other.
+Play, pause, skip, shuffle, favorite, and see what's coming **Up Next** — double-click anything in
+the queue to jump to it. Works with Apple Music, Spotify, and anything else that reports to macOS.
 
-A feature that announces something you are already looking at is neither, and doesn't ship.
+Long titles scroll once and settle instead of sliding forever. The artwork lends the island its
+color. Track changes crossfade in place, so the island never flickers open and shut.
 
----
+### 🌤 Weather — and it rains inside the island
 
-## Features
+<img src="assets/screenshots/weather.png" alt="Weather page showing rain in Dublin with a five-day forecast" width="640">
 
-### 📅 Today
-- What's next in your calendar, and what the sky is doing, in one surface
-- A button that joins the meeting — Zoom, Meet, Teams and the rest, read out of the invitation
-- Choose which calendars count, in Settings ▸ Glance
+Today's high and low, what it feels like, and the chance of rain for the next few days. Use your
+location, or just type a city.
 
-### 🌤 Weather
-- Today's high and low against where the temperature sits now, what it feels like, and the chance
-  of rain for each of the next few days
-- Works from your location, or from a city you start typing and pick from the list
-- **When it's raining, it rains in the island** — and the drops land on its bottom edge rather than
-  fading out. Snow falls too. Both stop entirely if you've asked macOS to reduce motion
+When it's raining outside, it rains **inside** the island, and the drops land on its bottom edge
+instead of fading away. Snow falls too. Both stop if you've asked macOS to reduce motion.
 
-### 🎵 Music
-- Album cover in the sliver left of the notch, equalizer in the sliver right
-- The equalizer moves with the music and freezes mid-stride on pause
-- Long titles scroll and then settle rather than scrolling forever
-- The album artwork lends the island its color, and the audio format shows as a small badge
-- **Up Next** — the queue your player is actually working through, with the output device,
-  favorite and playback speed. Double-click anything in the list to play it
-- Works with Apple Music, Spotify, and anything else that reports to the system
-- Track changes crossfade in place — the island doesn't reopen
+### 📂 The shelf — drop files on the notch
 
-### 🔊 Volume, mute & brightness
-- Shows the level you just set, right where your eyes already are
-- The bar leans off its own edge when you press past the end of the range, so a key that does
-  nothing still says so
-- **Isleta can answer the keys itself.** Turn it on under Sources and the island replaces macOS's
-  own HUD rather than sitting beside it. Volume and brightness are separate switches, both off
-  until you turn them on
+<img src="assets/screenshots/shelf.png" alt="The shelf offering Convert to PDF, Transcribe and Copy Link for three dropped items" width="640">
 
-### 📂 The shelf
-- Drop a file on the notch and it stays there — drag it out whenever you've found where it belongs
-- **Or drop files on it to convert them:** images, images to PDF, video, audio, Word, RTF, HTML,
-  spreadsheets and presentations
-- **Drop audio or video to transcribe it.** The text lands beside the original. Nothing is
-  uploaded, and no permission is asked
-- **Copy Link** puts a shareable iCloud link on your clipboard. For files outside iCloud Drive the
-  row becomes AirDrop, which is the thing that always works
-- Search the shelf, preview with Space, and look back through everything Isleta has made for you.
-  It survives a restart
+Drag a file onto the notch and it waits there until you've found where it belongs. While it's
+there, the island can also:
 
-### 🎧 Bluetooth devices
-- Take your AirPods out of the case and the island shows them beside a ring of how much charge is
-  left, for a few seconds, then goes
-- AirPods, AirPods Pro, AirPods Max, Beats and anything else that pairs — the ones Apple makes get
-  their own picture, everything else gets a generic pair
-- The ring turns amber below 20%, the same place Apple's own battery menu starts warning
-- Two ear pieces report as the lower of the two — the one that runs out first is the one worth
-  knowing about
+- **Convert it** — images, images to PDF, video, audio, Word, RTF, HTML, spreadsheets, slides
+- **Transcribe it** — drop audio or video and the text lands beside the original. Nothing is
+  uploaded and nothing is asked of you
+- **Copy a link** — a shareable iCloud link on your clipboard, or AirDrop for files outside iCloud
 
-### 🔒 On the lock screen
-- A card showing what's playing. It arrives when the Mac locks and leaves the moment you unlock it
-- Off until you turn it on
+Search the shelf, preview with the space bar, and look back at everything it's made for you. It
+survives a restart.
 
-### ⏱ And the rest of what arrives
-- **Timers** started in Clock, counting down in the sliver beside the notch, drawn as Clock's own
-  ring — orange while it runs, gray while it's paused
+### 🎧 AirPods and other devices
+
+<img src="assets/screenshots/airpods.png" alt="AirPods connecting, with a battery ring beside the notch" width="640">
+
+Take your AirPods out of the case and the island says hello with a ring showing how much charge is
+left, then gets out of the way. The ring turns amber below 20%. AirPods, AirPods Pro, AirPods Max
+and Beats get their own picture; everything else gets a generic pair.
+
+### 🔊 Volume, mute and brightness
+
+The level you just set, shown where your eyes already are. Press past the end of the range and the
+bar leans off its own edge, so a key that does nothing still tells you so.
+
+Isleta can also **answer the keys itself** and replace Apple's own HUD entirely — volume and
+brightness are separate switches, both off until you turn them on.
+
+### ⏱ And the small stuff that just shows up
+
+- **Timers** you start in Clock, counting down beside the notch in Clock's own ring
 - **Battery and power** — the charger going in and out, a low battery, Low Power Mode
-- **A call in progress**, with how long it's been going
-- **Welcome back** — a greeting on wake and unlock, in the right language for the hour and your
-  time zone
+- **A call in progress**, and how long it's been going
+- **Welcome back** — a greeting on wake, in the right language for the hour
 - **Screen sharing**, so you know when you're being watched
+- **A lock screen card** showing what's playing (off until you turn it on)
 
-### 🌍 In four languages
-- English, German, French and Spanish, following your Mac's language
+### 🌍 Four languages
+
+English, German, French and Spanish, following whatever your Mac is set to.
 
 ---
 
 ## How you use it
 
-At rest the Dynamic Island *is* the MacBook notch: pure black, filling the cutout, invisible by
-design. Being invisible is the point, so arriving with the pointer is what announces it — the
-island swells a few points past the notch while the trackpad taps once under your finger.
+At rest, Isleta *is* the notch — pure black, filling the cutout, invisible on purpose. Arriving with
+the pointer is what announces it: the island swells a few points past the notch and the trackpad
+taps once under your finger.
 
 | Do this | Get this |
 |---|---|
-| Move the pointer onto the MacBook notch | The island peeks — an invitation to click |
-| Click | It expands, onto Today |
-| **Swipe two fingers across an open island** | **Turn the page — Today, Music, Weather, wrapping** |
+| Move the pointer onto the notch | It peeks — an invitation to click |
+| Click | It opens |
+| **Swipe two fingers sideways** | Turn the page: Today → Music → Weather, and around again |
 | Drag a file onto it | The shelf opens and takes it |
-| Flick a closed island left or right | Whatever is on stage stows out of the way. Click to bring it back |
-| Swipe up with two fingers | An open island closes. Up is up, whichever way natural scrolling is set |
-| Right-click it | Isleta's own menu, including the way into Settings |
+| Flick a closed island sideways | Whatever's on stage stows out of the way. Click to bring it back |
+| Swipe up with two fingers | It closes |
+| Right-click it | Isleta's own menu, and the way into Settings |
 | `esc` | It closes |
-| `⌃⌥⌘I` | Open and close it from anywhere (rebindable) |
-| Menu bar icon | Show Glance, Show Now Playing, Show Weather, Settings, Setup Guide, Export Logs…, Quit |
+| `⌃⌥⌘I` | Open and close it from anywhere (you can change this) |
 
-**Also worth knowing:**
+**A few things worth knowing:**
 
-- No Dock icon, no window — Isleta lives in the menu bar, and the menu bar icon can be hidden
-- The first launch walks you through eight short screens, five of which are permissions — each
-  showing what it's for, and which button to press, before it asks. Skip any of them and the rest
-  of Isleta still works
-- Clicking the island never steals focus: no title bar flicker, no lost caret
-- Transport controls work from a window that never becomes key
-- **A list of apps the island stays out of entirely**, for full-screen video or a presentation
-
----
-
-## Where it appears
-
-- ✅ **On the display with the MacBook notch — and nowhere else.**
-  An external monitor has no cutout for the Dynamic Island to be continuous with, so an island up
-  there would just be a black rectangle stuck to the top of the screen. A different product.
-- ✅ Plug in as many displays as you like — the island stays on the laptop where it belongs.
-- ⚠️ **Exception:** a Mac with no notched display at all (mini, Studio, iMac) gets a floating
-  Dynamic Island pinned to the top of the primary display, because otherwise there'd be nothing
-  to use.
-
-The island is black in a real notch and glass where it floats, and it no longer asks you to choose.
-A notch island has to be optically continuous with the bezel and a floating one has nothing to be
-continuous with — that was never a matter of taste, so it is no longer a setting.
+- There's no Dock icon and no window — Isleta lives in the menu bar, and you can hide that icon too
+- Clicking the island never steals focus. No title bar flicker, no lost cursor in the thing you
+  were typing
+- The first launch walks you through eight short screens. Five are permissions, each explaining
+  what it's for *before* it asks. Skip any of them and the rest of Isleta still works
+- You can give it a list of apps to stay out of entirely — handy for full-screen video or a
+  presentation
 
 ---
 
-## Settings
+## Will it run on my Mac?
 
-Four panes, not seven — and roughly a third as many controls as 1.x had. What went were the
-settings that were asking you a question Isleta can answer for itself.
+**You'll need macOS 26 or later on Apple silicon.**
 
-| Pane | What's on it |
-|---|---|
-| **General** | Launch at login, the shortcuts, whether Isleta shows in the menu bar, the lock-screen card, the apps it stays out of, updates, and — on a Mac with no notch — whether the floating island keeps out of the way until something happens |
-| **Sources** | Turn Now Playing, the HUDs, Today, calendar alerts, meetings, timers, Bluetooth devices, power, calls, the shelf, the wake greeting and screen sharing on or off independently — each with what it needs written beside it. Replacing Apple's volume and brightness HUDs lives here too, under the HUD row |
-| **Glance** | Which calendars count, and whether the weather uses your location or a city you type |
-| **About** | Acknowledgements, Export Logs…, Open Setup Guide, Quit, and everything back to defaults |
+- ✅ **MacBook Pro or MacBook Air with a notch** — this is Isleta's home. The island lives in the
+  cutout.
+- ✅ **Plug in as many external displays as you like.** The island stays on the laptop, because an
+  external monitor has no cutout to be continuous with — an island up there would just be a black
+  rectangle stuck to the top of the screen.
+- ⚠️ **Mac mini, Mac Studio or iMac** — no notch anywhere, so you get a floating island pinned to
+  the top of your main display instead.
 
-Two shortcuts: **Open the island**, which ships bound to `⌃⌥⌘I`, and **Show glance**, which starts
-unassigned. Only the first ships with a key, because Isleta has no Dock icon and its menu bar item
-can be hidden — a user who hides the icon needs one way back in. Everything else is a key taken
-from every other app on your Mac, so nothing else claims one without being asked.
-
-The shortcut recorder reads your actual keyboard layout, so Dvorak and AZERTY users see the key
-they really pressed.
+Isleta is a **direct download**, signed with an Apple Developer ID and notarized by Apple. It
+updates itself. It is not on the Mac App Store, because it needs Accessibility and a small helper
+process to read what's playing, and the App Store sandbox allows neither.
 
 ---
 
-## Requirements
+## Your privacy
 
-- macOS 26 or later
-- Apple silicon
-- A MacBook Pro or MacBook Air with a notch — that notch is where the Dynamic Island for macOS
-  lives (see [Where it appears](#where-it-appears) for other Macs)
+This is the short version, and it really is the whole version:
 
-**Distribution:** direct download, signed with a Developer ID and notarized by Apple.
-Not on the Mac App Store — Isleta needs Accessibility and a helper process that reads what's
-playing, neither of which the App Store sandbox permits.
+- ❌ No account, ever
+- ❌ No telemetry, no analytics, no crash reporting service
+- ❌ Nothing about you, your music, your location or your calendar leaves your Mac
+- ✅ **Transcription runs entirely on your Mac.** Audio never leaves it
+- ✅ Your settings are a small file in your own user library
+- ✅ Isleta keeps a log at `~/Library/Logs/Isleta` — events only, never track titles, file names,
+  event titles or serial numbers. That's what makes **Export Logs…** safe to email to a stranger
+- ✅ **Exactly two kinds of network request exist**: the weather, and checking for a new version.
+  Both are switches. Turn them off and Isleta never touches the network at all
+
+And since it's open source, you don't have to take any of that on faith — the code is right here.
 
 ---
 
-## Permissions
+<details>
+<summary><strong>What Isleta asks permission for (and what happens if you say no)</strong></summary>
 
-Isleta asks for as little as it can get away with, as late as it can. Every one of them is asked
-by a button you press, never at launch.
+<br>
+
+Isleta asks for as little as it can, as late as it can. Every request comes from a button *you*
+press — never at launch.
 
 | Permission | Needed for | If you decline |
 |---|---|---|
-| **None** | Volume, mute and brightness levels, timers, the shelf, file conversion, transcription, the wake greeting, power, hover, haptics, the shortcut | — |
-| **Accessibility** | The media keys — so Isleta can answer them, and so it can replace Apple's HUD if you ask it to | The island still shows the level; it just can't take the key |
-| **Automation** (Music / Spotify) | The one-shot "what's playing right now?" read at launch | You lose the first track of a session, nothing else — live updates need no permission |
-| **Calendar** | What's next on Today, meeting links, and calendar alerts | Today shows the weather half only |
+| **None at all** | Volume, mute and brightness, timers, the shelf, file conversion, transcription, the wake greeting, power, hover, haptics, the shortcut | — |
+| **Accessibility** | Answering the media keys, and replacing Apple's HUD if you ask it to | The island still shows the level; it just can't take the key |
+| **Automation** (Music / Spotify) | A one-shot "what's playing right now?" read at launch | You lose the first track of a session, nothing else |
+| **Calendar** | Today's events, meeting links, calendar alerts | Today shows the weather half only |
 | **Location** | Weather where you are | Type a city instead — same weather, no location |
 | **Bluetooth** | Hearing a device connect, so AirPods can say hello | No device ever appears; nothing else changes |
 
-Each is explained in Settings, next to the switch it belongs to, along with what stops working if
-you say no.
+Each one is explained in Settings, right beside the switch it belongs to.
 
----
+</details>
 
-## Privacy
+<details>
+<summary><strong>Settings — what's on each pane</strong></summary>
 
-- ❌ No account
-- ❌ No telemetry, no analytics, no crash reporting service
-- ❌ Nothing about you, what you play, where you are, or what's in your calendar is uploaded
-  anywhere
-- ✅ What's playing and what's on your calendar is read on your Mac, drawn on your Mac, and
-  forgotten
-- ✅ **Transcription runs entirely on your Mac.** Audio never leaves it, and macOS asks you for
-  nothing to do it
-- ✅ Isleta keeps a log at `~/Library/Logs/Isleta` — events only, never track titles, file names,
-  event titles or serial numbers, so **Export Logs…** is safe to send to a stranger
-- ✅ Your settings are a small preferences file in your own user library
-- ✅ Exactly two kinds of network request: the weather, and checking whether a new version exists.
-  Both are switches. Turn them off and the app never touches the network at all.
+<br>
 
----
+| Pane | What's on it |
+|---|---|
+| **General** | Launch at login, shortcuts, whether Isleta shows in the menu bar, the lock screen card, the apps it stays out of, updates |
+| **Sources** | Turn each thing on or off independently — Now Playing, the HUDs, Today, calendar alerts, meetings, timers, Bluetooth, power, calls, the shelf, the wake greeting, screen sharing |
+| **Glance** | Which calendars count, and whether weather uses your location or a city you type |
+| **About** | Acknowledgements, Export Logs…, Setup Guide, Quit, reset to defaults |
 
-## Known limitations
+There are two keyboard shortcuts. **Open the island** ships bound to `⌃⌥⌘I`; **Show glance** starts
+unassigned. Only the first gets a key out of the box, because Isleta has no Dock icon and its menu
+bar item can be hidden — you need one guaranteed way back in. Everything else is a key taken away
+from some other app on your Mac, so nothing claims one without being asked.
 
-- **You cannot see who is calling.** macOS doesn't let apps outside Apple read that, or answer for
-  you. Isleta shows that a call is happening and nothing more.
-- **A connected device's battery is read once, when it connects.** It doesn't tick down while you
-  wear them — macOS gives no signal when the level changes, and Isleta won't poll for one. Most
-  non-Apple headphones report no level at all.
+The shortcut recorder reads your real keyboard layout, so Dvorak and AZERTY users see the key they
+actually pressed.
+
+</details>
+
+<details>
+<summary><strong>Honest limitations</strong></summary>
+
+<br>
+
+- **You can't see who's calling.** macOS doesn't let apps outside Apple read that. Isleta shows
+  that a call is happening, and nothing more.
+- **A device's battery is read once, when it connects.** It doesn't tick down while you wear them —
+  macOS gives no signal when the level changes, and Isleta won't poll for one. Most non-Apple
+  headphones report no level at all.
 - **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
-  started by hand in Clock is there immediately. macOS gives no signal for the others.
-- **Replacing the system HUDs is off until you turn it on, and it needs Accessibility.** Quitting
-  Isleta hands your keys straight back. If Isleta is force-quit, the system HUD stays out of the
-  way until Isleta next starts. Brightness covers the built-in display only.
+  started by hand in Clock is instant. macOS gives no signal for the others.
+- **Replacing the system HUDs needs Accessibility, and is off until you turn it on.** Quitting
+  Isleta hands your keys straight back. Brightness covers the built-in display only.
 - **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
   can sit over the middle of the space labels.
 - **The hover target is the notch itself** — about 185 points wide, and easy to overshoot.
-- **Weather needs your location, or a city you type.** Isleta asks for neither until you use it.
+
+</details>
 
 ---
 
-## Build from source
+## Open source
 
-**Requirements:** macOS 26+, Apple silicon, Xcode 26+. No package manager and no code generation
-step — the five local SwiftPM packages and both vendored dependencies are in the tree.
+Isleta is **free software under the [MIT License](LICENSE)**. You can read it, build it, fork it,
+learn from it, or ship your own thing with it.
+
+- 🐞 **Found a bug?** [Open an issue](https://github.com/idevtim/isleta/issues)
+- 💡 **Got an idea?** [Start a discussion](https://github.com/idevtim/isleta/discussions)
+- 🔧 **Want to help?** [**CONTRIBUTING.md**](CONTRIBUTING.md) has setup, the house rules and the
+  performance budget
+- 🔒 **Security issue?** Email **security@idevtim.com** rather than opening an issue —
+  see [SECURITY.md](SECURITY.md)
+- 🤝 **Ground rules** — [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Short version: be decent.
+  Technical disagreement made in good faith isn't a conduct matter — bring the measurement
+
+Hardware quirks are especially useful to hear about: a display arrangement that confuses it, a
+music app it doesn't recognize.
+
+### Build it yourself
+
+You do **not** need an Apple developer account. Debug builds are ad-hoc signed and work with no
+certificate at all.
 
 ```sh
 git clone https://github.com/idevtim/isleta.git
 cd isleta
 ./Tools/check.sh
+open .build/xcode/Build/Products/Debug/Isleta.app
 ```
 
-`Tools/check.sh` is the whole check: it builds and tests every package, runs the localization audit,
-builds `Isleta.app`, then audits the built app. It must pass before anything is called done.
+`Tools/check.sh` is the whole check — it builds and tests every package, runs the localization
+audit, builds the app, then audits the built app. There's no package manager to install and no
+code generation step: the five local SwiftPM packages and both vendored dependencies are already
+in the tree.
 
-```sh
-open .build/xcode/Build/Products/Debug/Isleta.app     # not `./Isleta` — see below
-swift test --package-path Packages/IslandKit --filter IslandShapeTests
-```
+Two things that will otherwise look like bugs in your own build: **Debug builds have no weather**
+(WeatherKit needs an entitlement an ad-hoc signature can't carry), and you should **launch with
+`open -a`, not from the shell** (macOS judges permission requests against the *responsible*
+process, so an app started from a terminal inherits the terminal's grants). Both are explained in
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
-**You do not need an Apple developer account.** Debug builds are ad-hoc signed and work with no
-certificate. Two consequences worth knowing before you file a bug against your own build:
+<details>
+<summary><strong>How the code is laid out</strong></summary>
 
-- **Debug builds have no weather.** WeatherKit needs a `com.apple.developer.*` entitlement and an
-  ad-hoc signature cannot carry one — which is why there are two entitlements files. A Debug build
-  logs `weatherkit entitlement absent` and draws the calendar half alone. That's expected.
-- **Launch it with `open -a`, not from the shell.** macOS judges a permission request against the
-  *responsible* process, so an app started from a terminal inherits the terminal's grants and its
-  usage strings. Every permission bug hides from a shell launch.
-
-`Tools/sign-debug.sh` signs a Debug build with a stable identity so TCC grants survive rebuilds —
-set `APPLE_TEAM_ID` and `CODE_SIGN_IDENTITY` to your own. `Tools/release.sh` is maintainer-only.
-
----
-
-## How it's put together
+<br>
 
 Five local SwiftPM packages plus a thin app shell. The layering test: **anything in `IslandUI` must
 build and preview with no permission granted.**
@@ -324,80 +314,49 @@ Packages/
   IslandSettings      config model, persistence, settings window, Sparkle seam
 Vendor/               mediaremote-adapter; Sparkle's LICENSE only — see its README
 Tools/check.sh        build + test everything the way CI should
-Tools/release.sh      sign, notarize, sign the archive, regenerate the appcast
-appcast.xml           the Sparkle feed, served raw from this repo
+Tools/release.sh      sign, notarize, regenerate the appcast (maintainer only)
+appcast.xml           the Sparkle update feed, served raw from this repo
 docs/                 the record: architecture, traps, platform constraints, motion
 release-notes/        one file per shipped version
 ```
 
-Each package has a `README.md` stating what it owns **and what it deliberately does not**.
+Every package has a `README.md` saying what it owns **and what it deliberately does not**.
 
 **The docs are the interesting part.** Almost every entry in them was measured on real hardware,
-most of it after a session was lost to the thing it warns about — `docs/PLATFORM-CONSTRAINTS.md` and
+most of it after a session was lost to the thing it warns about. `docs/PLATFORM-CONSTRAINTS.md` and
 `docs/TRAPS.md` in particular are a long list of macOS APIs that return `success` and do nothing.
 `CLAUDE.md` is the map that says which file to read before touching which area. `docs/PROGRESS.md`
-records what was **withdrawn** as carefully as what shipped, because a removed feature is a decision
-a later reader has to be able to find.
+records what was **withdrawn** as carefully as what shipped, because a removed feature is a
+decision a later reader has to be able to find.
 
----
-
-## Contributing
-
-Contributions are welcome — see **[CONTRIBUTING.md](CONTRIBUTING.md)** for setup, the house rules
-and the performance budget.
-
-Two things worth knowing before you open a PR:
-
-- **Read the doc for the area first.** `CONTRIBUTING.md` has the table. These aren't style
-  preferences; each one is a measurement that cost somebody a day.
-- **A feature that announces something the user is already looking at doesn't ship.** Seven have
-  been withdrawn on that ground — notifications, the app switcher, the app-installed island, the
-  disk island, the month grid, the player bar, downloads. Worth knowing before you build one.
-
-Security issues go to **security@idevtim.com**, not the issue tracker — see
-[SECURITY.md](SECURITY.md).
-
----
-
-## License
-
-[MIT](LICENSE) © 2026 Timothy Murphy.
-
-The vendored dependencies keep their own licenses: **mediaremote-adapter** is BSD 3-Clause and
-**Sparkle** is MIT, both reproduced in `Vendor/`.
-
----
-
-## Feedback & links
-
-- 🐞 **Bugs** — [GitHub Issues](https://github.com/idevtim/isleta/issues)
-- 💡 **Ideas** — [GitHub Discussions](https://github.com/idevtim/isleta/discussions)
-- 🌐 **Web** — [tryisleta.com](https://tryisleta.com)
-
-Real hardware quirks are especially useful — a display arrangement that confuses it, a music app
-it doesn't recognize.
+</details>
 
 ---
 
 ## Support the project
 
-Isleta is a one-person project, and free. If it earns its place in your MacBook notch:
+Isleta is a one-person project, and it's free. If it earns its place in your notch:
 
-- ❤️ [**GitHub Sponsors**](https://github.com/sponsors/idevtim) — monthly support
-- ☕ [**Buy Me a Coffee**](https://buymeacoffee.com/idevtim) — one-shot tip
+❤️ [**GitHub Sponsors**](https://github.com/sponsors/idevtim) &nbsp;·&nbsp; ☕ [**Buy Me a Coffee**](https://buymeacoffee.com/idevtim) &nbsp;·&nbsp; ⭐ **Or just star the repo** — it genuinely helps
 
 ---
 
-## Acknowledgements
+## License and thanks
 
-- [**mediaremote-adapter**](https://github.com/ungive/mediaremote-adapter) by Jonas van den Berg
-  and contributors — Now Playing, used under the BSD 3-Clause License
-- [**Sparkle**](https://github.com/sparkle-project/Sparkle) — updates, used under the MIT License
+**[MIT](LICENSE)** © 2026 Timothy Murphy.
+
+The vendored dependencies keep their own licenses:
+
+- [**mediaremote-adapter**](https://github.com/ungive/mediaremote-adapter) by Jonas van den Berg and
+  contributors — reads Now Playing, BSD 3-Clause
+- [**Sparkle**](https://github.com/sparkle-project/Sparkle) — updates, MIT
+
+Both are reproduced in `Vendor/`.
 
 ---
 
 <div align="center">
 
-**© 2026 Isleta** • Made by [Timothy Murphy](https://idevtim.com)
+**© 2026 Isleta** • Made by [Timothy Murphy](https://idevtim.com) • [tryisleta.com](https://tryisleta.com)
 
 </div>
