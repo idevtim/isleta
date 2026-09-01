@@ -1,0 +1,402 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		IS1E7A000000000000000001 /* IslandKit in Frameworks */ = {isa = PBXBuildFile; productRef = IS1E7A000000000000000002 /* IslandKit */; };
+		IS1E7A000000000000000003 /* IslandUI in Frameworks */ = {isa = PBXBuildFile; productRef = IS1E7A000000000000000004 /* IslandUI */; };
+		IS1E7A000000000000000005 /* IslandActivities in Frameworks */ = {isa = PBXBuildFile; productRef = IS1E7A000000000000000006 /* IslandActivities */; };
+		IS1E7A000000000000000007 /* IslandSources in Frameworks */ = {isa = PBXBuildFile; productRef = IS1E7A000000000000000008 /* IslandSources */; };
+		IS1E7A000000000000000009 /* IslandSettings in Frameworks */ = {isa = PBXBuildFile; productRef = IS1E7A00000000000000000A /* IslandSettings */; };
+		IS1E7A0000000000000000F7 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = IS1E7A0000000000000000F8 /* Sparkle */; };
+		IS1E7A0000000000000000E1 /* Isleta.icon in Resources */ = {isa = PBXBuildFile; fileRef = IS1E7A0000000000000000E0 /* Isleta.icon */; };
+		IS1E7A0000000000000000F2 /* MediaRemoteAdapter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = IS1E7A0000000000000000F0 /* MediaRemoteAdapter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		IS1E7A0000000000000000F3 /* mediaremote-adapter.pl in Embed MediaRemote Adapter Script */ = {isa = PBXBuildFile; fileRef = IS1E7A0000000000000000F1 /* mediaremote-adapter.pl */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		IS1E7A000000000000000010 /* Isleta.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Isleta.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		IS1E7A000000000000000011 /* Isleta-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Isleta-Info.plist"; sourceTree = "<group>"; };
+		IS1E7A000000000000000012 /* Isleta.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Isleta.entitlements; sourceTree = "<group>"; };
+		IS1E7A0000000000000000E0 /* Isleta.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Isleta.icon; sourceTree = "<group>"; };
+		IS1E7A0000000000000000F0 /* MediaRemoteAdapter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaRemoteAdapter.framework; path = "Vendor/mediaremote-adapter/MediaRemoteAdapter.framework"; sourceTree = SOURCE_ROOT; };
+		IS1E7A0000000000000000F1 /* mediaremote-adapter.pl */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; name = "mediaremote-adapter.pl"; path = "Vendor/mediaremote-adapter/bin/mediaremote-adapter.pl"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		IS1E7A000000000000000013 /* Isleta */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Isleta; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		IS1E7A000000000000000014 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				IS1E7A000000000000000001 /* IslandKit in Frameworks */,
+				IS1E7A000000000000000003 /* IslandUI in Frameworks */,
+				IS1E7A000000000000000005 /* IslandActivities in Frameworks */,
+				IS1E7A000000000000000007 /* IslandSources in Frameworks */,
+				IS1E7A000000000000000009 /* IslandSettings in Frameworks */,
+				IS1E7A0000000000000000F7 /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		IS1E7A0000000000000000F4 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				IS1E7A0000000000000000F2 /* MediaRemoteAdapter.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		IS1E7A0000000000000000F5 /* Embed MediaRemote Adapter Script */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = MediaRemoteAdapter;
+			dstSubfolderSpec = 7;
+			files = (
+				IS1E7A0000000000000000F3 /* mediaremote-adapter.pl in Embed MediaRemote Adapter Script */,
+			);
+			name = "Embed MediaRemote Adapter Script";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXGroup section */
+		IS1E7A000000000000000015 = {
+			isa = PBXGroup;
+			children = (
+				IS1E7A000000000000000013 /* Isleta */,
+				IS1E7A000000000000000016 /* Config */,
+				IS1E7A0000000000000000E0 /* Isleta.icon */,
+				IS1E7A0000000000000000F6 /* Vendor */,
+				IS1E7A000000000000000017 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		IS1E7A0000000000000000F6 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+				IS1E7A0000000000000000F0 /* MediaRemoteAdapter.framework */,
+				IS1E7A0000000000000000F1 /* mediaremote-adapter.pl */,
+			);
+			name = Vendor;
+			sourceTree = "<group>";
+		};
+		IS1E7A000000000000000016 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				IS1E7A000000000000000011 /* Isleta-Info.plist */,
+				IS1E7A000000000000000012 /* Isleta.entitlements */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		IS1E7A000000000000000017 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				IS1E7A000000000000000010 /* Isleta.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		IS1E7A000000000000000018 /* Isleta */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = IS1E7A000000000000000019 /* Build configuration list for PBXNativeTarget "Isleta" */;
+			buildPhases = (
+				IS1E7A00000000000000001A /* Sources */,
+				IS1E7A000000000000000014 /* Frameworks */,
+				IS1E7A00000000000000001B /* Resources */,
+				IS1E7A0000000000000000F4 /* Embed Frameworks */,
+				IS1E7A0000000000000000F5 /* Embed MediaRemote Adapter Script */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				IS1E7A000000000000000013 /* Isleta */,
+			);
+			name = Isleta;
+			packageProductDependencies = (
+				IS1E7A000000000000000002 /* IslandKit */,
+				IS1E7A000000000000000004 /* IslandUI */,
+				IS1E7A000000000000000006 /* IslandActivities */,
+				IS1E7A000000000000000008 /* IslandSources */,
+				IS1E7A00000000000000000A /* IslandSettings */,
+				IS1E7A0000000000000000F8 /* Sparkle */,
+			);
+			productName = Isleta;
+			productReference = IS1E7A000000000000000010 /* Isleta.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		IS1E7A00000000000000001C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					IS1E7A000000000000000018 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+				};
+			};
+			buildConfigurationList = IS1E7A00000000000000001D /* Build configuration list for PBXProject "Isleta" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				de,
+				fr,
+				es,
+			);
+			mainGroup = IS1E7A000000000000000015;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				IS1E7A00000000000000000B /* XCLocalSwiftPackageReference "Packages/IslandKit" */,
+				IS1E7A00000000000000000C /* XCLocalSwiftPackageReference "Packages/IslandUI" */,
+				IS1E7A00000000000000000D /* XCLocalSwiftPackageReference "Packages/IslandActivities" */,
+				IS1E7A00000000000000000E /* XCLocalSwiftPackageReference "Packages/IslandSources" */,
+				IS1E7A00000000000000000F /* XCLocalSwiftPackageReference "Packages/IslandSettings" */,
+				IS1E7A0000000000000000F9 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = IS1E7A000000000000000017 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				IS1E7A000000000000000018 /* Isleta */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		IS1E7A00000000000000001B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				IS1E7A0000000000000000E1 /* Isleta.icon in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		IS1E7A00000000000000001A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		IS1E7A00000000000000001E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SDKROOT = macosx;
+				SUPPRESS_WARNINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		IS1E7A00000000000000001F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SDKROOT = macosx;
+				SUPPRESS_WARNINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		IS1E7A000000000000000020 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = Isleta;
+				ASSETCATALOG_COMPILER_STANDALONE_ICON_BEHAVIOR = all;
+				CODE_SIGN_ENTITLEMENTS = Config/Isleta-Debug.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Config/Isleta-Info.plist;
+				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 2.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tryisleta.isleta;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		IS1E7A000000000000000021 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = Isleta;
+				ASSETCATALOG_COMPILER_STANDALONE_ICON_BEHAVIOR = all;
+				CODE_SIGN_ENTITLEMENTS = Config/Isleta.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Config/Isleta-Info.plist;
+				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 2.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tryisleta.isleta;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "Isleta Developer ID";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		IS1E7A00000000000000001D /* Build configuration list for PBXProject "Isleta" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				IS1E7A00000000000000001E /* Debug */,
+				IS1E7A00000000000000001F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		IS1E7A000000000000000019 /* Build configuration list for PBXNativeTarget "Isleta" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				IS1E7A000000000000000020 /* Debug */,
+				IS1E7A000000000000000021 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		IS1E7A00000000000000000B /* XCLocalSwiftPackageReference "Packages/IslandKit" */ = {isa = XCLocalSwiftPackageReference; relativePath = Packages/IslandKit; };
+		IS1E7A00000000000000000C /* XCLocalSwiftPackageReference "Packages/IslandUI" */ = {isa = XCLocalSwiftPackageReference; relativePath = Packages/IslandUI; };
+		IS1E7A00000000000000000D /* XCLocalSwiftPackageReference "Packages/IslandActivities" */ = {isa = XCLocalSwiftPackageReference; relativePath = Packages/IslandActivities; };
+		IS1E7A00000000000000000E /* XCLocalSwiftPackageReference "Packages/IslandSources" */ = {isa = XCLocalSwiftPackageReference; relativePath = Packages/IslandSources; };
+		IS1E7A00000000000000000F /* XCLocalSwiftPackageReference "Packages/IslandSettings" */ = {isa = XCLocalSwiftPackageReference; relativePath = Packages/IslandSettings; };
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		IS1E7A0000000000000000F9 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		IS1E7A000000000000000002 /* IslandKit */ = {isa = XCSwiftPackageProductDependency; productName = IslandKit; };
+		IS1E7A000000000000000004 /* IslandUI */ = {isa = XCSwiftPackageProductDependency; productName = IslandUI; };
+		IS1E7A000000000000000006 /* IslandActivities */ = {isa = XCSwiftPackageProductDependency; productName = IslandActivities; };
+		IS1E7A000000000000000008 /* IslandSources */ = {isa = XCSwiftPackageProductDependency; productName = IslandSources; };
+		IS1E7A00000000000000000A /* IslandSettings */ = {isa = XCSwiftPackageProductDependency; productName = IslandSettings; };
+		IS1E7A0000000000000000F8 /* Sparkle */ = {isa = XCSwiftPackageProductDependency; package = IS1E7A0000000000000000F9 /* XCRemoteSwiftPackageReference "Sparkle" */; productName = Sparkle; };
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = IS1E7A00000000000000001C /* Project object */;
+}

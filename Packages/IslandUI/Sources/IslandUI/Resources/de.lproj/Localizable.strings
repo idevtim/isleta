@@ -1,0 +1,149 @@
+
+/* What a kind of activity is called, when a provider supplied no label of its own */
+"activityKind.nowPlaying" = "Aktuelle Wiedergabe";
+"activityKind.systemHUD" = "System";
+"activityKind.welcomeBack" = "Willkommen zurück";
+"activityKind.shelf" = "Regal";
+"activityKind.timer" = "Timer";
+"activityKind.deviceConnected" = "Gerät";
+"activityKind.glance" = "Überblick";
+"activityKind.calendarAlert" = "Termin";
+"activityKind.meeting" = "Meeting";
+"activityKind.power" = "Batterie";
+"activityKind.call" = "Anruf";
+"activityKind.fileAction" = "Dateiaktion";
+"activityKind.focusChanged" = "Fokus";
+"activityKind.screenSharing" = "Bildschirmfreigabe";
+
+/* The numerals an activity value resolves to, and what VoiceOver reads instead */
+"value.compactClock.hours" = "%1$@h%2$@";
+"value.a11y.percent" = "%lld Prozent";
+"value.a11y.inProgress" = "läuft";
+"value.a11y.remaining" = "noch %@";
+"value.a11y.elapsed" = "%@ vergangen";
+
+/* The home page */
+"home.notPlaying" = "Nichts wird abgespielt";
+"home.previous.a11y" = "Vorheriger Titel";
+"home.next.a11y" = "Nächster Titel";
+"home.play.a11y" = "Abspielen";
+"home.pause.a11y" = "Pausieren";
+"home.date.a11y" = "Monat öffnen";
+"home.moreEvents" = "%lld weitere";
+"home.allow" = "Erlauben …";
+"home.openSettings" = "Einstellungen öffnen";
+"home.openSettings.a11y" = "Datenschutzeinstellungen für Kalender öffnen";
+"home.openEvent.a11y" = "Öffnet den Termin in Kalender";
+
+/* The pages the open island turns between */
+"page.home" = "Heute";
+"page.music" = "Musik";
+"page.weather" = "Wetter";
+
+/* Lists drawn in the island */
+"list.age.now" = "jetzt";
+"list.age.minutes" = "%lldmin";
+"list.age.hours" = "%lldh";
+"list.age.days" = "%lldd";
+
+/* The shelf */
+"shelf.dropTarget" = "Zum Hinzufügen ablegen";
+"shelf.searchCount" = "%1$lld von %2$lld";
+"shelf.actions.a11y" = "Aktionen für diese Dateien";
+"shelf.search.prompt" = "Suchen";
+"shelf.search.a11y" = "Regal durchsuchen";
+"shelf.search.end" = "Suche beenden";
+"shelf.clearAll" = "Leeren";
+"shelf.clearAll.a11y" = "Das Regal leeren";
+"shelf.tile.remove" = "%@ entfernen";
+"shelf.tile.missing" = "%@, fehlt";
+"shelf.actions.back" = "Zurück zum Regal";
+"shelf.job.progress" = "%1$@ · %2$@";
+
+/* Now Playing */
+"nowPlaying.a11y" = "Wird gerade abgespielt";
+"nowPlaying.a11y.openPlayer" = "Player öffnen";
+"nowPlaying.a11y.openTrack" = "%@ im Player öffnen";
+"nowPlaying.a11y.openTrackByArtist" = "%1$@ von %2$@ im Player öffnen";
+"nowPlaying.a11y.upNextPeek" = ". Als Nächstes: %@";
+"nowPlaying.upNext" = "Als Nächstes";
+"nowPlaying.scrubber.a11y" = "Wiedergabeposition";
+"nowPlaying.transport.previous" = "Vorheriger Titel";
+"nowPlaying.transport.play" = "Wiedergabe";
+"nowPlaying.transport.pause" = "Pause";
+"nowPlaying.transport.next" = "Nächster Titel";
+"nowPlaying.transport.shuffle" = "Zufällig";
+"nowPlaying.transport.repeat" = "Wiederholen";
+"nowPlaying.transport.favorite" = "Favorit";
+"nowPlaying.transport.unfavorite" = "Favorit entfernen";
+"nowPlaying.transport.backFifteen" = "Fünfzehn Sekunden zurück";
+"nowPlaying.transport.forwardFifteen" = "Fünfzehn Sekunden vor";
+"nowPlaying.transport.showUpNext" = "Als Nächstes einblenden";
+"nowPlaying.transport.hideUpNext" = "Als Nächstes ausblenden";
+"nowPlaying.state.on" = "Ein";
+"nowPlaying.state.off" = "Aus";
+"nowPlaying.repeat.all" = "Alle";
+"nowPlaying.repeat.one" = "Titel";
+"nowPlaying.queue.showing" = "Eingeblendet";
+"nowPlaying.queue.hidden" = "Ausgeblendet";
+
+/* The Up Next surface */
+"nowPlaying.queue.output" = "Ausgabe";
+"nowPlaying.queue.rate" = "%@×";
+"nowPlaying.queue.rate.a11y" = "Wiedergabetempo";
+"nowPlaying.queue.close" = "Als Nächstes schließen";
+"nowPlaying.queue.empty" = "Nichts in der Warteschlange";
+"nowPlaying.queue.empty.output" = "Keine Ausgabegeräte";
+"nowPlaying.queue.row.current" = "Wird gerade abgespielt";
+"nowPlaying.queue.row.hint" = "Doppelklicken zum Abspielen";
+
+/* The glance */
+"glance.weather.a11y" = "%1$@, %2$@";
+"glance.weather.a11y.place" = "%1$@ in %2$@, %3$@";
+"glance.allow" = "Erlauben …";
+"glance.allow.a11y" = "Kalenderzugriff erlauben";
+"glance.join" = "Beitreten";
+
+/* The drop history */
+"dropHistory.title" = "Ablageverlauf";
+"dropHistory.empty" = "Noch nichts abgelegt";
+"dropHistory.clearAll" = "Alle löschen";
+"dropHistory.clearAll.a11y" = "Den Ablageverlauf löschen";
+"dropHistory.clearAll.help" = "Vergisst, was Isleta mit den abgelegten Dateien gemacht hat. Es werden keine Dateien gelöscht.";
+"dropHistory.close" = "Schließen";
+"dropHistory.row.a11y" = "%1$@, %2$@";
+"dropHistory.row.hint" = "Zeigt sie im Finder";
+"dropHistory.copyLink" = "Link kopieren";
+"dropHistory.runAgain" = "Noch einmal ausführen";
+
+/* Shared */
+"list.separator" = ", ";
+
+/* The month grid */
+
+/* The weather surface */
+"glance.weather.open.a11y" = "Das Wetter anzeigen";
+"glance.weather.title" = "Wetter";
+"glance.weather.asOf" = "Stand %1$@";
+"glance.weather.today" = "Heute";
+"glance.weather.metric.rain" = "Regen";
+"glance.weather.metric.humidity" = "Luftfeuchte";
+"glance.weather.metric.feelsLike" = "Gefühlt";
+"glance.weather.metric.wind" = "Wind";
+"glance.weather.metric.unknown" = "—";
+"glance.weather.day.chance.a11y" = "%1$@ Niederschlagswahrscheinlichkeit";
+"glance.weather.unavailable" = "Das Wetter ist gerade nicht verfügbar.";
+"glance.weather.noPlace" = "Isleta weiß nicht, wo es nachfragen soll. Wähle in den Einstellungen einen Ort, dann erscheint hier die Vorhersage.";
+"glance.weather.openSettings" = "Einstellungen öffnen";
+"glance.weather.openSettings.a11y" = "Isleta-Einstellungen öffnen, um einen Ort zu wählen";
+"glance.schedule.close" = "Den Zeitplan schließen";
+"glance.schedule.close.label" = "Schließen";
+"glance.schedule.emptyToday" = "Heute keine Termine";
+"glance.schedule.emptyTomorrow" = "Morgen keine Termine";
+"glance.schedule.more" = "%1$@ weitere";
+"glance.schedule.open.a11y" = "Heute und morgen anzeigen";
+"glance.schedule.openEvent.a11y" = "Öffnet den Termin in Kalender";
+"glance.schedule.tomorrow" = "Morgen";
+
+"lockScreen.locked" = "Gesperrt";
+"lockScreen.unlocked" = "Entsperrt";

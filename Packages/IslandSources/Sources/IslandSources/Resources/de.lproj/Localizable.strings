@@ -1,0 +1,114 @@
+
+/* Bluetooth — the connect permission */
+"bluetooth.authorization.restricted" = "Der Bluetooth-Zugriff ist auf diesem Mac eingeschränkt, deshalb können Geräte, die sich verbinden, nicht angezeigt werden.";
+"bluetooth.authorization.denied" = "Isleta kann nicht sehen, wenn sich Bluetooth-Geräte verbinden. Erlaube Isleta den Bluetooth-Zugriff in den Systemeinstellungen ▸ Datenschutz & Sicherheit ▸ Bluetooth.";
+
+/* The calendar permission */
+"calendar.authorization.denied" = "Isleta kann deinen Kalender nicht sehen, deshalb hat die Insel zu deinem Tag nichts zu zeigen. Wenn du den Kalenderzugriff für Isleta in den Systemeinstellungen ▸ Datenschutz & Sicherheit einschaltest, ist wieder zu sehen, was als Nächstes ansteht — deine Termine werden nie gespeichert, nie irgendwohin gesendet und nie in Isletas Protokolle geschrieben.";
+"calendar.authorization.restricted" = "Der Kalenderzugriff wird auf diesem Mac verwaltet, deshalb kann Isleta deine Termine nicht lesen. Daran ändert nichts, was du in Isleta einstellst.";
+"calendar.authorization.writeOnly" = "Isleta hat nur schreibenden Kalenderzugriff: Der erlaubt das Hinzufügen von Terminen und gibt keine zum Lesen zurück. Die Insel braucht den vollen Zugriff.";
+
+/* A call in progress */
+"call.title" = "Anruf";
+"call.inProgress" = "Anruf läuft";
+"call.a11y.inApp" = "Anruf läuft in %@";
+
+/* The drop history — a file that has moved out of reach */
+"dropHistory.volumeUnavailable" = "%@ ist nicht verbunden";
+"dropHistory.missing" = "Diese Datei wurde gelöscht";
+
+/* File conversion and its failures — drawn on the island, one line */
+"fileAction.failed.nothingToConvert" = "Nichts zu konvertieren";
+"fileAction.failed.generic" = "Diese Datei konnte nicht konvertiert werden";
+"fileAction.failed.notStarted" = "Die Konvertierung ließ sich nicht starten";
+"fileAction.failed.noDestination" = "Der Zielordner ist nicht da";
+"fileAction.failed.noFreeName" = "Kein freier Name gefunden";
+"fileAction.failed.folderNotWritable" = "In diesen Ordner kann nicht geschrieben werden";
+"fileAction.failed.imageUnreadable" = "Dieses Bild ließ sich nicht lesen";
+"fileAction.failed.formatUnwritable" = "Dieses Format kann nicht geschrieben werden";
+"fileAction.failed.imageUnwritable" = "Dieses Bild ließ sich nicht schreiben";
+"fileAction.failed.pdfNotStarted" = "Ein PDF ließ sich nicht anlegen";
+"fileAction.failed.noImagesReadable" = "Keines dieser Bilder ließ sich lesen";
+"fileAction.failed.pdfUnwritable" = "Dieses PDF ließ sich nicht schreiben";
+"fileAction.failed.vectorUnreadable" = "Diese Vektorgrafik ließ sich nicht lesen";
+"fileAction.failed.thatPdfNotStarted" = "Dieses PDF ließ sich nicht anlegen";
+"fileAction.failed.vectorNotRasterised" = "Diese Vektorgrafik ließ sich nicht rastern";
+"fileAction.failed.fileNotOpenable" = "Diese Datei kann nicht geöffnet werden";
+"fileAction.failed.conversionUnavailable" = "Diese Konvertierung gibt es hier nicht";
+"fileAction.failed.fileNotConverted" = "Diese Datei ließ sich nicht konvertieren";
+"fileAction.failed.audioNotConverted" = "Dieses Audio ließ sich nicht konvertieren";
+"fileAction.failed.noText" = "In dieser Datei war kein Text";
+"fileAction.failed.noPreview" = "macOS konnte für diese Datei keine Übersicht erstellen";
+"fileAction.failed.nothingToLayOut" = "Es gab nichts zu setzen";
+
+/* The glance — the day, an alert, a meeting */
+"glance.alert.a11y" = "%@, %@";
+"glance.meeting.a11y" = "%@, bereit zum Beitreten";
+
+/* The HUDs this Mac cannot produce, and the ones Isleta will not suppress */
+"hud.unavailable.brightness" = "Die Bildschirmhelligkeit lässt sich auf diesem Mac nicht lesen, deshalb überlässt Isleta das Helligkeits-HUD dem System.";
+"hud.unavailable.volume" = "Der Audioausgang dieses Mac meldet keinen Pegel, den Isleta zeigen kann.";
+"hud.suppression.volume" = "Isleta zeigt sein eigenes Lautstärke-HUD neben dem des Systems, statt es zu ersetzen. Das System-HUD auszublenden hieße, die Lautstärketasten vollständig zu übernehmen — das tut Isleta für einen rein kosmetischen Gewinn nicht.";
+"hud.suppression.brightness" = "Isleta zeigt sein eigenes Helligkeits-HUD neben dem des Systems, statt es zu ersetzen. Das System-HUD auszublenden hieße, die Helligkeitstasten vollständig zu übernehmen.";
+
+/* Now Playing — the two routes that can be missing */
+"nowPlaying.unavailable.null" = "Isleta kann in der Insel zeigen, was du gerade hörst. Erlaube ihr in den Systemeinstellungen › Datenschutz & Sicherheit › Automation, deinen Musik-Player zu lesen.";
+"nowPlaying.unavailable.adapter" = "Diese Version von Isleta kann die systemweite „Aktuelle Wiedergabe“ nicht lesen. Isleta zeigt Musik von Playern, die sie direkt fragen kann, zum Beispiel von „Musik“.";
+"nowPlaying.scripting.denied" = "Isleta zeigt, was läuft, sobald du das nächste Mal abspielst, pausierst oder den Titel wechselst. Damit der aktuelle Titel sofort erscheint, erlaube Isleta in den Systemeinstellungen › Datenschutz & Sicherheit › Automation, %@ zu steuern.";
+
+/* Power — the charger, the charge, Low Power Mode */
+"power.duration.minutes" = "%lld Min.";
+"power.duration.hours" = "%lld Std.";
+"power.duration.hoursMinutes" = "%lld Std. %lld Min.";
+"power.title.charging" = "Wird geladen";
+"power.title.onBattery" = "Batteriebetrieb";
+"power.title.charged" = "Geladen";
+"power.title.lowBattery" = "Batterie fast leer";
+"power.title.lowPowerModeOn" = "Stromsparmodus ein";
+"power.title.lowPowerModeOff" = "Stromsparmodus aus";
+"power.flank.charging" = "Lädt auf";
+"power.flank.onBattery" = "Akkubetrieb";
+"power.flank.charged" = "Geladen";
+"power.flank.lowBattery" = "Akku fast leer";
+"power.flank.lowPowerModeOn" = "Sparmodus ein";
+"power.flank.lowPowerModeOff" = "Sparmodus aus";
+"power.estimate.toFull" = "%@ bis voll";
+"power.estimate.left" = "noch %@";
+
+/* Transcription failures */
+"transcribe.failed.noAudio" = "In dieser Datei ist kein Ton";
+"transcribe.failed.fileUnreadable" = "Diese Datei ließ sich nicht lesen";
+"transcribe.failed.noSpeech" = "In dieser Datei wurde keine Sprache gefunden";
+"transcribe.failed.noLanguageInstalled" = "Es ist keine Transkriptionssprache installiert";
+"transcribe.failed.languageNotInstalled" = "Diese Sprache ist nicht installiert";
+"transcribe.failed.generic" = "Diese Datei ließ sich nicht transkribieren";
+
+/* Weather, in a build that cannot ask for it */
+"weather.unavailable.default" = "Das Wetter ist in dieser Version von Isleta nicht verfügbar.";
+"weather.unavailable.notEntitled" = "Das Wetter ist in dieser Version von Isleta noch nicht dabei. Dein Kalender erscheint weiterhin in der Insel; für das Wetter ist eine Signierungsänderung nötig, die von Hand gemacht werden muss.";
+
+/* Welcome back — the greeting, and the line under it */
+"welcomeBack.greeting.morning" = "Guten Morgen";
+"welcomeBack.greeting.afternoon" = "Guten Tag";
+"welcomeBack.greeting.evening" = "Guten Abend";
+"welcomeBack.greeting.night" = "Willkommen zurück";
+"welcomeBack.message.morning.1" = "Der Tag gehört dir.";
+"welcomeBack.message.morning.2" = "Mach was draus.";
+"welcomeBack.message.morning.3" = "Eins nach dem anderen.";
+"welcomeBack.message.morning.4" = "Ein frischer Anfang, genau zur rechten Zeit.";
+"welcomeBack.message.morning.5" = "Du schaffst das.";
+"welcomeBack.message.afternoon.1" = "Der Tag ist noch lang.";
+"welcomeBack.message.afternoon.2" = "Wieder dabei. Schön.";
+"welcomeBack.message.afternoon.3" = "Du bist weiter, als es sich anfühlt.";
+"welcomeBack.message.afternoon.4" = "Mach weiter.";
+"welcomeBack.message.afternoon.5" = "Bereit, wenn du es bist.";
+"welcomeBack.message.evening.1" = "Du hast heute genug getan.";
+"welcomeBack.message.evening.2" = "Gute Arbeit heute.";
+"welcomeBack.message.evening.3" = "Der Rest kann warten.";
+"welcomeBack.message.evening.4" = "Lass den Tag ruhig ausklingen.";
+"welcomeBack.message.evening.5" = "Schön, dich wiederzusehen.";
+"welcomeBack.message.night.1" = "Immer noch da. Das zählt.";
+"welcomeBack.message.night.2" = "Sei heute Nacht gut zu dir.";
+"welcomeBack.message.night.3" = "Was auch immer es ist, es kann wahrscheinlich warten.";
+"welcomeBack.message.night.4" = "Die stillen Stunden stehen dir.";
+"welcomeBack.message.night.5" = "Lass dir Zeit.";

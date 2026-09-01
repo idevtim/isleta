@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- The Debug half of Config/Isleta.entitlements, and it exists for one reason: a Debug build is
+	     **ad-hoc signed** (`CODE_SIGN_IDENTITY = "-"`), and an ad-hoc signature cannot carry a
+	     developer entitlement. Xcode refuses the build outright — "has entitlements that require
+	     signing with a development certificate" — so the day WeatherKit was added to the release
+	     entitlements, `Tools/check.sh` stopped working for everyone.
+
+	     Two files rather than one is therefore not a workaround, it is the accurate statement. A
+	     Debug build *cannot* hold `com.apple.developer.weatherkit` — no provisioning profile
+	     authorises an ad-hoc signature — so a Debug build has no weather, `WeatherKitProvider`
+	     reports `weatherkit entitlement absent`, and `UnavailableWeatherProvider` draws the calendar
+	     with no weather beside it. That is a real state a user can be in (anyone running a build
+	     whose profile has expired), so developing against it is not a loss.
+
+	     To exercise the weather, build **Release**, signed with the Developer ID identity and the
+	     profile at Config/Isleta.provisionprofile — which is what Tools/release.sh does, and what
+	     the log line `weatherkit entitled` confirms. -->
+	<key>com.apple.security.app-sandbox</key>
+	<false/>
+	<!-- Hardened Runtime's **Resource Access** entitlements, and their absence is a silent failure.
+	     `ENABLE_HARDENED_RUNTIME = YES` (see the project) means the system refuses a protected
+	     resource unless the app declares it here. Refuses *silently*: measured 2026-08-23 against
+	     the shipped 2.0.0 build, `requestFullAccessToEvents` answered **granted=false with a nil
+	     error in 50 ms**, no dialog appeared, the status stayed `notDetermined`, and **tccd's own
+	     log never mentioned Isleta at all** — the request is not refused by the daemon, it never
+	     reaches it. `CLLocationManager.requestWhenInUseAuthorization()` failed identically, with
+	     `locationd` equally silent.
+
+	     That is indistinguishable from a missing usage string, which is what sent this hunting
+	     through TCC records, LaunchServices caches and bundle identities for half an hour. The
+	     usage strings were correct in `Config/Isleta-Info.plist` the whole time; a usage string
+	     says *why* the app wants a resource, and these say the app is *allowed to ask*. Both are
+	     required, and only one of them fails loudly.
+
+	     The control that settled it: an ad-hoc probe with the same usage string and **no hardened
+	     runtime** prompted and was granted in 2.4 s, from three different bundle identifiers.
+
+	     These are `com.apple.security.*`, so they are consumed by the sandbox and the hardened
+	     runtime rather than by AMFI — unlike `com.apple.developer.weatherkit` below, they need no
+	     provisioning-profile authorisation and cannot cause the exit-137 abort. -->
+	<key>com.apple.security.personal-information.calendars</key>
+	<true/>
+	<key>com.apple.security.personal-information.location</key>
+	<true/>
+	<!-- Bluetooth, for the device-connected island — and it was missing while the two above were
+	     present, which is how the same silent failure shipped twice.
+
+	     It does not fail the way calendars and location did. Those answered "not granted" in 50 ms;
+	     this **never answers at all**. Measured 2026-08-29 on macOS 27.0, by `sample` against a
+	     Developer ID signed build launched with `open -a`:
+	     `+[IOBluetoothHostController defaultController]` runs a `dispatch_once` that builds
+	     `IOBluetoothCoreBluetoothCoordinator`, whose initialiser waits on a dispatch semaphore for
+	     `bluetoothd` — and with the hardened runtime on and this key absent, that reply never
+	     comes. The wait has no timeout. Called from the main thread it deadlocked the whole app
+	     inside `applicationDidFinishLaunching`: no island, no crash report, no log line, and every
+	     source after Bluetooth in `SourceHub.entries` never started.
+
+	     tccd never mentioned `kTCCServiceBluetoothAlways` for Isleta at all, exactly as the block
+	     above describes — the request never reaches the daemon. It was invisible from a shell for
+	     the reason CLAUDE.md gives about `open -a`: the same probe run from Terminal is attributed
+	     to Terminal, whose grant is already decided, and answered in 3 ms.
+
+	     `IOBluetoothDeviceMonitor` now wakes the coordinator off the main thread regardless, so the
+	     app can no longer be hung by this. That is a seatbelt, not the fix; this key is the fix. -->
+	<key>com.apple.security.device.bluetooth</key>
+	<true/>
+</dict>
+</plist>

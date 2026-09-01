@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logExport.done.detail</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld fichier journal et le rapport de diagnostic ont été écrits dans :
+%2$@</string>
+			<key>other</key>
+			<string>%1$lld fichiers journaux et le rapport de diagnostic ont été écrits dans :
+%2$@</string>
+		</dict>
+	</dict>
+	<key>shelf.fileAway.failure.move</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld sur %2$lld n’a pas pu être déplacé</string>
+			<key>other</key>
+			<string>%1$lld sur %2$lld n’ont pas pu être déplacés</string>
+		</dict>
+	</dict>
+	<key>shelf.fileAway.failure.copy</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld sur %2$lld n’a pas pu être copié</string>
+			<key>other</key>
+			<string>%1$lld sur %2$lld n’ont pas pu être copiés</string>
+		</dict>
+	</dict>
+	<key>shelf.fileAway.failedCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld fichier n’a pas pu être classé</string>
+			<key>other</key>
+			<string>%lld fichiers n’ont pas pu être classés</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

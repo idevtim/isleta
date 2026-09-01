@@ -1,0 +1,182 @@
+
+/* The panes, the window, the version */
+"settings.pane.general" = "General";
+"settings.pane.sources" = "Fuentes";
+"settings.pane.glance" = "Vistazo";
+"settings.pane.about" = "Acerca de";
+"settings.window.title" = "Ajustes de Isleta";
+"about.version" = "Versión %@";
+"about.version.development" = "Versión de desarrollo";
+
+/* General ▸ Startup */
+"general.startup" = "Inicio";
+"startup.launchAtLogin" = "Abrir Isleta al iniciar sesión";
+"startup.caption" = "Isleta no tiene icono en el Dock, así que arranca fuera de la vista y ahí se queda hasta que la necesitas.";
+"startup.awaitingApproval" = "Esperando tu aprobación en Ajustes del Sistema.";
+"startup.openLoginItems" = "Abrir Ítems de inicio de sesión";
+"startup.error.unsigned" = "Isleta no puede abrirse al iniciar sesión porque esta copia no está firmada. Vuelve a instalarla desde tryisleta.com.";
+"startup.error.denied" = "macOS lo ha rechazado. Autoriza Isleta en Ajustes del Sistema › General › Ítems de inicio de sesión.";
+"startup.error.enable" = "No se ha podido activar la apertura al iniciar sesión: %@";
+"startup.error.disable" = "No se ha podido desactivar la apertura al iniciar sesión: %@";
+
+/* General ▸ Shortcuts */
+"general.shortcuts" = "Funciones rápidas de teclado";
+"general.shortcuts.caption" = "Haz clic en una función rápida y luego pulsa las teclas que quieras. Funcionan desde cualquier app, incluso a pantalla completa, y cada una es una tecla que ninguna otra app de este Mac podrá usar mientras Isleta esté en marcha.";
+"general.shortcuts.recording" = "Pulsa una función rápida. Esc cancela.";
+"general.shortcuts.clear.help" = "Borrar esta función rápida";
+"general.shortcuts.notSet" = "Sin asignar";
+"general.shortcuts.pressKeys" = "Pulsa las teclas…";
+"shortcuts.action.toggleIsland" = "Abrir la isla";
+"shortcuts.action.openGlance" = "Mostrar el vistazo";
+"shortcuts.key.space" = "Espacio";
+"shortcuts.key.unnamed" = "Tecla %lld";
+
+/* General ▸ Menu bar */
+"general.lockScreen" = "Pantalla de bloqueo";
+"general.lockScreen.caption" = "Lo que se está reproduciendo, en la pantalla de bloqueo, mientras estás lejos del Mac. Muestra la carátula, la pista y cuánto lleva sonando: no tiene botones, porque macOS no permite pulsar ahí nada más que el campo de la contraseña. Cualquiera que pase junto al Mac puede ver qué estás escuchando.";
+"general.lockScreen.show" = "Mostrar en la pantalla de bloqueo lo que se reproduce";
+
+"general.menuBar" = "Barra de menús";
+"general.menuBar.show" = "Mostrar Isleta en la barra de menús";
+"general.menuBar.caption.shown" = "Isleta no tiene icono en el Dock, así que este es tu acceso a los ajustes, a la guía de configuración y a Salir. Si lo desactivas, %@ abrirá la isla en su lugar, donde esas mismas cosas están a un clic.";
+"general.menuBar.caption.hidden" = "El icono está oculto. %@ abre la isla desde cualquier app, y los ajustes están a un clic dentro de ella.";
+
+/* Island */
+"island.hover.delay.none" = "Ninguno";
+"island.activities.absence.any" = "Cualquier regreso";
+
+/* Appearance ▸ Size */
+"appearance.size.measured" = "Medida";
+
+/* Appearance ▸ Motion, Now Playing, getting out of the way */
+"sources.quiet" = "Quitarse de en medio";
+"sources.quiet.add" = "Añadir app…";
+"sources.quiet.caption.empty" = "Apps de las que prefieres que Isleta se mantenga al margen. Mientras una de ellas esté delante, la isla no se dibuja ni acepta clics; vuelve en cuanto cambias de app.";
+"sources.quiet.caption" = "Mientras una de estas esté delante, la isla no se dibuja ni acepta clics. Vuelve en cuanto cambias de app.";
+"sources.quiet.remove.a11y" = "Dejar de ocultar la isla en esta app";
+"sources.quiet.panel.prompt" = "Añadir";
+"sources.quiet.panel.message" = "Elige las apps de las que Isleta debe mantenerse al margen.";
+"sources.quiet.minimal" = "Ocultar la isla en pantallas sin muesca";
+"sources.quiet.minimal.caption" = "En un Mac sin muesca, la isla es una pastilla que flota bajo la barra de menús todo el día. Esto la oculta hasta que ocurre algo o llega el puntero, que es como ya se comporta un recorte real, porque en reposo *es* el recorte.";
+
+/* Sources ▸ the rows */
+"sources.empty" = "En esta versión no hay ninguna fuente en marcha.";
+"sources.status.granted" = "Concedido";
+"sources.status.notGranted" = "Aún no concedido";
+"sources.status.unavailable" = "No disponible en este Mac";
+"permission.openSystemSettings" = "Abrir Ajustes del Sistema…";
+
+/* Sources ▸ Focus */
+"sources.focus" = "Concentración";
+"sources.focus.respect" = "Callar mientras haya una Concentración activa";
+"sources.focus.allow" = "Permitir acceso a Concentración…";
+"sources.focus.summary.granted" = "Mientras hay una Concentración activa, Isleta retiene los avisos del calendario. Todo lo que haces tú mismo —una tecla de volumen, un temporizador, un cambio de pista— se sigue mostrando.";
+"sources.focus.summary.notDetermined" = "Isleta aún no ha preguntado si puede ver tu Concentración. Hasta que lo haga, una Concentración no calla nada aquí: la isla sigue mostrando avisos del calendario a través de No molestar.";
+"sources.focus.summary.denied" = "El acceso a Concentración está desactivado, así que la isla muestra los avisos del calendario a través de No molestar. Activarlo en Ajustes del Sistema es lo que hace que el conmutador de arriba sirva de algo.";
+"sources.focus.summary.unavailable" = "Esta versión no puede preguntar por Concentración, así que la isla muestra los avisos del calendario a través de No molestar diga lo que diga el conmutador.";
+
+/* Glance ▸ Calendars */
+"glance.calendars" = "Calendarios";
+"glance.calendars.allow" = "Permitir acceso al calendario…";
+"glance.calendars.summary.granted" = "Elige qué calendarios muestra la isla. Si no eliges ninguno, los muestra todos.";
+"glance.calendars.summary.granted.empty" = "Isleta puede ver tus calendarios, y todavía no hay ninguno en este Mac.";
+"glance.calendars.summary.notDetermined" = "Isleta aún no ha pedido acceso a tu calendario. Tus eventos nunca se guardan, nunca se envían a ninguna parte y nunca se escriben en los registros de Isleta.";
+"glance.calendars.summary.denied" = "El acceso al calendario está desactivado, así que la isla no tiene nada que mostrar de tu día. Activarlo en Ajustes del Sistema devuelve lo que viene a continuación.";
+"glance.calendars.summary.restricted" = "El acceso al calendario está gestionado en este Mac. Nada de lo que cambies en Isleta lo alterará.";
+"glance.calendars.summary.writeOnly" = "Isleta tiene acceso al calendario solo de escritura, que autoriza a añadir eventos y no devuelve ninguno para leer. Lo que la isla necesita es acceso completo.";
+
+/* Glance ▸ Weather and Where */
+"glance.weather" = "El tiempo";
+"glance.weather.summary.granted" = "La isla muestra el tiempo donde estás, o en una ciudad que elijas.";
+"glance.weather.summary.notDetermined" = "Isleta aún no ha pedido tu ubicación. Puedes escribir una ciudad en su lugar: el tiempo funciona igual de las dos maneras.";
+"glance.weather.summary.denied" = "La ubicación está desactivada, así que escribe una ciudad. El tiempo funciona exactamente igual; Isleta simplemente pregunta por allí en vez de por aquí.";
+"glance.where.caption" = "El tiempo funciona de las dos maneras. Con la ubicación desactivada, Isleta pregunta por la ciudad que escribes en vez de por aquella en la que estás; no cambia nada más.";
+"glance.where.useLocation" = "Usar mi ubicación";
+"glance.where.refused" = "macOS no deja que Isleta acceda a tu ubicación, así que el interruptor no se puede activar. Eso cambia si activas Isleta en Localización; o escribe una ciudad abajo, que funciona igual de bien.";
+"glance.where.city" = "Ciudad";
+"glance.where.city.example" = "Madrid";
+"glance.where.city.caption" = "Empieza a escribir y elige tu ciudad de la lista. Se consulta una vez y se recuerda: una ciudad no se mueve, así que Isleta solo vuelve a preguntar si la cambias.";
+"glance.where.city.suggestions" = "Ciudades coincidentes";
+
+/* Updates */
+"updates.card" = "Actualización de software";
+"updates.caption" = "Isleta busca en silencio, en segundo plano, y nunca te interrumpe para hacerlo.";
+"updates.automatic" = "Buscar actualizaciones automáticamente";
+"updates.checkNow" = "Buscar ahora";
+"updates.unavailable" = "No disponible en esta versión.";
+
+/* About */
+"about.tagline" = "La muesca, por fin útil.";
+"about.acknowledgements" = "Agradecimientos";
+"about.acknowledgements.showLicense" = "Mostrar la licencia";
+"about.acknowledgements.hideLicense" = "Ocultar la licencia";
+"about.acknowledgements.project" = "Proyecto";
+"about.acknowledgement.mediaRemoteAdapter" = "Lee lo que se está reproduciendo. Apple restringió la API de Now Playing a sus propios procesos en macOS 15.4, y esta es la vía admitida para volver a ella.";
+"about.acknowledgement.sparkle" = "Entrega las actualizaciones de Isleta. Comprueba el appcast, verifica cada descarga contra la clave pública EdDSA incorporada en esta copia de la app e instala lo que ha verificado.";
+"about.setupGuide.caption" = "Las cuatro páginas que viste la primera vez. Explican dónde está la isla, qué puede mostrarte y qué desbloquea cada permiso; merece un segundo vistazo cuando lleves un tiempo usándola.";
+"about.quit.caption" = "Isleta se detiene hasta que vuelvas a abrirla. No tiene icono en el Dock, así que esto y el icono de la barra de menús son las dos salidas, y el de la barra de menús es uno que puedes desactivar.";
+"about.diagnostics" = "Diagnóstico";
+"about.diagnostics.caption" = "Guarda un único archivo de texto: lo que Isleta puede ver en este Mac y su registro reciente. No contiene texto de notificaciones, ni títulos de pistas, ni nombres de archivo, así que puedes adjuntarlo a un informe de errores sin problema.";
+"about.reset" = "Empezar de cero";
+"about.reset.caption" = "Devuelve todos los ajustes de todos los paneles a su valor de fábrica. No toca los permisos que hayas concedido en Ajustes del Sistema.";
+"about.reset.button" = "Restablecer los valores por omisión";
+"about.reset.loadFailure" = "No se han podido leer tus ajustes guardados, así que estos son los valores por omisión. (%@)";
+
+/* The first run */
+"onboarding.welcome.title" = "Te damos la bienvenida a Isleta";
+"onboarding.welcome.body" = "Isleta convierte la muesca en un sitio desde el que tu Mac puede hablar: qué está sonando, una notificación que llega, el volumen que acabas de cambiar.";
+"onboarding.welcome.hover" = "Lleva el puntero sobre la muesca y la isla responde.";
+"onboarding.welcome.menuBar" = "Sin icono en el Dock y sin ventana. Isleta vive en la barra de menús.";
+"onboarding.startup.title" = "Empezar con tu Mac";
+"onboarding.startup.body" = "Isleta no tiene icono en el Dock, así que arranca fuera de la vista y ahí se queda hasta que la necesitas.";
+"onboarding.startup.caption" = "Recomendado. Sin esto, la muesca vuelve a estar vacía después de cada reinicio.";
+"onboarding.ready.title" = "Todo listo";
+"onboarding.ready.body" = "La isla es invisible hasta que tiene algo que decir, o hasta que vas a buscarla.";
+"onboarding.ready.hover" = "Pasa el puntero por la muesca para entreabrirla. Haz clic para abrirla.";
+"onboarding.ready.shortcut" = "Pulsa %@ desde cualquier app para abrirla.";
+"onboarding.ready.menuBar" = "El icono de la barra de menús abre los ajustes de Isleta.";
+"onboarding.continue" = "Continuar";
+"onboarding.getStarted" = "Empezar";
+"onboarding.welcome.permissions" = "Las páginas siguientes piden los permisos que necesita cada función. Puedes omitir cualquiera de ellas.";
+"onboarding.skip" = "Omitir";
+"onboarding.askAgain" = "Preguntar de nuevo";
+"onboarding.openSystemSettings" = "Abrir Ajustes del Sistema…";
+"onboarding.permission.preview.a11y" = "Una vista previa del diálogo de permisos de macOS que aparecerá a continuación.";
+"onboarding.permission.automation.headline" = "Isleta necesita tu permiso para mostrar la música que ya estás escuchando.";
+"onboarding.permission.automation.notNeeded.headline" = "Isleta muestra la música que ya estás escuchando.";
+"onboarding.permission.automation.notNeeded" = "Nada que permitir. En este Mac, Isleta lee lo que suena sin pedir nada.";
+"onboarding.permission.bluetooth.notNeeded.headline" = "Isleta muestra los dispositivos que conectas.";
+"onboarding.permission.bluetooth.notNeeded" = "Nada que permitir. Este Mac no tiene radio Bluetooth que Isleta pueda observar.";
+"onboarding.permission.automation.instruction" = "Elige «OK» cuando macOS pregunte si Isleta puede controlar tu app de música.";
+"onboarding.permission.automation.granted" = "Permitido. La isla nombra la canción en cuanto la abres.";
+"onboarding.permission.automation.denied" = "No pasa nada. Isleta mostrará lo que suena a partir de la próxima reproducción, pausa o cambio de canción.";
+"onboarding.permission.calendar.headline" = "Isleta necesita tu permiso para mostrar lo siguiente de tu día.";
+"onboarding.permission.calendar.instruction" = "Elige «Permitir acceso completo» cuando macOS pregunte por tus calendarios.";
+"onboarding.permission.calendar.granted" = "Permitido. Tu día está en la segunda página de la isla.";
+"onboarding.permission.calendar.denied" = "No pasa nada. La segunda página de la isla queda vacía y todo lo demás funciona.";
+"onboarding.permission.location.headline" = "Isleta necesita tu permiso para mostrar el tiempo donde estás.";
+"onboarding.permission.location.instruction" = "Elige «Permitir» cuando macOS pregunte por tu ubicación.";
+"onboarding.permission.location.granted" = "Permitido. El tiempo está en la tercera página de la isla.";
+"onboarding.permission.location.denied" = "No pasa nada. Puedes elegir una ciudad en los ajustes de Isleta.";
+"onboarding.permission.bluetooth.headline" = "Isleta necesita tu permiso para mostrar los dispositivos que conectas.";
+"onboarding.permission.bluetooth.instruction" = "macOS preguntó por el Bluetooth cuando Isleta se inició. Ese permiso es el que muestra un dispositivo al llegar, y cuánta carga le queda.";
+"onboarding.permission.bluetooth.granted" = "Permitido. Tus dispositivos aparecen en la muesca al conectarse.";
+"onboarding.permission.bluetooth.denied" = "No pasa nada. Los dispositivos se siguen conectando igual — Isleta simplemente no lo dirá en la muesca.";
+"onboarding.permission.accessibility.headline" = "Isleta necesita tu permiso para sustituir los indicadores de volumen y brillo del sistema.";
+"onboarding.permission.accessibility.instruction" = "Elige «Abrir Ajustes del Sistema» cuando macOS lo pida y activa Isleta en la lista.";
+"onboarding.permission.accessibility.granted" = "Permitido. El volumen y el brillo ahora ocurren en la muesca.";
+"onboarding.permission.accessibility.denied" = "No pasa nada. macOS sigue mostrando sus propios indicadores de volumen y brillo.";
+
+/* The status menu */
+"menu.showNowPlaying" = "Mostrar Reproduciendo";
+"menu.showNowPlaying.nothing" = "No se está reproduciendo nada";
+"menu.showGlance" = "Mostrar el vistazo";
+"menu.showWeather" = "Mostrar el tiempo";
+"menu.openSettings" = "Abrir los ajustes de Isleta";
+"menu.openSetupGuide" = "Abrir la guía de configuración";
+"menu.exportLogs" = "Exportar los registros…";
+"menu.quit" = "Salir de Isleta";
+"sources.systemHUD.replace" = "Sustituir el indicador de volumen del sistema";
+"sources.systemHUD.replace.caption" = "Isleta responde ella misma a las teclas de volumen y silencio, así que macOS nunca muestra el suyo. Necesita Accesibilidad. Al salir de Isleta las teclas vuelven de inmediato.";
+"sources.systemHUD.replaceBrightness" = "Sustituir el indicador de brillo del sistema";
+"sources.systemHUD.replaceBrightness.caption" = "Isleta responde ella misma a las teclas de brillo de la pantalla integrada. Necesita Accesibilidad. Al salir de Isleta las teclas vuelven de inmediato.";

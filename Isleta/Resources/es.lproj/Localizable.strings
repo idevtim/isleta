@@ -1,0 +1,94 @@
+
+/* ---- Sources pane: what each source is called ---- */
+"sources.nowPlaying.title" = "Reproduciendo";
+"sources.systemHUD.title" = "Volumen, silencio y brillo";
+"sources.systemHUD.option.volume" = "Volumen y silencio";
+"sources.systemHUD.option.brightness" = "Brillo de la pantalla";
+"sources.welcomeBack.title" = "Bienvenido de nuevo";
+"sources.timer.title" = "Temporizadores";
+"sources.deviceConnected.title" = "Dispositivos Bluetooth";
+"sources.shelf.title" = "Estantería";
+"sources.glance.title" = "Calendario y tiempo";
+"sources.calendarAlert.title" = "Avisos de eventos";
+"sources.meeting.title" = "Reuniones";
+"sources.power.title" = "Batería y alimentación";
+"sources.call.title" = "Llamadas";
+"sources.fileAction.title" = "Acciones al soltar";
+"sources.focusChanged.title" = "Cambios de Concentración";
+"sources.screenSharing.title" = "Compartir pantalla";
+
+/* ---- Sources pane: what each source does, whether or not it can ---- */
+"sources.nowPlaying.summary" = "Muestra la canción que suena en Música, en Spotify o en el reproductor del sistema.";
+"sources.systemHUD.summary" = "Muestra en la isla los cambios de volumen, de silencio, del brillo de la pantalla y de la retroiluminación del teclado, junto al indicador del propio sistema.";
+"sources.welcomeBack.summary" = "Te saluda cuando vuelves a tu Mac después de un rato fuera.";
+"sources.timer.summary" = "Muestra en la isla la cuenta atrás de los temporizadores de la app Reloj de Apple. Solo lee el estado que Reloj ya guarda en este Mac, y no necesita ningún permiso.";
+"sources.deviceConnected.summary" = "Muestra los AirPods y otros dispositivos de audio Bluetooth cuando se conectan, con su carga. Necesita acceso a Bluetooth para verlos llegar: el nombre y la carga del dispositivo nunca salen de tu Mac.";
+"sources.shelf.summary" = "Guarda los archivos que arrastras a la isla.";
+"sources.glance.summary" = "Muestra tu día: lo siguiente en tu calendario, y el tiempo. Necesita acceso al calendario, y a la ubicación si quieres que el tiempo te siga.";
+"sources.calendarAlert.summary" = "Te avisa cuando un evento está a punto de empezar.";
+"sources.meeting.summary" = "Te da un botón para entrar en una llamada de Zoom, Meet, Teams o FaceTime cuando empieza una reunión.";
+"sources.power.summary" = "Muestra cuándo se enchufa y se desenchufa el adaptador de corriente, cuándo se está agotando la batería, y el modo de bajo consumo.";
+"sources.call.summary" = "Muestra que hay una llamada en curso, y cuánto lleva. macOS no deja que las apps ajenas a Apple vean quién llama.";
+"sources.fileAction.summary" = "Convierte, comprime y transcribe los archivos que sueltas en la isla. El trabajo ocurre en este Mac; no se sube nada.";
+"sources.focusChanged.summary" = "Dice cuándo se activa o se desactiva una Concentración, que es también el motivo por el que la isla se calla.";
+"sources.screenSharing.summary" = "Te recuerda que tu pantalla se está grabando o compartiendo.";
+
+/* ---- Sources pane: what is true right now ---- */
+"sources.status.working" = "Funcionando.";
+"sources.status.workingNoPermission" = "Funcionando. No necesita ningún permiso.";
+"sources.status.notGrantedYet" = "Aún no concedido.";
+"sources.nowPlaying.status.working" = "Funcionando. Isleta lee lo que suena sin ningún permiso.";
+"sources.nowPlaying.status.undetermined" = "Isleta mostrará lo que suena a partir de la siguiente reproducción, pausa o cambio de canción. Si le permites controlar tu app de música, la canción actual aparece de inmediato.";
+"sources.systemHUD.status.working" = "Funcionando. El volumen, el silencio y el brillo no necesitan ningún permiso.";
+"sources.systemHUD.status.unavailable" = "Este Mac no informa de ningún volumen, brillo de pantalla ni retroiluminación del teclado que Isleta pueda mostrar.";
+"sources.deviceConnected.status.noBattery" = "Isleta mostrará los dispositivos al conectarse, pero esta versión de macOS ya no informa de su nivel de batería, así que no se muestra ninguna carga.";
+"sources.deviceConnected.status.undetermined" = "Esperando el acceso a Bluetooth. macOS lo pregunta una sola vez, al arrancar Isleta: si cerraste ese diálogo sin responder, sal de Isleta y vuelve a abrirlo.";
+"sources.glance.status.granted" = "Concedido. Isleta muestra tu día y el tiempo.";
+"sources.glance.status.grantedNoWeather" = "Concedido. La isla muestra tu día. El tiempo todavía no está en esta versión.";
+"sources.power.status.noBattery" = "Este Mac no tiene batería, así que aquí no hay nada que mostrar.";
+"sources.power.status.working" = "Funcionando. El adaptador de corriente y la batería no necesitan ningún permiso.";
+"sources.call.status.working" = "Funcionando. Isleta muestra que hay una llamada en curso, y cuánto lleva. macOS no deja que las apps ajenas a Apple vean quién llama, ni que respondan por ti.";
+
+/* ---- Sources pane: the one place a permission prompt may come from ---- */
+"sources.action.openSystemSettings" = "Abrir Ajustes del Sistema…";
+"sources.action.allowCalendar" = "Permitir acceso al calendario…";
+
+/* ---- Export Logs… ---- */
+"logExport.notRunning.title" = "El registro no está en marcha.";
+"logExport.notRunning.detail" = "En esta versión no hay ningún archivo de registro adjunto, así que no hay nada que exportar.";
+"logExport.noFiles.title" = "No se ha encontrado ningún archivo de registro.";
+"logExport.noFiles.detail" = "No se ha escrito nada en:\n%@";
+"logExport.panel.title" = "Exportar registros";
+"logExport.panel.prompt" = "Exportar";
+"logExport.failed.title" = "No se han podido exportar los registros.";
+"logExport.done.title" = "Registros exportados.";
+
+/* ---- The shelf's file actions ---- */
+"shelf.fileAway.prompt.move" = "Mover aquí";
+"shelf.fileAway.prompt.copy" = "Copiar aquí";
+"shelf.fileAway.message.move" = "Elige adónde mover estos archivos.";
+"shelf.fileAway.message.copy" = "Elige adónde copiar estos archivos.";
+"shelf.action.moveToFolder" = "Mover a una carpeta";
+"shelf.action.copyToFolder" = "Copiar en una carpeta";
+"shelf.convert.couldNotStart" = "Esta conversión no ha podido empezar";
+"shelf.convert.didNotFinish" = "Esta conversión no ha llegado al final";
+"shelf.a11y" = "Estantería";
+"shelf.dropToAdd" = "Suelta para añadir";
+
+/* ---- Small shared words ---- */
+"common.ok" = "OK";
+"common.showInFinder" = "Mostrar en el Finder";
+"dropHistory.copyLink" = "Copiar enlace";
+"menuBar.glyph.a11y" = "Isleta";
+
+/* The first-run flow's payoff rows — what each permission is *for*, under its headline. Hardware
+   and capabilities rather than app names, for the three permissions that are not about an app. */
+"onboarding.payoff.here" = "Aquí";
+"onboarding.payoff.forecast" = "Pronóstico";
+"onboarding.payoff.conditions" = "Condiciones";
+"onboarding.payoff.headphones" = "Auriculares";
+"onboarding.payoff.earbuds" = "Auriculares internos";
+"onboarding.payoff.speaker" = "Altavoces";
+"onboarding.payoff.volume" = "Volumen";
+"onboarding.payoff.brightness" = "Brillo";
+"onboarding.payoff.mediaKeys" = "Teclas multimedia";

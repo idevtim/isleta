@@ -1,0 +1,125 @@
+# ---- macOS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# ---- Xcode: user & build state ----
+build/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Xcode workspace/project user state (keep shared schemes & settings)
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/configuration/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcworkspace/xcshareddata/swiftpm/configuration/
+
+# Xcode Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# ---- Swift Package Manager ----
+.build/
+.swiftpm/
+Packages/*/.build/
+Packages/*/.swiftpm/
+.netrc
+# Package.resolved is committed for apps (pins dependency versions).
+# Uncomment the next line if this becomes a library-only repo.
+# Package.resolved
+
+# ---- Swift / compiler artifacts ----
+*.o
+*.a
+*.dylib
+*.swiftmodule
+*.swiftdoc
+*.swiftsourceinfo
+*.profraw
+
+# ---- Instruments / profiling ----
+*.trace
+*.xctrace
+Instruments/
+
+# ---- Distribution / signing (never commit secrets) ----
+*.app
+*.dmg
+*.pkg
+*.zip
+*.xcarchive
+Export/
+ExportOptions.plist
+*.p12
+*.mobileprovision
+*.provisionprofile
+*.cer
+*.certSigningRequest
+AuthKey_*.p8
+
+# ---- Dependency managers (in case they get added later) ----
+Pods/
+Carthage/Build/
+.accio/
+
+# ---- Tooling ----
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+.swiftlint.cache
+*.log
+
+# ---- Editors / local env ----
+.vscode/
+.idea/
+*.swp
+*~
+.env
+.env.local
+
+# ---- Claude Code ----
+# Nothing under .claude/ is published. It is per-machine or per-session — agent worktrees (multi-GB
+# checkouts), local permission overrides, session state — plus the project skills, which are kept
+# private. `CLAUDE.md` at the repo root IS published: it is the map the docs and the source comments
+# point at.
+.claude/
+.remember/
+
+# ---- Unpublished record ----
+# These are the raw probe sessions and the 2.0 competitive analysis. They are the evidence the
+# findings in docs/PLATFORM-CONSTRAINTS.md and docs/TRAPS.md were distilled from, and those two
+# files — which ARE published — carry every finding that survived, with its date and its control.
+# Kept out of the public repo because they are a session-by-session working record rather than
+# documentation, and because PLAN-2.0.md is a competitor teardown.
+#
+# They still live on disk. `Tools/private-sync.sh` backs them up to the private repo.
+docs/PROBES-2.0.md
+docs/PROBE-*.md
+docs/PLAN-2.0.md
+docs/NEXT-SESSION.md
+docs/BRIEF.md
+
+# The private repo's git directory, used by Tools/private-sync.sh.
+.private.git/

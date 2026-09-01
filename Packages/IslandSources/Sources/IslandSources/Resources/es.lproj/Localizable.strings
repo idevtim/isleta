@@ -1,0 +1,114 @@
+
+/* Bluetooth — the connect permission */
+"bluetooth.authorization.restricted" = "El acceso a Bluetooth está restringido en este Mac, así que no se pueden mostrar los dispositivos que se conectan.";
+"bluetooth.authorization.denied" = "Isleta no puede ver cuándo se conectan dispositivos Bluetooth. Concédele el acceso a Bluetooth en Ajustes del Sistema ▸ Privacidad y seguridad ▸ Bluetooth.";
+
+/* The calendar permission */
+"calendar.authorization.denied" = "Isleta no puede ver tu calendario, así que la isla no tiene nada que mostrar de tu día. Si activas el acceso al calendario para Isleta en Ajustes del Sistema ▸ Privacidad y seguridad, vuelve a aparecer lo que viene a continuación: tus eventos nunca se guardan, nunca se envían a ningún sitio y nunca se escriben en los registros de Isleta.";
+"calendar.authorization.restricted" = "El acceso al calendario está gestionado en este Mac, así que Isleta no puede leer tus eventos. Nada de lo que cambies en Isleta lo modificará.";
+"calendar.authorization.writeOnly" = "Isleta tiene un acceso al calendario solo de escritura, que autoriza añadir eventos y no devuelve ninguno para leer. Lo que la isla necesita es el acceso completo.";
+
+/* A call in progress */
+"call.title" = "Llamada";
+"call.inProgress" = "Llamada en curso";
+"call.a11y.inApp" = "Llamada en curso en %@";
+
+/* The drop history — a file that has moved out of reach */
+"dropHistory.volumeUnavailable" = "%@ no está conectado";
+"dropHistory.missing" = "Ese archivo se ha eliminado";
+
+/* File conversion and its failures — drawn on the island, one line */
+"fileAction.failed.nothingToConvert" = "No hay nada que convertir";
+"fileAction.failed.generic" = "No se ha podido convertir este archivo";
+"fileAction.failed.notStarted" = "No se ha podido iniciar la conversión";
+"fileAction.failed.noDestination" = "La carpeta de destino no está";
+"fileAction.failed.noFreeName" = "No se ha encontrado un nombre libre";
+"fileAction.failed.folderNotWritable" = "No se puede escribir en esa carpeta";
+"fileAction.failed.imageUnreadable" = "No se ha podido leer esa imagen";
+"fileAction.failed.formatUnwritable" = "Ese formato no se puede escribir";
+"fileAction.failed.imageUnwritable" = "No se ha podido escribir esa imagen";
+"fileAction.failed.pdfNotStarted" = "No se ha podido iniciar un PDF";
+"fileAction.failed.noImagesReadable" = "No se ha podido leer ninguna de esas imágenes";
+"fileAction.failed.pdfUnwritable" = "No se ha podido escribir ese PDF";
+"fileAction.failed.vectorUnreadable" = "No se ha podido leer ese vectorial";
+"fileAction.failed.thatPdfNotStarted" = "No se ha podido iniciar ese PDF";
+"fileAction.failed.vectorNotRasterised" = "No se ha podido rasterizar ese vectorial";
+"fileAction.failed.fileNotOpenable" = "Ese archivo no se puede abrir";
+"fileAction.failed.conversionUnavailable" = "Esa conversión no está disponible aquí";
+"fileAction.failed.fileNotConverted" = "Ese archivo no se ha podido convertir";
+"fileAction.failed.audioNotConverted" = "No se ha podido convertir ese audio";
+"fileAction.failed.noText" = "En ese archivo no había texto";
+"fileAction.failed.noPreview" = "macOS no ha podido previsualizar ese archivo";
+"fileAction.failed.nothingToLayOut" = "No había nada que maquetar";
+
+/* The glance — the day, an alert, a meeting */
+"glance.alert.a11y" = "%@, %@";
+"glance.meeting.a11y" = "%@, listo para entrar";
+
+/* The HUDs this Mac cannot produce, and the ones Isleta will not suppress */
+"hud.unavailable.brightness" = "El brillo de la pantalla no se puede leer en este Mac, así que Isleta le deja el HUD de brillo al sistema.";
+"hud.unavailable.volume" = "La salida de audio de este Mac no informa de un nivel que Isleta pueda mostrar.";
+"hud.suppression.volume" = "Isleta muestra su propio HUD de volumen junto al del sistema en lugar de sustituirlo. Ocultar el HUD del sistema significaría hacerse por completo con las teclas de volumen, y eso Isleta no lo hará por una ganancia estética.";
+"hud.suppression.brightness" = "Isleta muestra su propio HUD de brillo junto al del sistema en lugar de sustituirlo. Ocultar el HUD del sistema significaría hacerse por completo con las teclas de brillo.";
+
+/* Now Playing — the two routes that can be missing */
+"nowPlaying.unavailable.null" = "Isleta puede mostrar en la isla lo que estás escuchando. Concédele permiso para leer tu reproductor de música en Ajustes del Sistema › Privacidad y seguridad › Automatización.";
+"nowPlaying.unavailable.adapter" = "Esta versión de Isleta no puede leer la información de Reproduciendo de todo el sistema. Isleta mostrará la música de los reproductores a los que puede preguntar directamente, como Música.";
+"nowPlaying.scripting.denied" = "Isleta muestra lo que suena en cuanto reproduzcas, pongas en pausa o cambies de pista la próxima vez. Para que muestre la pista actual de inmediato, permite que Isleta controle %@ en Ajustes del Sistema › Privacidad y seguridad › Automatización.";
+
+/* Power — the charger, the charge, Low Power Mode */
+"power.duration.minutes" = "%lld min";
+"power.duration.hours" = "%lld h";
+"power.duration.hoursMinutes" = "%lld h %lld min";
+"power.title.charging" = "Cargando";
+"power.title.onBattery" = "Con batería";
+"power.title.charged" = "Cargada";
+"power.title.lowBattery" = "Batería baja";
+"power.title.lowPowerModeOn" = "Modo de bajo consumo activado";
+"power.title.lowPowerModeOff" = "Modo de bajo consumo desactivado";
+"power.flank.charging" = "Cargando";
+"power.flank.onBattery" = "Con batería";
+"power.flank.charged" = "Cargada";
+"power.flank.lowBattery" = "Batería baja";
+"power.flank.lowPowerModeOn" = "Ahorro activo";
+"power.flank.lowPowerModeOff" = "Ahorro inactivo";
+"power.estimate.toFull" = "%@ para la carga completa";
+"power.estimate.left" = "quedan %@";
+
+/* Transcription failures */
+"transcribe.failed.noAudio" = "En ese archivo no hay audio";
+"transcribe.failed.fileUnreadable" = "No se ha podido leer ese archivo";
+"transcribe.failed.noSpeech" = "No se ha encontrado voz en ese archivo";
+"transcribe.failed.noLanguageInstalled" = "No hay ningún idioma de transcripción instalado";
+"transcribe.failed.languageNotInstalled" = "Ese idioma no está instalado";
+"transcribe.failed.generic" = "No se ha podido transcribir ese archivo";
+
+/* Weather, in a build that cannot ask for it */
+"weather.unavailable.default" = "El tiempo no está disponible en esta versión de Isleta.";
+"weather.unavailable.notEntitled" = "El tiempo todavía no está en esta versión de Isleta. Tu calendario sigue apareciendo en la isla; el tiempo necesita un cambio de firma que hay que hacer a mano.";
+
+/* Welcome back — the greeting, and the line under it */
+"welcomeBack.greeting.morning" = "Buenos días";
+"welcomeBack.greeting.afternoon" = "Buenas tardes";
+"welcomeBack.greeting.evening" = "Buenas noches";
+"welcomeBack.greeting.night" = "Hola de nuevo";
+"welcomeBack.message.morning.1" = "El día es tuyo.";
+"welcomeBack.message.morning.2" = "Que sea un buen día.";
+"welcomeBack.message.morning.3" = "Una cosa cada vez.";
+"welcomeBack.message.morning.4" = "Un nuevo comienzo, justo a tiempo.";
+"welcomeBack.message.morning.5" = "Tú puedes.";
+"welcomeBack.message.afternoon.1" = "Aún queda mucho día.";
+"welcomeBack.message.afternoon.2" = "De vuelta. Bien.";
+"welcomeBack.message.afternoon.3" = "Has avanzado más de lo que parece.";
+"welcomeBack.message.afternoon.4" = "Sigue así.";
+"welcomeBack.message.afternoon.5" = "Cuando tú quieras.";
+"welcomeBack.message.evening.1" = "Hoy has hecho suficiente.";
+"welcomeBack.message.evening.2" = "Buen trabajo hoy.";
+"welcomeBack.message.evening.3" = "Lo demás puede esperar.";
+"welcomeBack.message.evening.4" = "Termina con calma.";
+"welcomeBack.message.evening.5" = "Me alegra volver a verte.";
+"welcomeBack.message.night.1" = "Todavía por aquí. Eso cuenta.";
+"welcomeBack.message.night.2" = "Sé amable contigo esta noche.";
+"welcomeBack.message.night.3" = "Sea lo que sea, seguramente puede esperar.";
+"welcomeBack.message.night.4" = "Las horas tranquilas te sientan bien.";
+"welcomeBack.message.night.5" = "Tómate tu tiempo.";

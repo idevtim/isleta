@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- The sandbox is not a choice here, and its absence fails silently.
+
+	     Measured on macOS 27.0, A/B/A with the same sources and the same Developer ID signature,
+	     changing only this key: with the sandbox, `pluginkit -m -i com.tryisleta.isleta.share`
+	     lists the extension and the share sheet offers it; without the sandbox, pluginkit answers
+	     "no matches" — the extension does not exist as far as the system is concerned. Nothing is
+	     logged, `codesign` is happy, the .appex is in the bundle, and the row is simply never there.
+	     Repeated three times in a row, both directions.
+
+	     **This does not sandbox Isleta.** An .appex is its own signed bundle with its own
+	     entitlements; the app is signed separately against Config/Isleta.entitlements and stays
+	     unsandboxed, which is what Accessibility and the mediaremote-adapter Perl helper require.
+	     The only thing inside the sandbox is this one short-lived process, and what it can reach is
+	     exactly what it needs: the attachments the share sheet handed it, and NSWorkspace.
+
+	     There is deliberately no file-access entitlement of any kind. This process never opens a
+	     file — it reads the URLs out of the attachments and passes them to the app, which is
+	     unsandboxed and can open them. Measured from inside: reading a selected file answers
+	     isReadable=false, `~/Library/Application Support/Isleta` is unlistable, and a write to
+	     /private/tmp throws NSCocoaErrorDomain 513. All three are fine, because none of them is on
+	     the path this extension takes.
+
+	     Note what is NOT here: no `com.apple.developer.*` entitlement, and no App Group. Either
+	     would have to be authorised by an embedded provisioning profile, and an entitlement no
+	     profile authorises kills the process at `exec` with exit 137, no stdout, no stderr and no
+	     crash report — the trap Config/Isleta-Info.plist and Tools/release.sh both document. The
+	     `com.apple.security.*` keys are consumed by the sandbox rather than by AMFI, which is why
+	     this one is safe: verified against a Developer ID build with no profile embedded, and
+	     against Google Drive's shipping Finder extension, which carries sandbox and
+	     temporary-exception keys with no embedded profile anywhere in its bundle. -->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+</dict>
+</plist>

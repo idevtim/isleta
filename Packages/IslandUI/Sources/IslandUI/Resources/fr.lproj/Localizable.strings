@@ -1,0 +1,149 @@
+
+/* What a kind of activity is called, when a provider supplied no label of its own */
+"activityKind.nowPlaying" = "Lecture en cours";
+"activityKind.systemHUD" = "Système";
+"activityKind.welcomeBack" = "Bon retour";
+"activityKind.shelf" = "Étagère";
+"activityKind.timer" = "Minuteur";
+"activityKind.deviceConnected" = "Appareil";
+"activityKind.glance" = "Aperçu";
+"activityKind.calendarAlert" = "Événement";
+"activityKind.meeting" = "Réunion";
+"activityKind.power" = "Batterie";
+"activityKind.call" = "Appel";
+"activityKind.fileAction" = "Action sur fichier";
+"activityKind.focusChanged" = "Concentration";
+"activityKind.screenSharing" = "Partage d’écran";
+
+/* The numerals an activity value resolves to, and what VoiceOver reads instead */
+"value.compactClock.hours" = "%1$@h%2$@";
+"value.a11y.percent" = "%lld pour cent";
+"value.a11y.inProgress" = "en cours";
+"value.a11y.remaining" = "%@ restantes";
+"value.a11y.elapsed" = "%@ écoulées";
+
+/* The home page */
+"home.notPlaying" = "Aucune lecture en cours";
+"home.previous.a11y" = "Piste précédente";
+"home.next.a11y" = "Piste suivante";
+"home.play.a11y" = "Lire";
+"home.pause.a11y" = "Suspendre";
+"home.date.a11y" = "Ouvrir le mois";
+"home.moreEvents" = "%lld de plus";
+"home.allow" = "Autoriser…";
+"home.openSettings" = "Ouvrir Réglages";
+"home.openSettings.a11y" = "Ouvrir les réglages de confidentialité du calendrier";
+"home.openEvent.a11y" = "Ouvre l’événement dans Calendrier";
+
+/* The pages the open island turns between */
+"page.home" = "Aujourd’hui";
+"page.music" = "Musique";
+"page.weather" = "Météo";
+
+/* Lists drawn in the island */
+"list.age.now" = "à l’instant";
+"list.age.minutes" = "%lld min";
+"list.age.hours" = "%lld h";
+"list.age.days" = "%lld j";
+
+/* The shelf */
+"shelf.dropTarget" = "Déposez pour ajouter";
+"shelf.searchCount" = "%1$lld sur %2$lld";
+"shelf.actions.a11y" = "Actions pour ces fichiers";
+"shelf.search.prompt" = "Rechercher";
+"shelf.search.a11y" = "Rechercher dans l’étagère";
+"shelf.search.end" = "Terminer la recherche";
+"shelf.clearAll" = "Vider";
+"shelf.clearAll.a11y" = "Vider l’étagère";
+"shelf.tile.remove" = "Retirer %@";
+"shelf.tile.missing" = "%@, introuvable";
+"shelf.actions.back" = "Retour à l’étagère";
+"shelf.job.progress" = "%1$@ · %2$@";
+
+/* Now Playing */
+"nowPlaying.a11y" = "Lecture en cours";
+"nowPlaying.a11y.openPlayer" = "Ouvrir le lecteur";
+"nowPlaying.a11y.openTrack" = "Ouvrir %@ dans le lecteur";
+"nowPlaying.a11y.openTrackByArtist" = "Ouvrir %1$@ de %2$@ dans le lecteur";
+"nowPlaying.a11y.upNextPeek" = ". À suivre : %@";
+"nowPlaying.upNext" = "À suivre";
+"nowPlaying.scrubber.a11y" = "Position de lecture";
+"nowPlaying.transport.previous" = "Titre précédent";
+"nowPlaying.transport.play" = "Lecture";
+"nowPlaying.transport.pause" = "Pause";
+"nowPlaying.transport.next" = "Titre suivant";
+"nowPlaying.transport.shuffle" = "Aléatoire";
+"nowPlaying.transport.repeat" = "Répéter";
+"nowPlaying.transport.favorite" = "Titre favori";
+"nowPlaying.transport.unfavorite" = "Retirer des favoris";
+"nowPlaying.transport.backFifteen" = "Reculer de quinze secondes";
+"nowPlaying.transport.forwardFifteen" = "Avancer de quinze secondes";
+"nowPlaying.transport.showUpNext" = "Afficher À suivre";
+"nowPlaying.transport.hideUpNext" = "Masquer À suivre";
+"nowPlaying.state.on" = "Activé";
+"nowPlaying.state.off" = "Désactivé";
+"nowPlaying.repeat.all" = "Tout";
+"nowPlaying.repeat.one" = "Un titre";
+"nowPlaying.queue.showing" = "Affiché";
+"nowPlaying.queue.hidden" = "Masqué";
+
+/* The Up Next surface */
+"nowPlaying.queue.output" = "Sortie";
+"nowPlaying.queue.rate" = "%@×";
+"nowPlaying.queue.rate.a11y" = "Vitesse de lecture";
+"nowPlaying.queue.close" = "Fermer À suivre";
+"nowPlaying.queue.empty" = "Rien dans la file d’attente";
+"nowPlaying.queue.empty.output" = "Aucun périphérique de sortie";
+"nowPlaying.queue.row.current" = "Lecture en cours";
+"nowPlaying.queue.row.hint" = "Double-cliquez pour lire";
+
+/* The glance */
+"glance.weather.a11y" = "%1$@, %2$@";
+"glance.weather.a11y.place" = "%1$@ à %2$@, %3$@";
+"glance.allow" = "Autoriser…";
+"glance.allow.a11y" = "Autoriser l’accès au calendrier";
+"glance.join" = "Rejoindre";
+
+/* The drop history */
+"dropHistory.title" = "Historique des dépôts";
+"dropHistory.empty" = "Rien de déposé pour l’instant";
+"dropHistory.clearAll" = "Tout effacer";
+"dropHistory.clearAll.a11y" = "Effacer l’historique des dépôts";
+"dropHistory.clearAll.help" = "Oublie ce qu’Isleta a fait des fichiers que vous avez déposés. Aucun fichier n’est supprimé.";
+"dropHistory.close" = "Fermer";
+"dropHistory.row.a11y" = "%1$@, %2$@";
+"dropHistory.row.hint" = "L’affiche dans le Finder";
+"dropHistory.copyLink" = "Copier le lien";
+"dropHistory.runAgain" = "Recommencer";
+
+/* Shared */
+"list.separator" = ", ";
+
+/* The month grid */
+
+/* The weather surface */
+"glance.weather.open.a11y" = "Afficher la météo";
+"glance.weather.title" = "Météo";
+"glance.weather.asOf" = "relevé à %1$@";
+"glance.weather.today" = "Aujourd’hui";
+"glance.weather.metric.rain" = "Pluie";
+"glance.weather.metric.humidity" = "Humidité";
+"glance.weather.metric.feelsLike" = "Ressenti";
+"glance.weather.metric.wind" = "Vent";
+"glance.weather.metric.unknown" = "—";
+"glance.weather.day.chance.a11y" = "%1$@ de risque de précipitations";
+"glance.weather.unavailable" = "La météo n’est pas disponible pour le moment.";
+"glance.weather.noPlace" = "Isleta ne sait pas où chercher. Choisissez un lieu dans les réglages et les prévisions s’afficheront ici.";
+"glance.weather.openSettings" = "Ouvrir les réglages";
+"glance.weather.openSettings.a11y" = "Ouvrir les réglages d’Isleta pour choisir un lieu";
+"glance.schedule.close" = "Fermer l’agenda";
+"glance.schedule.close.label" = "Fermer";
+"glance.schedule.emptyToday" = "Aucun événement aujourd’hui";
+"glance.schedule.emptyTomorrow" = "Aucun événement demain";
+"glance.schedule.more" = "%1$@ de plus";
+"glance.schedule.open.a11y" = "Afficher aujourd’hui et demain";
+"glance.schedule.openEvent.a11y" = "Ouvre l’événement dans Calendrier";
+"glance.schedule.tomorrow" = "Demain";
+
+"lockScreen.locked" = "Verrouillé";
+"lockScreen.unlocked" = "Déverrouillé";

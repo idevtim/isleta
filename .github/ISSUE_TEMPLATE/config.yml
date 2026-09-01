@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Isleta Website
+    url: https://tryisleta.com
+    about: What Isleta is, what it does, and where to download it
+  - name: Questions & Ideas
+    url: https://github.com/idevtim/isleta/discussions
+    about: Ask a question or float an idea before opening an issue

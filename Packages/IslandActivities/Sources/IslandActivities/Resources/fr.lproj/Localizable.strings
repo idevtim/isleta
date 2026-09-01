@@ -1,0 +1,84 @@
+/* IslandActivities — fr. English lives in the Swift source, as each call site's second argument. */
+
+/* Section: the system HUD — spoken by VoiceOver, never drawn */
+"hud.volume" = "Volume";
+"hud.muted" = "Son coupé";
+"hud.brightness" = "Luminosité de l’écran";
+
+/* Section: the system HUD — the word drawn beside the glyph on a widened island. One noun, kept
+   short: the island's width is measured against the longest of these, so a phrase where a noun will
+   do widens the notch for everybody reading this language. */
+"hud.volume.label" = "Volume";
+"hud.muted.label" = "Son coupé";
+"hud.brightness.label" = "Écran";
+
+/* Section: Now Playing — joining text, not labels */
+"nowPlaying.metadataSeparator" = " — ";
+"nowPlaying.a11ySeparator" = " par ";
+
+/* Section: a Bluetooth device that has just connected */
+"device.connected.a11y.battery" = "%1$@ connecté, batterie à %2$lld pour cent";
+"device.connected.a11y" = "%@ connecté";
+"device.connected.battery" = "%lld %%";
+"device.connected.subtitle" = "Connecté";
+
+/* Section: a timer from Apple's Clock */
+"timer.untitled" = "Minuteur";
+"timer.paused" = "En pause";
+"timer.finished" = "Temps écoulé";
+"timer.finished.a11y" = "%@ terminé";
+
+/* Section: the shelf. shelf.itemCount is a plural — Localizable.stringsdict */
+"shelf.title" = "Étagère";
+
+/* Section: what the actions menu offers to do to a file */
+"convert.transcribe" = "Transcrire";
+"convert.compressVideo" = "Compresser la vidéo";
+"convert.to" = "Convertir en %@";
+
+/* Section: a joinable meeting */
+"meeting.join" = "Rejoindre %@";
+
+/* Section: the glance, with nothing to show */
+"glance.empty.granted" = "Rien d’autre aujourd’hui";
+"glance.empty.notDetermined" = "Isleta n’a pas encore demandé l’accès à votre calendrier";
+"glance.empty.denied" = "Activez l’accès au calendrier dans Réglages Système";
+"glance.empty.restricted" = "L’accès au calendrier est géré sur ce Mac";
+"glance.empty.writeOnly" = "Isleta peut ajouter des événements, mais pas les lire";
+
+/* Section: the glance's own formatting */
+"glance.startsIn.now" = "Commence maintenant";
+"glance.startsIn.minutes" = "Dans %lld min";
+"glance.startsIn.hours" = "Dans %lld h";
+"glance.day.today" = "Aujourd’hui";
+"glance.day.tomorrow" = "Demain";
+"glance.row.allDay" = "Toute la journée";
+
+/* Section: drop actions. "AirDrop" is Apple's own name and is not in this table. */
+"dropAction.revealInFinder" = "Afficher dans le Finder";
+"dropAction.copyToFolder" = "Copier dans un dossier…";
+"dropAction.moveToFolder" = "Déplacer vers un dossier…";
+"dropAction.copyLink" = "Copier le lien";
+
+/* Section: work Isleta is doing to a file. fileAction.fileCount is a plural. */
+"fileAction.a11y.running" = "%1$@, %2$@";
+"fileAction.finished.subtitle" = "%@ sur l’étagère";
+"fileAction.a11y.finished" = "%1$@ terminé, %2$@";
+"fileAction.a11y.failed" = "%1$@ a échoué, %2$@";
+
+/* Section: weather */
+"weather.unit.celsius" = "°C";
+"weather.unit.fahrenheit" = "°F";
+"weather.temperature.compact" = "%lld°";
+"weather.temperature.full" = "%1$lld %2$@";
+"weather.temperature.range" = "Max %1$lld°  Min %2$lld°";
+"weather.percentage" = "%lld %%";
+
+// Now Playing — the audio format badge. Apple ships these two terms
+// untranslated in Music itself in every language Isleta speaks, so they are
+// keys rather than literals only because the day one locale does translate
+// them, this is where it goes.
+"nowPlaying.format.lossless" = "Lossless";
+"nowPlaying.format.hiResLossless" = "Hi-Res Lossless";
+"nowPlaying.format.dolbyAtmos" = "Dolby Atmos";
+"nowPlaying.format.multichannel" = "Multicanal";

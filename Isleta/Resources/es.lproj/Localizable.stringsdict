@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logExport.done.detail</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld archivo de registro y el informe de diagnóstico se han escrito en:
+%2$@</string>
+			<key>other</key>
+			<string>%1$lld archivos de registro y el informe de diagnóstico se han escrito en:
+%2$@</string>
+		</dict>
+	</dict>
+	<key>shelf.fileAway.failure.move</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 de %2$lld no se ha podido mover</string>
+			<key>other</key>
+			<string>%1$lld de %2$lld no se han podido mover</string>
+		</dict>
+	</dict>
+	<key>shelf.fileAway.failure.copy</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 de %2$lld no se ha podido copiar</string>
+			<key>other</key>
+			<string>%1$lld de %2$lld no se han podido copiar</string>
+		</dict>
+	</dict>
+	<key>shelf.fileAway.failedCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 archivo no se ha podido archivar</string>
+			<key>other</key>
+			<string>%lld archivos no se han podido archivar</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

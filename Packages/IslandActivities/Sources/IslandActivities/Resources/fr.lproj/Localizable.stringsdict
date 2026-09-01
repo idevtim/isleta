@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- IslandActivities — fr. The two counted strings, and the only place a plural rule can live:
+     a format string cannot express one. French puts 0 in the 'one' category — « 0 élément » is singular — so 'one' carries the
+     number rather than a literal 1. -->
+<plist version="1.0">
+<dict>
+	<key>fileAction.fileCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key><string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key><string>lld</string>
+			<key>one</key><string>%lld fichier</string>
+			<key>other</key><string>%lld fichiers</string>
+		</dict>
+	</dict>
+	<key>shelf.itemCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key><string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key><string>lld</string>
+			<key>one</key><string>%lld élément</string>
+			<key>other</key><string>%lld éléments</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

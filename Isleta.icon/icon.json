@@ -1,0 +1,49 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "extended-srgb:0.023529,0.184314,0.298039,1.000000",
+      "extended-srgb:0.070588,0.627451,0.737255,1.000000"
+    ]
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "ripple-upper.svg",
+          "name" : "Ripple 1",
+          "opacity" : 0.38
+        },
+        {
+          "image-name" : "ripple-lower.svg",
+          "name" : "Ripple 2",
+          "opacity" : 0.26
+        }
+      ],
+      "shadow" : {
+        "kind" : "none",
+        "opacity" : 0
+      },
+      "specular" : false
+    },
+    {
+      "glass" : true,
+      "layers" : [
+        {
+          "image-name" : "island.svg",
+          "name" : "Island"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : true
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

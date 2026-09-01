@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<!-- What the user reads in the share sheet, and the only user-facing string this bundle has.
+
+	     "Isleta", not "Send to Isleta" and not "Add to Shelf". Measured on macOS 27.0: every other
+	     row in that sheet for a file is a bare product name — AirDrop, Mail, Messages, Notes,
+	     Freeform, Reminders, Journal. A verb there would be the one sentence in a list of nouns, and
+	     the sheet already supplies the verb in its own title. This is the wording that reads as
+	     something Apple shipped because it is the shape Apple ships. -->
+	<key>CFBundleDisplayName</key>
+	<string>Isleta</string>
+	<!-- Must track the app's. Sparkle replaces the whole bundle, so these only ever have to be
+	     internally consistent — but a mismatch is what makes an extension look like it came from a
+	     different install in `pluginkit -m -v`, which is the first thing a bug report is asked for. -->
+	<key>CFBundleShortVersionString</key>
+	<string>1.3.1</string>
+	<key>CFBundleVersion</key>
+	<string>1.3.1</string>
+	<!-- Required, and it is what an .appex is: an XPC service PlugInKit launches on demand. Xcode's
+	     Foundation Extension template sets this; a bundle without it is not loaded and says nothing. -->
+	<key>CFBundlePackageType</key>
+	<string>XPC!</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Isleta. All rights reserved.</string>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<!-- The activation rule, and the number in it is a hard, silent gate. Measured on
+			     macOS 27.0 with the count set to 50: 50 files offered the row, 51 removed it from
+			     `NSSharingService.sharingServices(forItems:)` entirely — no row, no error, no
+			     explanation to the user, who simply finds Isleta missing from the sheet when they
+			     select one file too many.
+
+			     So it is deliberately far above `ShelfContents.capacity` (30) rather than equal to
+			     it. A share of 100 files behaves exactly like a *drag* of 100 files onto the
+			     island: the shelf keeps the last 30 and logs the eviction. Setting it to 30 would
+			     make the two paths disagree — the drag would work and the share would vanish — and
+			     the vanishing one gives the user nothing to read. -->
+			<key>NSExtensionActivationRule</key>
+			<dict>
+				<key>NSExtensionActivationSupportsFileWithMaxCount</key>
+				<integer>100</integer>
+			</dict>
+		</dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.share-services</string>
+		<!-- The `@objc` name of the principal class, not the Swift one. A storyboard is deliberately
+		     absent: this extension presents nothing, and `NSExtensionMainStoryboard` would load a
+		     scene to put on screen. See ShareExtension.swift on why the work happens in `loadView`. -->
+		<key>NSExtensionPrincipalClass</key>
+		<string>IsletaShareExtension</string>
+	</dict>
+</dict>
+</plist>

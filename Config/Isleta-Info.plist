@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<!-- The languages Isleta speaks, and the switch that turns the packages on.
+
+	     This list is load-bearing in a way that is invisible when it is wrong. Measured on macOS
+	     27.0 with a probe .app carrying a package-style resource bundle: CFBundle negotiates a
+	     *nested* bundle's language against the **main** bundle's list, so with `de` absent here,
+	     `Bundle.module.preferredLocalizations` inside IslandUI, IslandSettings, IslandActivities
+	     and IslandSources all collapse to ["en"] and every one of them silently draws English —
+	     no warning, no exception, nothing in any log. Adding `de` here (with no de.lproj in the
+	     app at all) was enough on its own to make all four resolve.
+
+	     So: a language ships when it is in this array. Removing one here switches it off across
+	     the whole app, including in packages whose .lproj folders are still present and correct.
+
+	     `en` is listed although there is no en.lproj anywhere — English is the `defaultValue`
+	     argument at each call site, which is where the copy is argued and where it stays. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>de</string>
+		<string>fr</string>
+		<string>es</string>
+	</array>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>2.1.0</string>
+	<!-- Must equal CFBundleShortVersionString above. Sparkle compares CFBundleVersion, not the
+	     marketing string, so if this does not increase every existing install silently concludes
+	     it is up to date — a failure that logs nothing anywhere. Tools/release.sh checks the two
+	     rather than syncing them, because PlistBuddy would rewrite this file and strip these
+	     comments. -->
+	<key>CFBundleVersion</key>
+	<string>2.1.0</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Isleta. All rights reserved.</string>
+	<!-- Required, not optional: the Now Playing scripting route asks Music and Spotify what is
+	     playing through /usr/bin/osascript, and TCC attributes that Apple event to Isleta as the
+	     responsible process. Without this key macOS refuses the event outright (errAEEventNotPermitted)
+	     and there is no dialog and no log line saying why — the route simply never returns a track.
+	     There is deliberately no Accessibility key here: macOS has none. Accessibility is granted
+	     through AXIsProcessTrustedWithOptions and the System Settings list, and no Info.plist string
+	     is consulted for it. -->
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Isleta asks your music app what’s playing so it can show the current track in the island when Isleta starts. Live updates need no permission.</string>
+	<!-- Required, and 1.3.0 was cut without it. The Bluetooth device source registers for
+	     IOBluetooth's connect notification, which spins up CoreBluetooth's coordinator underneath,
+	     and that files a TCC access request. TCC kills any process that makes one with no usage
+	     string: SIGABRT inside __TCC_CRASHING_DUE_TO_PRIVACY_VIOLATION__, about 270 ms after
+	     launch, with the island never drawn and nothing in our own log to say why — the last line
+	     written is the timer source starting.
+
+	     The trap is that it cannot be reproduced the way this project verifies everything else. TCC
+	     attributes a request to the *responsible* process, so a build launched from a shell — which
+	     is what --perf-report, --device-demo and every hardware check do — is judged against
+	     Terminal's usage strings and Terminal's grant, and runs perfectly for as long as you watch
+	     it. Only a launch through LaunchServices (Finder, Dock, login item) makes Isleta its own
+	     responsible process. Verify anything permission-shaped with `open -a Isleta`, never from
+	     the shell. -->
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Isleta shows your AirPods and other Bluetooth audio devices in the island when they connect, with the charge left in them. Nothing about your devices leaves your Mac.</string>
+	<!-- Calendar, for the glance. Deliberately the *FullAccess* key and not the legacy
+	     NSCalendarsUsageDescription: write-only access authorises saving new items and returns no
+	     calendars to read, which is the opposite of what a "what's next" surface needs.
+
+	     Measured on macOS 27 with three bundled probes, each launched with `open` so each was its
+	     own responsible process. The legacy key does still work — tccd carries all three names and
+	     falls back — but that is a fallback rather than a licence. The case that matters is having
+	     *no* calendar key at all, which does not abort the way the Bluetooth one above does: the
+	     request answers granted=false with a nil error in 9 ms, raises no prompt, logs nothing, and
+	     leaves authorizationStatus at notDetermined rather than denied. A source that retries on
+	     notDetermined therefore asks forever and never advances, and the whole signal is nine
+	     milliseconds and a false-looking false. -->
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Isleta reads your upcoming events so it can show what’s next in the island. Your events are never stored, never sent anywhere, and never written to Isleta’s logs.</string>
+	<!-- Location, for the weather. Optional by design — WeatherKit takes a CLLocation and has no
+	     opinion about where it came from, so a city typed in Settings gives a fully working weather
+	     island with this permission refused or never asked for.
+
+	     Unlike every other permission in this file, location is **not a TCC service** —
+	     kTCCServiceLocation is absent from tccd's table and authorization lives in
+	     /var/db/locationd/clients.plist. So a missing usage string here does not abort the process:
+	     measured, a probe with no location key still raised a prompt and was granted. That makes
+	     the string invisible in testing and load-bearing in production, because without it the user
+	     is shown a prompt with no reason on it. It is the WhenInUse key and not the Always one:
+	     Always asks for background wake-ups an LSUIElement agent has no use for. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Isleta uses your location to show the weather where you are. You can type a city instead — and either way, your location is only ever sent to Apple’s weather service.</string>
+	<!-- Focus, for the gate rather than for a feature. Isleta reads whether a Focus is on so it can
+	     decline to put an island on screen while the user has asked for quiet — it is consulted once
+	     when an activity is about to be published, never on a timer, and it drives no activity of
+	     its own.
+
+	     Two measurements decided the shape. There is **no change notification anywhere**:
+	     INFocusStatusCenter.h declares two properties and one method and no constant, and neither
+	     Intents nor DoNotDisturb nor Focus.framework carries a Darwin name for state — only private
+	     XPC. So a live Focus indicator would need a poll, and is not shipped. And `isFocused`
+	     answers a definite Optional(false) — not nil — whether or not authorization was ever
+	     granted, so an unauthorised read is indistinguishable from "no Focus is on". Every read is
+	     gated on authorizationStatus == .authorized, or the island would tell a user sitting in Do
+	     Not Disturb, with total confidence, that they are not. -->
+	<key>NSFocusStatusUsageDescription</key>
+	<string>Isleta checks whether a Focus is on so it can stay quiet when you have asked your Mac for quiet. It never changes your Focus, and it never records it.</string>
+	<key>LSUIElement</key>
+	<true/>
+	<!-- Sparkle (§8.1.10). The appcast is committed to the repo and served raw from GitHub, which
+	     gives it a URL that never changes between releases. https only: Sparkle will refuse a
+	     plain-http feed without an App Transport Security exception, and adding one would be
+	     weakening update security to save a redirect. -->
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/idevtim/isleta/main/appcast.xml</string>
+	<!-- The public half of Isleta's EdDSA (ed25519) key pair, generated 2026-08-19. The private
+	     half lives in the release machine's login keychain and a password manager, and never in
+	     this repo — `Tools/release.sh` is the only thing that touches it, through
+	     `generate_appcast`, which signs each archive without printing it.
+
+	     Do not edit this string. Every copy of Isleta already installed verifies updates against
+	     the key that shipped inside it, so changing this key strands them: a new pair does not
+	     rescue an install that trusts the old one, and losing the private half strands them just
+	     the same. Never paste another app's key here either — one leaked private key must not sign
+	     updates for two applications.
+
+	     Blanking it is a safe failure rather than a broken build: `-[SPUUpdater startUpdater:]`
+	     validates this value before it will start, so a build without a valid key cannot check for
+	     updates at all, and cannot be talked into installing anything by a spoofed feed.
+	     `SparkleUpdater` turns that refusal into `canCheckForUpdates == false`, which the settings
+	     window states out loud. `Tools/release.sh` refuses to build in that state. -->
+	<key>SUPublicEDKey</key>
+	<string>TDnC5yMZcwQ8x4jjkJFyxK7yJF+z34NhMk4BanAiij0=</string>
+	<!-- The shipped default, matching `IsletaConfiguration.automaticUpdateChecks`. Whatever the user
+	     has actually chosen is pushed into the updater before it starts, so this value is only ever
+	     read on a machine that has never opened the settings window. Its other job is to tell
+	     Sparkle the question has been answered, which suppresses Sparkle's own "check for updates
+	     automatically?" permission prompt — Isleta asks that in its own settings window, and two
+	     dialogs asking the same question can disagree. -->
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>NSSupportsAutomaticTermination</key>
+	<false/>
+	<key>NSSupportsSuddenTermination</key>
+	<false/>
+</dict>
+</plist>
