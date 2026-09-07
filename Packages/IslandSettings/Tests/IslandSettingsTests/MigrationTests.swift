@@ -76,29 +76,56 @@ struct MigrationTests {
         #expect(object["delightEnabled"] == nil)
     }
 
-    /// **The one that matters now `suppressSystemHUDs` is a live setting again.**
+    /// **A stored answer never survives, whichever way the default is pointing.**
     ///
-    /// This file says `true`. It was written when the switch could not move anything —
+    /// This file says `true`, written when the switch could not move anything —
     /// `SystemHUDSuppression` suppressed nothing on macOS 26 — so it is an answer about a control
-    /// that did nothing, not consent to hand Isleta the volume keys. Schema 23 clears the key so the
-    /// decoder falls back to `false`, which is where CLAUDE.md requires suppression to start.
+    /// that did nothing rather than consent. Schema 23 clears the key and schema 25 clears it again,
+    /// so what a 1.x file said stops mattering and the decoder falls back to the shipped default.
     ///
-    /// If this ever fails, somebody upgrading from a 1.x install silently loses their volume keys on
-    /// first launch, and the only clue is a switch they never touched.
-    @Test("a v3 file that asked to hide the HUD does not consent to replacing it")
+    /// It asserted `false` until 2026-09-07, when the default was reversed. What the test is really
+    /// pinning is that the *file* does not decide: `defaults.suppressSystemHUDs` does, and that is
+    /// what it compares against so the two cannot be changed independently.
+    @Test("a v3 file that asked to hide the HUD does not decide anything")
     func staleSuppressionIsNotConsent() throws {
         let json = """
         {"schemaVersion":3,"suppressSystemHUDs":true}
         """
         let decoded = try SettingsMigration.decode(Data(json.utf8))
-        #expect(decoded.suppressSystemHUDs == false)
+        #expect(decoded.suppressSystemHUDs == IsletaConfiguration.defaults.suppressSystemHUDs)
     }
 
-    /// And a fresh install starts there too, which is the same rule stated without a migration in
-    /// front of it.
-    @Test("suppression is off in the shipped defaults")
-    func suppressionIsOffByDefault() {
-        #expect(IsletaConfiguration.defaults.suppressSystemHUDs == false)
+    /// **The default itself, reversed on 2026-09-07 and pinned here so it cannot drift back
+    /// silently.** Both switches ship on; nothing is suppressed until Accessibility is granted, which
+    /// is where the consent now lives — `SourceHub` is what gates it, and the first run is what asks.
+    @Test("both HUD switches ship on")
+    func suppressionIsOnByDefault() {
+        #expect(IsletaConfiguration.defaults.suppressSystemHUDs)
+        #expect(IsletaConfiguration.defaults.suppressBrightnessHUD)
+    }
+
+    /// **An existing install lands on the new default rather than keeping the old one.**
+    ///
+    /// A blob written under schema 24 carries an explicit `false` for both switches — the old
+    /// default, written out by the encoder whether or not a hand ever set it. Schema 25 clears both
+    /// keys so the decoder falls back. If this fails, the reversal reaches new installs only and
+    /// every existing user keeps Apple's HUDs with nothing saying why.
+    @Test("the v24 to v25 step puts an existing install on the new default")
+    func v25ClearsBothHUDKeys() throws {
+        let json = """
+        {"schemaVersion":24,"suppressSystemHUDs":false,"suppressBrightnessHUD":false}
+        """
+        let decoded = try SettingsMigration.decode(Data(json.utf8))
+        #expect(decoded.suppressSystemHUDs)
+        #expect(decoded.suppressBrightnessHUD)
+
+        // And on the raw object, which is the only place the cleared keys are visible at all.
+        let migrated = SettingsMigration.migrate([
+            "schemaVersion": 24, "suppressSystemHUDs": false, "suppressBrightnessHUD": false,
+        ])
+        #expect(migrated["suppressSystemHUDs"] == nil)
+        #expect(migrated["suppressBrightnessHUD"] == nil)
+        #expect(migrated["schemaVersion"] as? Int == IsletaConfiguration.currentSchemaVersion)
     }
 
     /// The migrator runs on the raw object, which is the only place the withdrawn keys are still

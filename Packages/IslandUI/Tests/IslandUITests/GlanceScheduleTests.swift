@@ -106,7 +106,7 @@ struct GlanceSchedulePlanTests {
     @Test("today's all-day events are the pills, capped, and the rest are counted")
     func allDayBecomesPills() {
         let all = (0..<7).map { event("a\($0)", allDay: true) }
-        let plan = GlanceSchedulePlan.plan(today: all, tomorrow: [])
+        let plan = GlanceSchedulePlan.plan(today: all, tomorrow: [], now: day)
         #expect(plan.pills.count == GlanceScheduleLayout.maximumPills)
         #expect(plan.pillOverflow == 7 - GlanceScheduleLayout.maximumPills)
         // An all-day event is not an hour, so it never appears in the right-hand column.
@@ -117,7 +117,8 @@ struct GlanceSchedulePlanTests {
     func todayIsOrdered() {
         let plan = GlanceSchedulePlan.plan(
             today: [event("late", hour: 17), event("early", hour: 8), event("noon", hour: 12)],
-            tomorrow: []
+            tomorrow: [],
+            now: day
         )
         #expect(plan.today.map(\.id) == ["early", "noon", "late"])
         #expect(plan.overflow == 0)
@@ -131,7 +132,8 @@ struct GlanceSchedulePlanTests {
     func tomorrowTakesTheRest() {
         let plan = GlanceSchedulePlan.plan(
             today: [event("t1", hour: 9), event("t2", hour: 11)],
-            tomorrow: [event("m1", hour: 9), event("m2", hour: 14)]
+            tomorrow: [event("m1", hour: 9), event("m2", hour: 14)],
+            now: day
         )
         #expect(plan.today.count == 2)
         #expect(plan.showsTomorrow)
@@ -143,7 +145,8 @@ struct GlanceSchedulePlanTests {
     func tomorrowsAllDayIsSummarised() {
         let plan = GlanceSchedulePlan.plan(
             today: [event("t1", hour: 9)],
-            tomorrow: (0..<5).map { event("m\($0)", allDay: true) } + [event("m.timed", hour: 17)]
+            tomorrow: (0..<5).map { event("m\($0)", allDay: true) } + [event("m.timed", hour: 17)],
+            now: day
         )
         // The count is the whole point of the row: five all-day events collapse into one line that
         // says five, rather than into five lines that would push the timed event out.
@@ -157,7 +160,7 @@ struct GlanceSchedulePlanTests {
     func todayCanFillTheColumn() {
         let capacity = GlanceScheduleLayout.maximumEntries
         let today = (0..<(capacity + 2)).map { event("t\($0)", hour: $0 + 6) }
-        let plan = GlanceSchedulePlan.plan(today: today, tomorrow: [event("m1", hour: 9)])
+        let plan = GlanceSchedulePlan.plan(today: today, tomorrow: [event("m1", hour: 9)], now: day)
         // One row of the budget goes to the count itself, which is why this is capacity - 1.
         #expect(plan.today.count == capacity - 1)
         #expect(!plan.showsTomorrow)
@@ -176,7 +179,8 @@ struct GlanceSchedulePlanTests {
     func neverOverflowsTheColumn(count: Int) {
         let plan = GlanceSchedulePlan.plan(
             today: (0..<count).map { event("t\($0)", hour: $0 % 23) },
-            tomorrow: (0..<count).map { event("m\($0)", hour: $0 % 23) }
+            tomorrow: (0..<count).map { event("m\($0)", hour: $0 % 23) },
+            now: day
         )
         #expect(plan.rowCount + (plan.overflow > 0 ? 1 : 0) <= GlanceScheduleLayout.maximumEntries)
     }
@@ -190,7 +194,8 @@ struct GlanceSchedulePlanTests {
     func noCombinationOverflows(todayCount: Int, tomorrowCount: Int) {
         let plan = GlanceSchedulePlan.plan(
             today: (0..<todayCount).map { event("t\($0)", hour: $0 % 23, allDay: $0 % 3 == 0) },
-            tomorrow: (0..<tomorrowCount).map { event("m\($0)", hour: $0 % 23, allDay: $0 % 4 == 0) }
+            tomorrow: (0..<tomorrowCount).map { event("m\($0)", hour: $0 % 23, allDay: $0 % 4 == 0) },
+            now: day
         )
         #expect(plan.rowCount + (plan.overflow > 0 ? 1 : 0) <= GlanceScheduleLayout.maximumEntries)
     }
@@ -204,10 +209,11 @@ struct GlanceSchedulePlanTests {
     func anEmptyTodaySaysSo() {
         let plan = GlanceSchedulePlan.plan(
             today: [],
-            tomorrow: [event("m1", hour: 9), event("m2", hour: 10)]
+            tomorrow: [event("m1", hour: 9), event("m2", hour: 10)],
+            now: day
         )
         #expect(plan.today.isEmpty)
-        #expect(plan.showsTodayEmpty)
+        #expect(plan.todayNote == .noEvents)
         #expect(plan.showsTomorrow)
         #expect(!plan.showsTomorrowEmpty)
         #expect(plan.hasEntries)
@@ -219,10 +225,11 @@ struct GlanceSchedulePlanTests {
     func anEmptyTomorrowSaysSo() {
         let plan = GlanceSchedulePlan.plan(
             today: [event("t1", hour: 9)],
-            tomorrow: []
+            tomorrow: [],
+            now: day
         )
         #expect(plan.today.count == 1)
-        #expect(!plan.showsTodayEmpty)
+        #expect(plan.todayNote == .none)
         #expect(plan.showsTomorrowEmpty)
         // The heading is drawn *because* something follows it, which is the rule `showsTomorrow`
         // has always stated — an empty tomorrow is now one of the things that can follow.
@@ -231,8 +238,8 @@ struct GlanceSchedulePlanTests {
 
     @Test("two empty days both say so")
     func bothDaysSaySo() {
-        let plan = GlanceSchedulePlan.plan(today: [], tomorrow: [])
-        #expect(plan.showsTodayEmpty)
+        let plan = GlanceSchedulePlan.plan(today: [], tomorrow: [], now: day)
+        #expect(plan.todayNote == .noEvents)
         #expect(plan.showsTomorrowEmpty)
         #expect(plan.showsTomorrow)
         #expect(plan.rowCount == 2)
@@ -246,11 +253,70 @@ struct GlanceSchedulePlanTests {
     func allDayAloneStillLeavesTheHoursEmpty() {
         let plan = GlanceSchedulePlan.plan(
             today: [event("a1", allDay: true), event("a2", allDay: true)],
-            tomorrow: []
+            tomorrow: [],
+            now: day
         )
         #expect(plan.pills.count == 2)
         #expect(plan.today.isEmpty)
-        #expect(plan.showsTodayEmpty)
+        #expect(plan.todayNote == .noEvents)
+    }
+
+    // MARK: - A day that is over says that instead
+
+    /// **Reported from use, 2026-09-07: it should say "No more events today".** The column lists the
+    /// whole day, finished events included, so "No events today" under a morning of meetings that
+    /// have all ended reads as the calendar having lost them — and the same line on a genuinely free
+    /// day is the only true thing to say. Two sentences, decided here.
+    @Test("a day whose events have all finished says there are no more, not that there were none")
+    func aFinishedDaySaysNoMore() {
+        let plan = GlanceSchedulePlan.plan(
+            today: [event("t1", hour: 9), event("t2", hour: 11)],
+            tomorrow: [],
+            now: day.addingTimeInterval(18 * 3600)
+        )
+        // The events are still listed — this line is added under them, not instead of them.
+        #expect(plan.today.count == 2)
+        #expect(plan.todayNote == .noMoreEvents)
+        // The two events, this line, and tomorrow's own — the row budget pays for all four.
+        #expect(plan.rowCount == 4)
+        #expect(plan.showsTomorrowEmpty)
+    }
+
+    /// The other half of the pair, at the same hour: a day that never had one says so.
+    @Test("an evening on a day with nothing on it still says the day was empty")
+    func anEmptyEveningStillSaysEmpty() {
+        let plan = GlanceSchedulePlan.plan(
+            today: [], tomorrow: [], now: day.addingTimeInterval(18 * 3600)
+        )
+        #expect(plan.todayNote == .noEvents)
+    }
+
+    /// **`end` rather than `start`, and the difference is an hour somebody is sitting in.** A
+    /// meeting that has begun and not finished is not a day that is over, and a column saying so
+    /// mid-standup would be wrong about the one hour it is being read in.
+    @Test("an event in progress is still to come, so no line is drawn")
+    func anEventInProgressIsNotOver() {
+        let plan = GlanceSchedulePlan.plan(
+            today: [event("t1", hour: 9)],
+            tomorrow: [],
+            // Nine o'clock plus ten minutes: started, and half an hour long.
+            now: day.addingTimeInterval(9 * 3600 + 600)
+        )
+        #expect(plan.todayNote == .none)
+        #expect(plan.rowCount == 1 + 1, "the event, and tomorrow's own empty line")
+    }
+
+    /// The line still has to be paid for, whichever of the two it is.
+    @Test("a finished day says nothing when there is no row left to say it in")
+    func theFinishedLineIsPaidFor() {
+        let capacity = GlanceScheduleLayout.maximumEntries
+        let plan = GlanceSchedulePlan.plan(
+            today: (0..<(capacity + 2)).map { event("t\($0)", hour: $0 % 23) },
+            tomorrow: [],
+            now: day.addingTimeInterval(48 * 3600)
+        )
+        #expect(plan.todayNote == .none)
+        #expect(plan.overflow > 0)
     }
 
     /// **A tomorrow squeezed out by a full today is not an empty tomorrow.** The flag is asked of
@@ -261,18 +327,19 @@ struct GlanceSchedulePlanTests {
         let capacity = GlanceScheduleLayout.maximumEntries
         let plan = GlanceSchedulePlan.plan(
             today: (0..<(capacity + 2)).map { event("t\($0)", hour: $0 % 23) },
-            tomorrow: [event("m1", hour: 9)]
+            tomorrow: [event("m1", hour: 9)],
+            now: day
         )
         #expect(!plan.showsTomorrowEmpty)
-        #expect(!plan.showsTodayEmpty)
+        #expect(plan.todayNote == .none)
         #expect(plan.overflow > 0)
     }
 
     /// And an empty day says nothing when there is no row to say it in — the budget is the budget.
     @Test("the lines are charged against the column like everything else")
     func theLinesArePaidFor() {
-        let plan = GlanceSchedulePlan.plan(today: [], tomorrow: [], entryCapacity: 0)
-        #expect(!plan.showsTodayEmpty)
+        let plan = GlanceSchedulePlan.plan(today: [], tomorrow: [], now: day, entryCapacity: 0)
+        #expect(plan.todayNote == .none)
         #expect(!plan.showsTomorrowEmpty)
         #expect(plan.rowCount == 0)
     }
@@ -283,7 +350,8 @@ struct GlanceSchedulePlanTests {
         let plan = GlanceSchedulePlan.plan(
             today: [event("t1", hour: 9), event("t2", hour: 10)],
             tomorrow: [event("m1", hour: 9), event("m2", hour: 10), event("m3", hour: 11),
-                       event("m4", hour: 12)]
+                       event("m4", hour: 12)],
+            now: day
         )
         let drawnTomorrow = plan.tomorrow.count
         #expect(plan.today.count == 2)
@@ -295,12 +363,12 @@ struct GlanceSchedulePlanTests {
     /// heading with nothing under it says nothing. That is right about the *heading* and wrong about
     /// the column: a surface that just stops is read as broken, and it was, as "some days are
     /// missing events". The heading is still never drawn bare; what follows it now is a sentence.
-    /// See `GlanceSchedulePlan.showsTodayEmpty`, and `bothDaysSaySo` for the replacement.
+    /// See `GlanceSchedulePlan.todayNote`, and `bothDaysSaySo` for the replacement.
     @Test("an empty day says it is empty rather than drawing a blank column")
     func anEmptyDaySaysSo() {
-        let plan = GlanceSchedulePlan.plan(today: [], tomorrow: [])
+        let plan = GlanceSchedulePlan.plan(today: [], tomorrow: [], now: day)
         #expect(plan.hasEntries)
-        #expect(plan.showsTodayEmpty)
+        #expect(plan.todayNote == .noEvents)
         // The heading is drawn because something follows it — which is the rule it always had.
         #expect(plan.showsTomorrow)
         #expect(plan.showsTomorrowEmpty)
@@ -311,7 +379,7 @@ struct GlanceSchedulePlanTests {
 
     @Test("a day with nothing left still shows tomorrow")
     func tomorrowStandsAlone() {
-        let plan = GlanceSchedulePlan.plan(today: [], tomorrow: [event("m1", hour: 9)])
+        let plan = GlanceSchedulePlan.plan(today: [], tomorrow: [event("m1", hour: 9)], now: day)
         #expect(plan.today.isEmpty)
         #expect(plan.showsTomorrow)
         #expect(plan.hasEntries)

@@ -5,8 +5,9 @@ Geometry and windowing. Everything that has to be true before a single pixel is 
 ## Owns
 
 - **Screen geometry** (`NotchGeometry`, `NotchResolver`, `IslandScreen`, `IslandPlacement`) —
-  turning `NSScreen` into a notch rect, and deciding which displays get an island at all (only
-  notched ones; see PROGRESS.md). The resolver is pure
+  turning `NSScreen` into a notch rect, and deciding which displays get an island at all — only
+  notched ones, which overrides the brief's §1/§4.3 and is recorded in `docs/ARCHITECTURE.md`. The
+  resolver is pure
   arithmetic with no AppKit dependency, so display-arrangement maths is unit-testable against
   captured real-hardware values.
 - **The island outline** (`ContinuousCorner`, `IslandShapeGeometry`, `IslandShapeMetrics`) — the

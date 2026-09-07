@@ -46,7 +46,7 @@ import AppKit
 /// does the ordering, so nothing surfaced it. That is a real discrepancy between what
 /// `OverlaySpace.swift`'s comment claims and what the window server holds, and it is **deliberately
 /// not fixed here**: the island's behavior is verified on hardware at the level it is actually
-/// running at, and changing it is a separate change with its own probe. See PROGRESS.md.
+/// running at, and changing it is a separate change with its own probe.
 ///
 /// ## Private API, and the shape that makes it safe
 ///

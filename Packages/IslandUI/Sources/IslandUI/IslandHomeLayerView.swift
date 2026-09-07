@@ -382,8 +382,15 @@ struct IslandHomeLayerView: View {
 
     /// Apple's badge for the playing track, or nil — which is also the answer to "does the column
     /// have a badge row", so the drawing and the height are one question asked once.
+    ///
+    /// **Nothing playing takes the badge with it**, on `IslandHomeLayout.drawsFormatRow`'s rule:
+    /// the format arrives on the queue's clock and outlives the track that carried it, so without
+    /// this the column said "Not playing" over the last song's "Lossless".
     private var audioBadge: NSImage? {
-        nowPlaying?.audioFormat.flatMap { AudioFormatBadge.image(for: $0.kind) }
+        guard IslandHomeLayout.drawsFormatRow(
+            hasTrack: content != nil, hasFormat: nowPlaying?.audioFormat != nil
+        ) else { return nil }
+        return nowPlaying?.audioFormat.flatMap { AudioFormatBadge.image(for: $0.kind) }
     }
 
     /// The cover's own accent, or the palette's where there is no cover to take one from.

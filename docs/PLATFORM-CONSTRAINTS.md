@@ -202,7 +202,7 @@ Never invent a symbol.
   timer anywhere, and a persistent readout is deliberately not shipped. Zero means "not reported",
   never "flat": a device genuinely at 0% has disconnected.
 - **Display brightness *is* readable, and it pushes — this corrects a claim that shipped through
-  1.3.0.** Four release notes, PROGRESS.md and `SystemHUDBrightness` all said brightness had no
+  1.3.0.** Four release notes and `SystemHUDBrightness` all said brightness had no
   route on Apple Silicon **and no change notification anywhere**; the second half was the
   load-bearing one, because a value nothing announces cannot drive a HUD however well it reads.
   Both halves are false. `DisplayServicesGetBrightness` (DisplayServices.framework, private) returns
@@ -235,8 +235,8 @@ Never invent a symbol.
   (32768/65536, 1488/2047, 381794/1599999) and **not one of them moved a digit** while real
   brightness went 0.835 → 0.20 → 1.00 → 0.67. `IOServiceAddInterestNotification` on that node
   returns `KERN_SUCCESS` and never fires. `CoreDisplay_Display_GetUserBrightness` answers a constant
-  `1.0000`. PROGRESS.md previously recorded the registry property as "could not be shown to track
-  the panel, so it may be a constant"; it is not a maybe.
+  `1.0000`. The registry property was previously recorded as "could not be shown to track the panel,
+  so it may be a constant"; it is not a maybe.
 - **Synthesized brightness keys do not change brightness on Apple Silicon, and that invalidated the
   earlier measurement.** An `NSEventTypeSystemDefined` subtype-8 media key for
   `NX_KEYTYPE_BRIGHTNESS_UP`/`DOWN` posted to `kCGHIDEventTap` from a process with
@@ -855,7 +855,7 @@ Never invent a symbol.
   and do nothing.
   `OverlaySpace.swift`'s comment still claims `Int32.max`, and the discrepancy is **deliberately not
   fixed**: the island's behavior is verified on hardware at the level it is actually running at, and
-  changing it is a separate change with its own probe. See PROGRESS.md.
+  changing it is a separate change with its own probe.
 - **Suppressing Apple's HUDs: consuming the key at `.cghidEventTap` works — measured 2026-08-30**,
   reversing the two objections that made "ship alongside the system HUD" the answer.
   `HUDConsumeSelfTest` (`--hud-consume-test`), signed Debug build with Accessibility granted, macOS
@@ -891,8 +891,12 @@ Never invent a symbol.
   **unconditionally** at every launch before any setting is read, so a crash costs the HUD until
   Isleta next starts rather than until logout; `resume()` is synchronous and runs first in
   `applicationWillTerminate` (a detached `Task` never completes during termination — the
-  `applicationWillTerminate` trap in `docs/TRAPS.md` again); and the feature is off by default. The
-  way back, if it is judged too expensive, is `suppressible = []`.
+  `applicationWillTerminate` trap in `docs/TRAPS.md` again); and nothing is suppressed without the
+  Accessibility grant. **The third mitigation used to be "and the feature is off by default", and it
+  is gone as of 2026-09-07**: both switches now default to on, so this exposure reaches users who
+  never went looking for them. The reversal is the owner's, taken with the cost named, and the
+  permission prompt at first run is what carries the consent instead. The way back, if it is judged
+  too expensive, is `suppressible = []`.
   **Nothing polls.** The reference implementation this was taken from (`~/Sites/Atoll`,
   `SystemOSDManager`) re-freezes each respawn from a 150 ms–1 s watcher, because the helper is
   jetsam-exited when idle and respawned on the next key; §9 forbids that outright. Isleta checks

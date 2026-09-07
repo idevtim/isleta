@@ -1022,7 +1022,7 @@ public final class IslandScreenModel {
         #if DEBUG
         // The control arm, for the paired A/B this change was measured with — `--hitch-legacy-width`
         // puts the pages back on the dragged shape so the two can be interleaved in one binary,
-        // which `docs/PERF.md` asks of every comparison here. Debug only, like `--hitch-no-icons`.
+        // which `docs/PERFORMANCE.md` asks of every comparison. Debug only, like `--hitch-no-icons`.
         if Self.usesLegacyContentWidth { return contentMetrics.bodySize.width }
         #endif
         return undraggedMetrics(for: contentForm).bodySize.width
@@ -1718,7 +1718,8 @@ public final class IslandScreenModel {
     ///
     /// Left as a note rather than deleted silently, because "raise the shared clock rate" is the
     /// obvious first idea for anything else that wants to move, and "give it its own display link"
-    /// is the obvious second one. Both are wrong. See PERF.md's 9.6 correction.
+    /// is the obvious second one. Both are wrong — see `docs/PERFORMANCE.md` on where per-frame
+    /// drawing's cost actually comes from.
 
     /// Applies a change to the inputs and animates whatever presentation change falls out of it.
     ///

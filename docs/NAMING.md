@@ -17,8 +17,8 @@ need no glossary.
 `UserDefaults` key, or in a test name.** DynamicLake's module names — DynaKeys, DynaMusix,
 DynaGlance, DynaClip, DynaDrop, DynaConnect, DynaSwitcher, DynaCall, DynaBoats, Liqoria, miniLake,
 Slim Player — and Alcove's are theirs. They are catalogued in an unpublished competitive analysis,
-because naming the thing you are comparing against is what analysis is; a stage in `PROGRESS.md`
-or a symbol in the source is a different act.
+because naming the thing you are comparing against is what analysis is; a milestone in the log or a
+symbol in the source is a different act.
 
 One had reached the code: **`miniLake` shipped as an `AppearanceSettings` field, a `UserDefaults`
 key, a test suite and a user-facing switch label.** It became `compactIsland` at schema 12, with

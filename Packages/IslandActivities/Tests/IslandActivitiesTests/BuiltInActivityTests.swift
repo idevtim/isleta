@@ -35,8 +35,8 @@ struct BuiltInActivityTests {
             // The 2.0 kinds that end when their subject ends. A call hangs up, a conversion
             // finishes, a screen stops being shared, and a glance is dismissed — in each the source
             // knows, so an expiry would be Isleta guessing over the top of something that has the
-            // answer. The glance is here for the reason the recents list keeps its ground
-            // (PROGRESS.md): it is read, not glanced at.
+            // answer. The glance is here for the reason the recents list keeps its ground: it is
+            // read, not glanced at.
             #expect(activity.expiry == .never)
         case .calendarAlert, .meeting, .power, .focusChanged:
             // Four moments with nothing to retract them. The meeting is the one to watch: it is the

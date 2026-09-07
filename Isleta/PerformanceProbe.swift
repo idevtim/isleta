@@ -56,7 +56,7 @@ final class PerformanceProbe {
     }
 
     /// `--perf-report <seconds>`: idle for the given window, print a report, exit. Used to produce
-    /// the numbers in PERF.md without leaving a sampler in the shipping path.
+    /// the numbers §9 is checked against, without leaving a sampler in the shipping path.
     static func reportModeDuration() -> TimeInterval? {
         let arguments = ProcessInfo.processInfo.arguments
         guard let index = arguments.firstIndex(of: "--perf-report"),

@@ -231,6 +231,19 @@ struct HomeLayoutTests {
                 > IslandHomeLayout.contentHeight(eventCount: 0, hasOverflow: false))
     }
 
+    /// **No track, no badge** — whatever format the player last reported.
+    ///
+    /// `NowPlayingController.audioFormat` arrives on the queue's clock rather than the snapshot's,
+    /// so it can outlive the song it describes; a column already saying "Not playing" was carrying
+    /// the last one's "Lossless" underneath it. The shell asks this to size the island and the view
+    /// asks it to draw, which is why the rule is here rather than in either of them.
+    @Test("the badge row needs a track as well as a format")
+    func theBadgeRowNeedsATrack() {
+        #expect(IslandHomeLayout.drawsFormatRow(hasTrack: true, hasFormat: true))
+        #expect(!IslandHomeLayout.drawsFormatRow(hasTrack: false, hasFormat: true), "not playing")
+        #expect(!IslandHomeLayout.drawsFormatRow(hasTrack: true, hasFormat: false), "a stream")
+    }
+
     /// The row has to hold Apple's badge without resizing it — they are 18pt tall and a trademark
     /// is not ours to shrink. See `AudioFormatBadge`.
     @Test("the badge row is tall enough for Apple's badge")

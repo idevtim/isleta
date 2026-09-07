@@ -210,7 +210,7 @@ public struct GlanceSchedulePlan: Equatable, Sendable {
     /// empty tomorrow counts as something (`showsTomorrowEmpty`).
     public var showsTomorrow: Bool = false
 
-    /// Whether today says, in one line, that it has nothing on it.
+    /// What today's own line says, or that there isn't one.
     ///
     /// **Reported from use, 2026-08-31: "some days are missing events / maybe they are truly
     /// empty."** They were truly empty, and the column said nothing about it — a day with nothing
@@ -220,8 +220,31 @@ public struct GlanceSchedulePlan: Equatable, Sendable {
     /// `CalendarAccess` exists to prevent one level up: **absence has to be stated, because a
     /// surface that just stops is read as broken.**
     ///
-    /// It costs a row, charged against `entryCapacity` like everything else here — see `plan`.
-    public var showsTodayEmpty: Bool = false
+    /// **Two sentences rather than one, from 2026-09-07.** A day that never had a timed event and a
+    /// day whose events are all behind the user are both "nothing to come", and one line for the
+    /// pair had to be wrong about one of them: this column lists the *whole* day, past included, so
+    /// "No events today" under a morning of finished meetings reads as the calendar having lost
+    /// them. `TodayNote` is which of the two it is, decided once here rather than by the view
+    /// re-reading the events against the clock.
+    ///
+    /// Either line costs a row, charged against `entryCapacity` like everything else here — see
+    /// `plan`.
+    public var todayNote: TodayNote = .none
+
+    /// What today has left, in one line.
+    public enum TodayNote: Equatable, Sendable {
+
+        /// Something is still to come, so the events say it themselves and no line is drawn.
+        case none
+
+        /// The day carries no timed event at all. Today's all-day pills do not count — they are in
+        /// the other column, and a day whose only entry is "Sam's birthday" still has no hours in
+        /// it, which is what this column is.
+        case noEvents
+
+        /// It had them, and they have all finished.
+        case noMoreEvents
+    }
 
     /// The same for tomorrow, drawn under the heading. `showsTomorrow` is true whenever this is.
     public var showsTomorrowEmpty: Bool = false
@@ -239,7 +262,7 @@ public struct GlanceSchedulePlan: Equatable, Sendable {
     /// Whether the right column has anything in it at all — a stated absence included, which is
     /// the point of stating it.
     public var hasEntries: Bool {
-        !today.isEmpty || showsTodayEmpty || showsTomorrow
+        !today.isEmpty || todayNote != .none || showsTomorrow
     }
 
     /// Every row the column draws, so the one invariant this type has — that it never asks for more
@@ -248,7 +271,7 @@ public struct GlanceSchedulePlan: Equatable, Sendable {
     /// adding one, which is what the fitting below is careful about.
     public var rowCount: Int {
         today.count
-            + (showsTodayEmpty ? 1 : 0)
+            + (todayNote == .none ? 0 : 1)
             + (tomorrowAllDayCount > 0 ? 1 : 0)
             + tomorrow.count
             + (showsTomorrowEmpty ? 1 : 0)
@@ -259,11 +282,16 @@ public struct GlanceSchedulePlan: Equatable, Sendable {
     /// - Parameters:
     ///   - today: everything on today, timed and all-day, in any order.
     ///   - tomorrow: the same for tomorrow.
+    ///   - now: the instant today is judged against — what separates a day with nothing on it from
+    ///     a day whose events are all behind the user. Passed in rather than read from the clock,
+    ///     for `GlanceScheduleLayerView.now`'s reason: the date block and the two lists have to
+    ///     agree, and a test has to be able to ask about any hour of any day.
     ///   - entryCapacity: how many rows the right column draws.
     ///   - pillCapacity: how many all-day pills the left column draws.
     public static func plan(
         today todayEvents: [GlanceEvent],
         tomorrow tomorrowEvents: [GlanceEvent],
+        now: Date,
         entryCapacity: Int = GlanceScheduleLayout.maximumEntries,
         pillCapacity: Int = GlanceScheduleLayout.maximumPills
     ) -> Self {
@@ -285,16 +313,25 @@ public struct GlanceSchedulePlan: Equatable, Sendable {
         var spent = plan.today.count
         var missed = todayTimed.count - plan.today.count
 
-        // **A day with nothing on it says so, and it costs a row.** Before this, an empty today was
-        // silent and the column opened at "TOMORROW" — see `showsTodayEmpty`. It is charged against
-        // the budget rather than floated above it for the reason everything here is: the island's
-        // height is agreed before the transition and there are exactly `entryCapacity` rows to
-        // spend, so a line that did not pay would be drawn outside the island.
+        // **A day with nothing left on it says so, and it costs a row.** Before this, an empty
+        // today was silent and the column opened at "TOMORROW" — see `todayNote`. It is charged
+        // against the budget rather than floated above it for the reason everything here is: the
+        // island's height is agreed before the transition and there are exactly `entryCapacity`
+        // rows to spend, so a line that did not pay would be drawn outside the island.
+        //
+        // **Anything unfinished counts as still to come**, `end` rather than `start`: a meeting the
+        // user is sitting in is not a day that is over, and a column that said so mid-standup would
+        // be wrong about the one hour it is being read in.
         //
         // Today's all-day pills do **not** count. They are in the other column, and a day whose
         // only entry is "Sam's birthday" still has no hours in it — which is what this column is.
-        if plan.today.isEmpty, spent < capacity {
-            plan.showsTodayEmpty = true
+        //
+        // The words are asked of the **whole** day and the row is asked of what is left, which is
+        // what makes the two sentences honest: a day that never had an event says so, and a day
+        // that had a morning of them says there are no more. A today whose events were squeezed out
+        // by the capacity cannot reach here at all — `spent` is the capacity in that case.
+        if !todayTimed.contains(where: { $0.end > now }), spent < capacity {
+            plan.todayNote = todayTimed.isEmpty ? .noEvents : .noMoreEvents
             spent += 1
         }
 

@@ -67,7 +67,8 @@ Load-bearing decisions, in the order they matter:
 - **The bottom corners curve inward**, following the physical cutout's own, and the shape never
   paints outside `bodySize`. An earlier version flared them outward to look "carved"; on hardware
   that put two points on the bottom of the island and read as a shape pasted *over* the notch. See
-  PROGRESS.md — this overrides §4.4 of the brief. `ContinuousCorner` still supports concave corners.
+  the shape's own tests — this overrides §4.4 of the brief. `ContinuousCorner` still supports
+  concave corners.
 - **Only displays with a real notch get an island** (`IslandPlacement.displays(from:)`), overriding
   §1/§4.3. A Mac with no notched display at all falls back to a synthesized island on the primary
   display, or the app would have no UI on a mini/Studio/iMac.

@@ -37,14 +37,14 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.1.0</string>
+	<string>2.1.1</string>
 	<!-- Must equal CFBundleShortVersionString above. Sparkle compares CFBundleVersion, not the
 	     marketing string, so if this does not increase every existing install silently concludes
 	     it is up to date — a failure that logs nothing anywhere. Tools/release.sh checks the two
 	     rather than syncing them, because PlistBuddy would rewrite this file and strip these
 	     comments. -->
 	<key>CFBundleVersion</key>
-	<string>2.1.0</string>
+	<string>2.1.1</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>

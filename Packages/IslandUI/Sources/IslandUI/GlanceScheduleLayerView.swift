@@ -24,7 +24,8 @@ import SwiftUI
 /// **It replaced a month grid**, on 2026-08-28. Six weeks of dots answered "what does this month
 /// look like", which is a question people ask a wall planner and not a notch; what they ask the
 /// notch is what is next. The grid, its two arrows, day selection and `GlanceMonthGrid` all went
-/// with it — see PROGRESS.md, which keeps what the grid measured about EventKit.
+/// with it; what the grid measured about EventKit outlived it, in `docs/PLATFORM-CONSTRAINTS.md`
+/// and in `CalendarReading`'s own comment.
 ///
 /// **Not scrollable.** A fixed five entries and then a count, decided by `GlanceSchedulePlan`.
 /// A scrollable list here would be a *fourth* surface owning the island's vertical axis, and
@@ -48,7 +49,9 @@ struct GlanceScheduleLayerView: View {
     private var calendar: Calendar { .current }
 
     private var plan: GlanceSchedulePlan {
-        GlanceSchedulePlan.plan(today: glance.todayEvents, tomorrow: glance.tomorrowEvents)
+        GlanceSchedulePlan.plan(
+            today: glance.todayEvents, tomorrow: glance.tomorrowEvents, now: now
+        )
     }
 
     var body: some View {
@@ -252,8 +255,17 @@ struct GlanceScheduleLayerView: View {
                     entry(event)
                 }
 
-                if plan.showsTodayEmpty {
+                // **Two sentences, and which one is `GlanceSchedulePlan`'s answer rather than this
+                // view's.** The column lists the whole day, finished events included, so a day of
+                // morning meetings that are all over is not an empty day and must not be told it
+                // is — see `GlanceSchedulePlan.TodayNote`.
+                switch plan.todayNote {
+                case .none:
+                    EmptyView()
+                case .noEvents:
                     nothingOn(islandText("glance.schedule.emptyToday", "No events today"))
+                case .noMoreEvents:
+                    nothingOn(islandText("glance.schedule.noMoreToday", "No more events today"))
                 }
 
                 if plan.showsTomorrow {

@@ -39,4 +39,6 @@ hover → first frame < 16 ms · Energy impact "Low" indefinitely.
   `sample` at 1ms with no user-code stack in it, are not consistent with a process drawing 0.4% — and
   both were available for the whole of the investigation that preceded reading the sampler's own
   code. Cross-check the harness against the system's tools before believing a budget is breached.
-- Instruments (Time Profiler + Energy) at the end of every milestone, results recorded in `PERF.md`.
+- Instruments (Time Profiler + Energy) at the end of every milestone. A result is a **paired** delta
+  against an interleaved control from the same session — an unpaired number measures the machine's
+  afternoon, not the change — and it belongs in the pull request that claims it.

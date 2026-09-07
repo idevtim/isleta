@@ -5,12 +5,6 @@ import IslandKit
 import Observation
 import SwiftUI
 
-/// Something on the lock screen the pointer can be on.
-///
-/// One type for the three, because they are answering one question — "what is under the pointer
-/// right now" — and the answer is exactly one of them. Three independent booleans would be three
-/// ways for two to be true at once, which is `NowPlayingTransportView.hovered`'s reasoning; here it
-/// is also what lets a single crossing be reported for a haptic, whichever region was entered.
 /// What the lock-screen card is showing, and whether it should be on screen at all.
 ///
 /// One per screen, the way `IslandScreenModel` is, and for the same reason: two displays lock
@@ -239,14 +233,28 @@ public final class LockScreenCardModel {
         )
     }
 
-    /// Takes a pointer position and updates what the surface draws as hovered.
+    /// Takes a pointer position and updates what the surface draws as hovered, and answers whether
+    /// this sample is the one that **arrived on the island**.
     ///
-    /// **It used to return the region that was entered, and that return existed for a haptic.**
-    /// Both are gone — see `LockScreenCardView.pointerClock` for why the lock screen no longer
-    /// buzzes. What is left is the assignment, which is the half that was always doing the work:
-    /// the lit button, the widened progress line and the peeked padlock all read from these three
-    /// properties, and none of them cares whether this sample is the one that crossed.
-    public func updatePointer(_ location: CGPoint) {
+    /// That return exists for one haptic and nothing else: the pointer landing on the padlock is
+    /// the same arrival as the pointer landing on the island when the Mac is unlocked, and it gets
+    /// the same `Haptics.peek()` tap — restored 2026-09-07 on the owner's report that the locked
+    /// notch felt dead under the hand the unlocked one answers. It has to be a *crossing* rather
+    /// than the property, because there is no `mouseEntered` here to fire once: this is sampled
+    /// thirty times a second, and a tap keyed on `isHovered` would be a buzz for as long as the
+    /// pointer rested there.
+    ///
+    /// **The transport buttons and both press edges still have none**, which is the part of the
+    /// 2026-08-30 removal that stands: on a locked screen the user is looking straight at the
+    /// control they are pointing at and the lit button already says it is live, so three buzzes for
+    /// one glance at a track title is the feature announcing itself. One tap for the one arrival
+    /// the island itself would tap for is the whole of what came back.
+    ///
+    /// The three assignments are the rest, and none of them cares which sample crossed: the lit
+    /// button, the widened progress line and the peeked padlock are all a function of where the
+    /// pointer is now.
+    @discardableResult
+    public func updatePointer(_ location: CGPoint) -> Bool {
         // All three regions from one sample. One display link answers for both surfaces — they are
         // two panels but one model, and a second sampler running at 30Hz beside the first would be
         // a second clock on the idle path for a question already asked.
@@ -258,11 +266,11 @@ public final class LockScreenCardModel {
             && LockScreenCardLayout.progressFrame(inScreenFrame: frame).contains(location)
         let onIsland = isOnScreen && hoverRegion.contains(location)
 
-        // **Three assignments, and no edge detection left.** Which region the pointer *crossed into*
-        // mattered only to the haptic, which fired once per entry rather than thirty times a second
-        // for as long as the pointer rested there; with the buzz gone the crossing has no reader,
-        // and what the surface draws is a function of where the pointer is now.
-        //
+        // **One edge, and it is the island's.** Whether the pointer crossed into a *control* has no
+        // reader — the drawing is a function of where the pointer is now — so the only crossing
+        // computed is the one the tap is for, and it is computed before `isHovered` is written.
+        let didArriveOnIsland = onIsland && !isHovered
+
         // `hoveredControl` is assigned for a disabled control too, and that is deliberate: a
         // capability can flip while the pointer rests there — a track loads and skipping becomes
         // possible — and the button must be lit at that instant rather than waiting for the pointer
@@ -270,6 +278,7 @@ public final class LockScreenCardModel {
         hoveredControl = control
         isProgressHovered = onProgress
         isHovered = onIsland
+        return didArriveOnIsland
     }
 
     /// Whether the pointer is on the progress line.

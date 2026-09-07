@@ -57,7 +57,7 @@ Extracted from `CLAUDE.md`, which now carries the map rather than the record.
   it is not the disk — it is first-load signature validation, cached per-vnode. **Linked rather than
   `dlopen`ed, that whole cost lands before `main()`**: a trivial binary linking it took 0.26–0.33 s
   exec-to-exit against a fresh copy and 0.00 s without it.
-  **This explains a number already in PERF.md that had no explanation** — "400.5 ms first launch
+  **This explains a measurement that had no explanation for a release** — "400.5 ms first launch
   after a build", against a 300 ms budget met at 100–160 ms warm. It is not a build artifact and it
   is not a warm-up: it is the same mechanism, and it will happen to a user on the first launch after
   every Sparkle update. So a dependency of any size is a **launch-budget** question before it is a
@@ -83,8 +83,7 @@ Extracted from `CLAUDE.md`, which now carries the map rather than the record.
 - **A withdrawn feature is a subtraction, not a deprecation.** The code, the vocabulary case, the
   settings control, the shortcut, the strings and the tests all go, so nothing is left whose status
   a later reader has to work out. The *measurements* outlive the code, in the owning module's
-  README under "Will not own" and in `PROGRESS.md`, because a fact about an API is not a fact about
-  the feature. **Seven have gone this way**, and no doc may describe one as live, planned or
+  README under "Will not own", because a fact about an API is not a fact about the feature. **Seven have gone this way**, and no doc may describe one as live, planned or
   configurable:
 
   | Withdrawn | Date |

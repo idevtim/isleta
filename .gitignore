@@ -121,5 +121,13 @@ docs/PLAN-2.0.md
 docs/NEXT-SESSION.md
 docs/BRIEF.md
 
+# The milestone log and the raw measurement history, unpublished as of 2026-09-07. Both are running
+# logs of the project's making rather than documentation of what it is — dated entries, open
+# questions, superseded numbers, and per-milestone Instruments runs that mean nothing without the
+# session they were taken in. What survived them is in the published docs; `docs/PERFORMANCE.md`
+# carries the budget and the paired-delta rule any measurement has to satisfy.
+docs/PROGRESS.md
+docs/PERF.md
+
 # The private repo's git directory, used by Tools/private-sync.sh.
 .private.git/

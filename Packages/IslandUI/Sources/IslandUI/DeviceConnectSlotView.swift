@@ -26,7 +26,7 @@ import SwiftUI
 ///
 /// So the turn is `arrivalAngle` to zero: it comes in tilted and settles square, never approaching
 /// edge-on. That is also what the moment is — an arrival, not a process — which is the other reason
-/// it is not `repeatForever`. PERF.md's open Milestone 9.6 finding is that a small
+/// it is not `repeatForever`. The open finding behind §9's continuous-animation rule is that a small
 /// continuously-redrawing flank appears to cost the *whole* 608×200pt transparent panel a repaint;
 /// the equaliser measured 9.9% against §9's 4% animating ceiling. Under Reduce Motion it does not
 /// turn at all (§6.3), and the still frame is the same picture.

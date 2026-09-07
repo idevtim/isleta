@@ -87,8 +87,8 @@ struct IslandMaterialView: View {
     /// and the window server derives the panel's event shape from the alpha of the backing store —
     /// so every point the shadow reaches is a point the window server may start routing to us, where
     /// `IslandHitTestView` will then reject it and the click will land nowhere. Whether the server's
-    /// threshold actually catches a shadow this faint is a measurement rather than a guess: see
-    /// PROGRESS.md, and `PassThroughSelfTest` is what answers it.
+    /// threshold actually catches a shadow this faint is a measurement rather than a guess, and
+    /// `PassThroughSelfTest` is what answers it — on hardware, on every launch.
     static let shadowRadius: CGFloat = 10
     static let shadowOpacity: Double = 0.34
     static let shadowOffset: CGFloat = 3

@@ -9,9 +9,9 @@ import SwiftUI
 /// Every other activity describes itself as data in four slots and `ActivityContentView` draws it,
 /// which is what keeps IslandActivities free of SwiftUI. The glance cannot: it draws a *list* of
 /// events, each with a time, a color and possibly a button that opens a URL, and the four-slot
-/// vocabulary has no word for any of that. PROGRESS.md already sanctions the escape hatch — "a
-/// bespoke view belongs in IslandUI keyed on `ActivityKind`, never as an `AnyView` smuggled through
-/// IslandActivities" — and this is the state that view reads.
+/// vocabulary has no word for any of that. The escape hatch is the standing one — a bespoke view
+/// belongs in IslandUI keyed on `ActivityKind`, never as an `AnyView` smuggled through
+/// IslandActivities — and this is the state that view reads.
 ///
 /// So the glance activity publishes its two flanks and its compact badge as ordinary
 /// `ActivityContent` (the glyph and the next time, which is what the collapsed island shows), and

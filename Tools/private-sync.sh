@@ -50,6 +50,8 @@ PATHS=(
   "docs/PLAN-2.0.md"
   "docs/NEXT-SESSION.md"
   "docs/BRIEF.md"
+  "docs/PROGRESS.md"
+  "docs/PERF.md"
   ".claude/settings.json"
   ".claude/skills"
 )

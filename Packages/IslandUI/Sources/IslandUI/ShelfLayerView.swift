@@ -10,9 +10,9 @@ import SwiftUI
 /// Every other activity describes itself as data and `ActivityContentView` draws it, which is what
 /// keeps IslandActivities free of SwiftUI. The shelf cannot: it draws *n* independent things, each
 /// with its own hit region, its own drag source and its own remove control, and the four-slot
-/// vocabulary has no word for that. PROGRESS.md already sanctions the escape hatch — "a bespoke
-/// view belongs in IslandUI keyed on `ActivityKind`, never as an `AnyView` smuggled through
-/// IslandActivities" — and this is it.
+/// vocabulary has no word for that. The escape hatch is the standing one — a bespoke view belongs
+/// in IslandUI keyed on `ActivityKind`, never as an `AnyView` smuggled through IslandActivities —
+/// and this is it.
 ///
 /// So the shelf activity publishes its flanks and its compact badge as ordinary `ActivityContent`
 /// (the tray glyph and the count, which is what the collapsed island shows), and publishes an

@@ -22,7 +22,10 @@ something happened and they leave on their own. A feature that announces somethi
 already looking at belongs to neither, and has seven times now been withdrawn — see below.
 
 **`docs/PROGRESS.md` is the status file** — milestones, decisions that override this brief, and open
-questions. Read it first and keep it current in the same commit as the work it describes.
+questions. Read it first and keep it current in the same commit as the work it describes. It is on
+disk and **not in the repository** (see below), so nothing published may point at it: a finding that
+belongs to the product goes in one of the files in the table below, and the log keeps the story of
+when it was found.
 
 ## Where the detail lives
 
@@ -66,6 +69,12 @@ holds the pre-open-source history:
 - `docs/PLAN-2.0.md` — the competitive analysis. It names a competitor's features throughout, which
   is what analysis is and not what a public repo should carry.
 - `docs/BRIEF.md`, `docs/NEXT-SESSION.md` — a reconstruction and a hand-off, neither authoritative.
+- `docs/PROGRESS.md`, `docs/PERF.md` — the milestone log and the raw measurement history, unpublished
+  as of 2026-09-07. Both are running logs of *this* project's making rather than documentation of
+  what it is: dated entries, open questions, superseded numbers, and per-milestone Instruments runs
+  that mean nothing without the session they were taken in. What survives them is already in the
+  files the table above points at, and `docs/PERFORMANCE.md` carries the budget and the paired-delta
+  rule a measurement has to satisfy.
 - `.claude/` — the skills and settings.
 
 **Do not cite an unpublished file from a published one.** A source comment or a doc that points at
@@ -197,7 +206,7 @@ docs above. Do not undo one without reading its entry first.
 - **A withdrawn feature is a subtraction, not a deprecation.** The code, the vocabulary case, the
   settings control, the shortcut, the strings and the tests all go, so nothing is left whose status a
   later reader has to work out — and the *measurements* outlive the code, in the module README's
-  "Will not own" and in `docs/PROGRESS.md`, because a fact about an API is not a fact about the feature.
+  "Will not own", because a fact about an API is not a fact about the feature.
   Seven have gone this way: notifications, the app switcher, the app-installed island, the disk
   island, the month grid, the player bar, downloads.
 - Every module has a `README.md` saying what it owns **and what it deliberately does not**.

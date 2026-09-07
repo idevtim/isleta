@@ -83,7 +83,7 @@ public struct Precipitation: Equatable, Sendable {
 ///
 /// ## Why this is a value and not a renderer
 ///
-/// PERF.md's 9.6 correction is the whole design: per-frame drawing from this process through
+/// §9's rule about continuous animation is the whole design: per-frame drawing from this process through
 /// SwiftUI's `Canvas`/`TimelineView` costs **17.7 % of a core and 279 MB regardless of how big the
 /// drawing is**, and the same animation handed to CoreAnimation costs **0.007–0.010 % and 14.6 MB**
 /// because the render server owns it and this process draws nothing. So the field is arithmetic
@@ -293,7 +293,7 @@ public struct PrecipitationField: Equatable {
     ///
     /// A cap rather than a pure density, because the island's body is one size today and the field
     /// is asked for whatever rectangle it is handed. Sixty-four layers is already well past the
-    /// point where a person could count them; see the measurement in PERF.md's precipitation note.
+    /// point where a person could count them, and the field was measured at this cap.
     public static let maximumDrops = 64
 
     /// The rain's lean, in radians. One constant for every intensity: wind is not what "heavy"
@@ -663,7 +663,8 @@ private extension String {
 ///
 /// ## Nothing per frame, ever
 ///
-/// This is `NowPlayingEqualiserView`'s shape and it is that shape for PERF.md's measured reason: a
+/// This is `NowPlayingEqualiserView`'s shape and it is that shape for the measured reason in
+/// `docs/PERFORMANCE.md`: a
 /// `Canvas` or a `TimelineView` here would cost 17.7 % of a core and 279 MB whether it drew forty
 /// drops or one bar, and the size of the surface does not enter into it. Everything below is
 /// `CALayer`s carrying `CAKeyframeAnimation`s that the render server runs; this process does no work

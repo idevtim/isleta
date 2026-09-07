@@ -47,9 +47,9 @@ import SwiftUI
 /// The legibility that a veil would have bought comes from the **content** instead — every word and
 /// glyph on this card carries a shadow (`textShadowOpacity`). That is local to the letters, does
 /// nothing over a dark backdrop and everything over a bright one, and leaves the material alone.
-/// `PROGRESS.md` has the five treatments that were measured on the way here and what each of them
-/// cost; the short version is that every one of them bought its contrast by darkening the glass,
-/// which is exactly what stopped it looking like Apple's.
+/// Five treatments were measured on the way here — a `.regular` material, a tint over the glass, a
+/// scrim under the content, a darker glass, and this — and every one of the four rejected bought its
+/// contrast by darkening the glass, which is exactly what stopped it looking like Apple's.
 ///
 /// Two things inherited from the synthesized island, each of which has already cost a session:
 ///
@@ -249,8 +249,8 @@ public struct LockScreenCardView: View {
                 Color.clear
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     // **`.clear`, and nothing over it.** Not `.regular`, not a tint, not a scrim —
-                    // see the type comment, and `PROGRESS.md` for the four heavier treatments that
-                    // were measured and rejected on the way here.
+                    // see the type comment for the four heavier treatments that were measured and
+                    // rejected on the way here.
                     .glassEffect(.clear, in: shape)
             }
         }
@@ -744,13 +744,17 @@ public struct LockScreenNotchView: View {
             // progress line. What this drives is the drawing: the lit button, the widened line, the
             // peeked padlock.
             //
-            // **There is no haptic on any of this, and there used to be one on each.** A tick fired
-            // on every crossing and on both press edges, which is §7's vocabulary applied to a
-            // surface that is not the island: on a locked screen the user is looking straight at
-            // the thing they are pointing at, and the lit button already says it is live. Three
-            // buzzes for one glance at a track title is the feature announcing itself, which is
-            // what the brief rules out.
-            model.updatePointer(location)
+            // **One haptic, on the one arrival, and there used to be one on each.** A tick fired on
+            // every crossing and on both press edges, which is §7's vocabulary applied to a surface
+            // that is not the island: on a locked screen the user is looking straight at the
+            // control they are pointing at, and the lit button already says it is live. Three
+            // buzzes for one glance at a track title is the feature announcing itself. What came
+            // back on 2026-09-07 is the *island's* own tap, and only it — the padlock widening
+            // under the pointer is `peek()` by any other name, and the locked notch answering
+            // nothing under a hand the unlocked one taps for is the inconsistency the user feels.
+            // `Haptics.peek()` rather than `arrival()`: same tap, and this is the island arriving,
+            // not a control inside it.
+            if model.updatePointer(location) { Haptics.peek() }
             let isDown = NSEvent.pressedMouseButtons != 0
             // `pressedMouseButtons` is a global query, not an event — see `isPressed`. The island
             // cannot act on the click; the swell under the press is the acknowledgement, and it is

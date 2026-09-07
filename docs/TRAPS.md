@@ -478,8 +478,8 @@ they name (`NotificationAXObserverSource` and the rest) are not in the tree; rea
   any log line that prints the dictionary. It identifies the user's machine and must never reach
   `IslandLog` or the export bundle — the log is emailed to strangers.
 - **Per-frame drawing through SwiftUI `Canvas`/`TimelineView` costs ~18% of a core and ~279 MB, and
-  the size of the thing drawn does not matter.** Measured 2026-08-23 across eight arms; see PERF.md's
-  9.6 section. Six bars in a **40×32** panel cost **17.83%** against the same bars in a 608×200 panel
+  the size of the thing drawn does not matter.** Measured 2026-08-23 across eight arms; the rule and
+  the equaliser's own numbers are in `docs/PERFORMANCE.md`. Six bars in a **40×32** panel cost **17.83%** against the same bars in a 608×200 panel
   at **17.72%**, with the **same 279.5 MB** — and the footprint is identical at 120, 30 and 8 Hz, so
   it is not a backing-store pool. Rate limiting does not rescue it: 8 Hz is still over §9's 4%.
   **Six `CALayer`s with a `CABasicAnimation` are 0.007–0.010% and 14.6 MB** for the same animation in

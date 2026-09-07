@@ -41,7 +41,7 @@ public struct ActivityEntry: Sendable, Identifiable {
 /// inputs elsewhere in this codebase — never a stored "currently presented" field. `presented` is
 /// still defined as the head of the order; the pin only changes what sorts to the head.
 ///
-/// **It carries its own deadline.** The two alternatives were both rejected in PROGRESS.md: a pin
+/// **It carries its own deadline.** Both alternatives were considered and rejected: a pin
 /// that holds until its activity leaves makes a volume keypress do nothing visible, and a view-level
 /// offset into the queue makes the presented activity and the displayed one differ, at which point
 /// `ActivityChange` stops describing what is on screen.
@@ -57,9 +57,9 @@ public struct ActivityPin: Equatable, Sendable {
     /// which is an activity changing place for a reason the user cannot see.
     public let placedAt: Date
 
-    /// When the pin lapses, measured from the **last interaction** rather than from the swipe —
-    /// PROGRESS.md is explicit about that, and it is the difference between a pin that survives a
-    /// user still working with the island and one that drops out from under them mid-gesture.
+    /// When the pin lapses, measured from the **last interaction** rather than from the swipe. That
+    /// is the difference between a pin that survives a user still working with the island and one
+    /// that drops out from under them mid-gesture.
     public private(set) var deadline: Date
 
     /// How much quiet the pin needs before it lapses. Carried on the pin rather than read from a
@@ -143,7 +143,7 @@ public struct ActivityStack: Sendable {
     /// sleep is exactly what it was before Milestone 2.
     public private(set) var pin: ActivityPin?
 
-    /// How long a pin holds without interaction (§5, PROGRESS.md's "~8s").
+    /// How long a pin holds without interaction (§5's "~8s").
     public static let defaultPinHold: Duration = .seconds(8)
 
     /// The user's dwell multiplier (`IsletaConfiguration.activityDwellScale`), applied to every
@@ -406,7 +406,7 @@ public struct ActivityStack: Sendable {
     /// Holds `id` at the head of the order until the pin lapses. What a swipe does.
     ///
     /// Pinning an id that is not on the stack records **nothing**. That is the "a pin must not
-    /// resurrect an activity that has expired out of the stack" rule from PROGRESS.md, enforced at
+    /// resurrect an activity that has expired out of the stack" rule, enforced at
     /// the only two points where it can be violated: here, and in `removeExpired`. A pin kept for
     /// an absent id would sit waiting, and the next time that source re-presented — the next track,
     /// the next volume keypress — the activity would jump the queue for a swipe the user made
@@ -564,8 +564,8 @@ public struct ActivityStack: Sendable {
     /// doing nothing.
     ///
     /// The one thing that still outranks a pin is an interrupting activity that arrived **after**
-    /// the user swiped. That is PROGRESS.md's "an interrupting activity can still preempt a pinned
-    /// one", read at the resolution the failure actually happens at. Two coarser rules were
+    /// the user swiped — "an interrupting activity can still preempt a pinned one", read at the
+    /// resolution the failure actually happens at. Two coarser rules were
     /// considered:
     ///
     /// - *Interrupting always outranks a pin.* Simpler, and wrong in a way the user feels: swiping
@@ -573,7 +573,7 @@ public struct ActivityStack: Sendable {
     ///   by itself a second later — the swipe and its result separated by long enough to read as
     ///   two unrelated events.
     /// - *The pin always outranks everything.* Then pressing the volume key does nothing visible,
-    ///   which is the alternative PROGRESS.md rejected the sticky pin for in the first place.
+    ///   which is the alternative the sticky pin was rejected for in the first place.
     ///
     /// Both dates being read here are already on the stack; nothing is stored to support this.
     /// Re-presenting an id refreshes its `insertedAt`, so a second press of the volume key is a new

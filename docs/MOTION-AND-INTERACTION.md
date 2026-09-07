@@ -140,6 +140,15 @@ tracking region tracks the largest state reachable without another click — too
 growing under a stationary pointer hands itself a `mouseExited` and oscillates; too large and it
 stays peeked with the pointer far away over transparent pixels.
 
+**The locked notch taps too, and only it does** (2026-09-07). The padlock's surface widens under an
+arriving pointer exactly as the island does, so it performs the same `Haptics.peek()` — but there is
+no `mouseEntered` on a locked screen to fire it once, so the arrival is an *edge* computed inside
+`LockScreenCardModel.updatePointer`, which is sampled thirty times a second and returns true only on
+the sample that crossed in. Nothing else on that surface taps: the transport buttons, the progress
+line and both press edges each had a tick until 2026-08-28 and they stay gone — the user is looking
+straight at the control they are pointing at, and the lit wash already says it is live. See
+`Packages/IslandUI/README.md`.
+
 The system suppresses haptics unless the user is touching the trackpad, so mouse users correctly get
 the animation and no tap — don't add device detection. `Haptics.isEnabled` is the single off switch
 until IslandSettings exists. Peek is deliberately small (`IslandLayout.peekWidthGrowth` /
@@ -468,8 +477,9 @@ wider, the schedule, is a drill-down that takes the carousel down while it is up
 `IslandPageHeight`'s argument in the other axis, and the rain field is where the two meet: it is the
 one layer inside a page that is really a function of the island's *height*, and it now takes its
 ground from its caller, because `contentMetrics` while the weather page is a **neighbour** is the
-shape of the page being left. `docs/PERF.md` has the paired numbers and the two things that were
-measured and found not to be the cause.
+shape of the page being left. Measured as a paired delta against an interleaved control, which is
+what `docs/PERFORMANCE.md` asks of any number claimed here; two other suspects were measured on the
+same run and found not to be the cause.
 
 **`--swipe-test` walks it.** It turns three pages and back, then swipes twice with no pause between
 and checks *both* turns landed — a one-step check cannot tell "it turned twice" from "it turned once

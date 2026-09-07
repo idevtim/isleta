@@ -40,7 +40,7 @@ import AppKit
 /// - **Nothing is above it.** `Int32.max` puts the island over Mission Control's own chrome. On a
 ///   real notch the closed island is inside the hardware cutout and covers nothing; on a synthesized
 ///   island it covers the center of the space-label row — boring.notch #1059, mitigated on their
-///   `dev` branch with `.transient` on non-notched displays. Not yet done here; see PROGRESS.md.
+///   `dev` branch with `.transient` on non-notched displays. Not yet done here.
 @MainActor
 public protocol OverlaySpaceHost: AnyObject {
     /// Whether windows handed to `host(_:)` actually land in a private space. False for the

@@ -181,7 +181,11 @@ public enum SystemHUDSuppression {
     ///   setting is read, so a crash costs the HUD until Isleta next starts rather than until logout.
     /// - `resume()` is synchronous and runs first in `applicationWillTerminate`, which the app's
     ///   SIGTERM/SIGINT sources also reach.
-    /// - The feature is off by default, so nobody who has not asked for it can be exposed at all.
+    /// - Nothing is suppressed without the Accessibility grant, which the first run asks for by
+    ///   name and the user can withdraw in System Settings. **That grant is now the whole of the
+    ///   consent**: the feature was off by default until 2026-09-07 and is on from then, so the
+    ///   exposure below reaches users who never went looking for the switch. The reversal is the
+    ///   owner's, taken with this paragraph in front of them.
     ///
     /// It is still an uninstall away from a Mac with no volume HUD and no Isleta to repair it. If
     /// that is judged too expensive later, the way back is `suppressible = []` — the machinery below
@@ -207,9 +211,9 @@ public enum SystemHUDSuppression {
     /// where the menu bar is, and that is the only panel measured.
     ///
     /// **Ability is not the same as doing it.** Nothing is suppressed until the app shell turns it
-    /// on from `IsletaConfiguration.suppressSystemHUDs`, which is off by default — CLAUDE.md's first
-    /// condition. This set says what *could* be, so a UI can offer it honestly; `apply(enabled:)` is
-    /// what says what is.
+    /// on from `IsletaConfiguration.suppressSystemHUDs` — on by default since 2026-09-07, and still
+    /// gated on the Accessibility grant at `SourceHub`. This set says what *could* be, so a UI can
+    /// offer it honestly; `apply(enabled:)` is what says what is.
     public static let suppressible: Set<SystemHUD> = [.volume, .mute, .brightness]
 
     /// Why `hud` is not suppressed, in words meant for a user reading a grayed-out switch.

@@ -756,6 +756,12 @@ public final class NowPlayingController {
         canSkipBackFifteen = false
         canSkipForwardFifteen = false
         playbackRate = nil
+        // With the track it describes. This arrives on the **queue's** clock — see
+        // `applyAudioFormat` — and the queue is republished only when its window changes, so a
+        // player that stops mid-list never pushes a queue again and the badge stood there over
+        // "Not playing" until it was cleared here. A format is a fact about a song, and there
+        // isn't one.
+        audioFormat = nil
         // **`outputDevices` is deliberately not cleared.** It is a fact about the machine, not about
         // the track — the Mac still has speakers when the music stops — and clearing it would empty
         // the Output tab every time playback ended.

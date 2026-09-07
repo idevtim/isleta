@@ -54,8 +54,8 @@ file to read for the area you're about to change. The short version:
 | claim something is fast enough | `docs/PERFORMANCE.md` |
 | add a dependency, use a private API, or add a persistence layer | `docs/WORKING-AGREEMENTS.md` |
 
-`docs/PROGRESS.md` is the status file — milestones, decisions that override the brief, and open
-questions. `docs/PERF.md` holds the measurements.
+The milestone log and the raw measurement history are the maintainer's and are not in this
+repository — what came out of them lives in the files above, which is where a claim is checked.
 
 ## Making changes
 
@@ -109,7 +109,8 @@ These are build-failing thresholds, not aspirations:
 > idle CPU < 0.3% · animating < 4% · resident memory < 60 MB · cold launch to visible < 300 ms ·
 > hover → first frame < 16 ms · Energy impact "Low" indefinitely
 
-`Isleta.app --perf-report 60` measures against them. Record results in `docs/PERF.md`.
+`Isleta.app --perf-report 60` measures against them, and `docs/PERFORMANCE.md` says what a
+measurement has to be paired against before it means anything. Put the numbers in the pull request.
 
 ## Tests
 

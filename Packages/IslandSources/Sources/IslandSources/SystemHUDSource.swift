@@ -210,10 +210,11 @@ public final class SystemHUDSource: ActivitySource {
 
     /// Whether Isleta is replacing the volume keys rather than watching them.
     ///
-    /// Set by the app shell from `IsletaConfiguration.suppressSystemHUDs`, and **off by default** —
-    /// CLAUDE.md's first condition for suppression, and the reason this is a stored flag rather than
-    /// a capability the source assumes. Changing it restarts the tap, because `CGEvent.tapCreate`
-    /// takes `.listenOnly` / `.defaultTap` at creation.
+    /// Set by the app shell from `IsletaConfiguration.suppressSystemHUDs` — **on by default since
+    /// 2026-09-07**, and gated at `SourceHub` on the Accessibility grant, which is what the consent
+    /// now rests on. Still a stored flag rather than a capability this source assumes: the user can
+    /// put Apple's HUD back with one switch. Changing it restarts the tap, because
+    /// `CGEvent.tapCreate` takes `.listenOnly` / `.defaultTap` at creation.
     /// Whether Isleta replaces Apple's brightness HUD rather than appearing beside it.
     ///
     /// **Separate from `replacesVolumeKeys`, not folded into it**, because the two carry different
@@ -556,7 +557,7 @@ public final class SystemHUDSource: ActivitySource {
     /// One callback from the brightness ramp.
     ///
     /// `Date()` rather than an injected clock, matching every other deadline in this codebase —
-    /// see PROGRESS.md on why activity deadlines are `Date` and not a monotonic clock. The
+    /// see `ActivityContent` for why activity deadlines are `Date` and not a monotonic clock. The
     /// throttle here is a hundred milliseconds; a clock step large enough to disturb it is one that
     /// has already disturbed every activity's expiry.
     private func handleBrightness(_ level: Double) {

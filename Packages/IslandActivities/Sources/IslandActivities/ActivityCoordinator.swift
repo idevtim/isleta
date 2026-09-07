@@ -171,8 +171,8 @@ public final class ActivityCoordinator {
 
     /// Restarts the pin's hold, because the user just did something to the island.
     ///
-    /// Separate from `cycle` so hovering and clicking count as interaction too — PROGRESS.md says
-    /// the eight seconds runs from the last interaction, not from the swipe.
+    /// Separate from `cycle` so hovering and clicking count as interaction too: the eight seconds
+    /// run from the last interaction, not from the swipe.
     ///
     /// **This is the call that must not cost anything when nothing is pinned**, because the app
     /// shell makes it from every hover and every click. It cannot: with no pin, `refreshPin` writes

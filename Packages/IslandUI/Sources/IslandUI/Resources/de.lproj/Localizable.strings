@@ -141,6 +141,7 @@
 "glance.schedule.emptyToday" = "Heute keine Termine";
 "glance.schedule.emptyTomorrow" = "Morgen keine Termine";
 "glance.schedule.more" = "%1$@ weitere";
+"glance.schedule.noMoreToday" = "Heute keine weiteren Termine";
 "glance.schedule.open.a11y" = "Heute und morgen anzeigen";
 "glance.schedule.openEvent.a11y" = "Öffnet den Termin in Kalender";
 "glance.schedule.tomorrow" = "Morgen";

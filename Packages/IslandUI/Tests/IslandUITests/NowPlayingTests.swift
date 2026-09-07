@@ -836,6 +836,20 @@ struct NowPlayingCoverColorTests {
         #expect(controller.barColors(increaseContrast: false) == nil)
     }
 
+    /// The badge goes with the track, and the track is what a stop takes away.
+    ///
+    /// The format rides in on the **queue's** clock, and the queue is republished only when its
+    /// window changes — so a player that stops mid-list pushes no queue again, and before this the
+    /// last song's "Lossless" stood under the "Not playing" placeholder.
+    @Test("the audio format goes with the track")
+    func resetClearsTheAudioFormat() {
+        let controller = controller()
+        controller.applyAudioFormat(AudioFormat(mediaRemoteFields: ["sampleRate": 44100]))
+        #expect(controller.audioFormat != nil)
+        controller.reset()
+        #expect(controller.audioFormat == nil)
+    }
+
     @Test("a palette read for a different number of bars is refused, not padded")
     func aMismatchedRowIsRefused() {
         let short = Array(repeating: AlbumColor(red: 1, green: 0, blue: 0), count: 3)

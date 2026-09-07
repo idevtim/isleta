@@ -141,6 +141,7 @@
 "glance.schedule.emptyToday" = "Hoy no hay eventos";
 "glance.schedule.emptyTomorrow" = "Mañana no hay eventos";
 "glance.schedule.more" = "%1$@ más";
+"glance.schedule.noMoreToday" = "Hoy no hay más eventos";
 "glance.schedule.open.a11y" = "Mostrar hoy y mañana";
 "glance.schedule.openEvent.a11y" = "Abre el evento en Calendario";
 "glance.schedule.tomorrow" = "Mañana";

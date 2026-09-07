@@ -53,10 +53,12 @@ struct SystemHUDSuppressionTests {
         #expect(SystemHUDSuppression.suppressible == [.volume, .mute, .brightness])
     }
 
-    /// **Off unless asked.** CLAUDE.md's first condition, and the reason `apply` takes the setting
-    /// rather than reading a capability and assuming consent.
-    @Test("nothing is suppressed unless the user asked for it")
-    func offByDefault() {
+    /// **The switch still governs, whichever way it ships.** The default moved to on for 2.1.1
+    /// (`IsletaConfiguration.suppressSystemHUDs`), and this is the half that did not: a user who
+    /// turns it off suppresses nothing, which is why `apply` takes the setting rather than reading a
+    /// capability and assuming consent.
+    @Test("nothing is suppressed when the switch is off")
+    func offWhenTheSwitchIsOff() {
         #expect(SystemHUDSuppression.apply(enabled: false, accessibilityGranted: true).isEmpty)
     }
 

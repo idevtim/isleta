@@ -1264,13 +1264,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // fallback, which answers nil for `.nowPlaying` — so the music page was being sized to
             // the *home* page's empty height.
             // The home page's music column gains a row when the track has a badge, so the shell has
-            // to ask the same question the view will — see `IslandHomeLayout.formatLineHeight`. Two
-            // answers here is the island sized for one arrangement and drawing another, which is
-            // the failure this whole function is careful about.
+            // to ask the same question the view will — `IslandHomeLayout.drawsFormatRow`, which is
+            // where the rule lives and why the track is half of it. Two answers here is the island
+            // sized for one arrangement and drawing another, which is the failure this whole
+            // function is careful about.
             return IslandPageHeight.contentHeight(
                 for: page ?? pages.current,
                 glance: glance,
-                hasAudioFormat: nowPlaying?.controller.audioFormat != nil
+                hasAudioFormat: IslandHomeLayout.drawsFormatRow(
+                    hasTrack: nowPlayingContent != nil,
+                    hasFormat: nowPlaying?.controller.audioFormat != nil
+                )
             )
         }
 

@@ -145,7 +145,7 @@ struct NowPlayingArtworkView: View {
 ///
 /// It was a `Canvas` inside a `TimelineView(.animation)` until 2026-08-23, and that cost **17.7 % of
 /// a core and 279 MB** — §9's whole animating budget four times over, and its memory budget four
-/// times over. The correction in PERF.md is the part worth carrying: the cost is **not** a function
+/// times over. The correction is the part worth carrying: the cost is **not** a function
 /// of how big the animating view or its panel is. A 40×32pt panel drawing the same six bars measured
 /// 17.83 % against the 608×200pt panel's 17.72 %, with the same 279.5 MB, and `.drawingGroup()`
 /// changed neither. So "make the animating thing smaller" is not a lever that exists, and rate

@@ -145,11 +145,21 @@ public struct IsletaConfiguration: Equatable, Sendable {
     /// the volume keys and `SystemVolumeControl` does what they would have done — measured on
     /// 2026-08-30, so this is that condition being met rather than being forgotten.
     ///
-    /// **False by default**, which is CLAUDE.md's first condition for suppression and not a
-    /// nicety: turning it on means Isleta becomes the implementation of the volume keys, and an app
-    /// that does that to somebody who never asked has taken their volume keys away.
+    /// **True as of 2026-09-07, and it was false for the whole of 2.0 and 2.1.** The old default was
+    /// the brief's first condition for suppression — an app that becomes the implementation of the
+    /// volume keys for somebody who never asked has taken their volume keys away — and the owner
+    /// reversed it knowingly, on the ground that a user who installs an app whose whole subject is
+    /// the notch has asked for the notch to be where the volume goes. The condition it replaces is
+    /// **consent through the permission**: nothing is suppressed until Accessibility is granted
+    /// (`SourceHub` gates both flags on `AXIsProcessTrusted()`), the first run asks for it by name,
+    /// and one switch in Settings puts Apple's HUD back.
     ///
-    /// Volume and mute only. Brightness keeps Apple's HUD — see `SystemHUDSuppression.suppressible`.
+    /// What the reversal costs is stated where the mechanism is (`SystemHUDSuppression`,
+    /// `docs/PLATFORM-CONSTRAINTS.md`): a `SIGSTOP` outlives the process that sent it, so a
+    /// force-quit or a panic now leaves Apple's HUD frozen for users who never opted in, until
+    /// `SystemOSDSuppressor.repairAtLaunch()` thaws it at Isleta's next launch.
+    ///
+    /// Volume and mute. Brightness is its own flag below — see `SystemHUDSuppression.suppressible`.
     public var suppressSystemHUDs: Bool
 
     /// Whether Isleta replaces Apple's brightness HUD instead of appearing beside it.
@@ -162,13 +172,15 @@ public struct IsletaConfiguration: Equatable, Sendable {
     /// failure. Folding them into one switch would make accepting the cheaper risk mean accepting
     /// the dearer one.
     ///
-    /// False by default, for `suppressSystemHUDs`'s reason and more so.
+    /// **True as of 2026-09-07**, with `suppressSystemHUDs` and on the same reasoning. It stays a
+    /// separate flag: the risks are still different sizes, and a user who wants Apple's brightness
+    /// HUD back must be able to have it without giving up the volume one.
     public var suppressBrightnessHUD: Bool
 
     public init(
         schemaVersion: Int = IsletaConfiguration.currentSchemaVersion,
-        suppressSystemHUDs: Bool = false,
-        suppressBrightnessHUD: Bool = false,
+        suppressSystemHUDs: Bool = true,
+        suppressBrightnessHUD: Bool = true,
         toggleHotKey: HotKeyBinding = .toggleIsland,
         shortcuts: Shortcuts = Shortcuts(),
         sources: SourceToggles = SourceToggles(),
@@ -245,7 +257,7 @@ public struct IsletaConfiguration: Equatable, Sendable {
     /// **Version 22 removes `sources.transfers`.** Downloads are withdrawn — the folder watcher,
     /// the source, `ActivityKind.transfer` and the settings row — so the switch goes with the kind
     /// it gated rather than being left as a key nothing reads.
-    public static let currentSchemaVersion = 24
+    public static let currentSchemaVersion = 25
 
     /// What a machine that has never opened Settings runs with.
     public static let defaults = IsletaConfiguration()

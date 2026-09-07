@@ -298,11 +298,6 @@ struct LockScreenSurfaceTests {
     }
 
     /// Hover follows the pointer, in and out, and is idempotent while it rests inside.
-    ///
-    /// This asserted a *crossing* until the lock screen's haptics were removed — `updatePointer`
-    /// answered the region entered, once per entry, so a buzz could not repeat thirty times a
-    /// second. With no buzz to fire there is no edge to report, and what is left is the property
-    /// the drawing reads.
     @MainActor
     @Test("hover follows the pointer in and out of the region")
     func hoverFollowsThePointer() {
@@ -319,6 +314,43 @@ struct LockScreenSurfaceTests {
         #expect(model.isHovered, "still inside")
         model.updatePointer(outside)
         #expect(!model.isHovered, "and left")
+    }
+
+    /// The arrival is answered **once per entry**, which is the whole reason it is a return value
+    /// and not `isHovered`.
+    ///
+    /// This is what the haptic fires on — the same `Haptics.peek()` tap the unlocked island
+    /// performs when the pointer lands on it. The surface is sampled thirty times a second, so a
+    /// tap keyed on the property would buzz for as long as the pointer rested on the padlock.
+    @MainActor
+    @Test("arriving on the island is reported once, on the sample that crossed")
+    func arrivalIsReportedOncePerEntry() {
+        let model = LockScreenCardModel()
+        model.screen = Self.notched
+        model.isLocked = true
+
+        let inside = CGPoint(x: Self.notched.notch.rect.midX, y: Self.notched.frame.maxY - 8)
+        let outside = CGPoint(x: 10, y: 10)
+
+        #expect(model.updatePointer(inside), "the sample that crossed in")
+        #expect(!model.updatePointer(inside), "resting there is not a second arrival")
+        #expect(!model.updatePointer(outside), "leaving is not one either")
+        #expect(model.updatePointer(inside), "and coming back is")
+    }
+
+    /// An unlocked Mac has nothing there to arrive on, so no tap can be asked for — otherwise a
+    /// pointer sitting where the island would be buzzes the moment the Mac locks under it.
+    @MainActor
+    @Test("no arrival is reported while the surface is off screen")
+    func arrivalNeedsTheSurfaceOnScreen() {
+        let model = LockScreenCardModel()
+        model.screen = Self.notched
+        let inside = CGPoint(x: Self.notched.notch.rect.midX, y: Self.notched.frame.maxY - 8)
+
+        #expect(!model.updatePointer(inside), "not locked, so nothing is there to arrive on")
+
+        model.isLocked = true
+        #expect(model.updatePointer(inside), "and now there is")
     }
 
     /// An unlocked Mac has no surface, so a pointer sitting where the island would be must not

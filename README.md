@@ -11,7 +11,7 @@
 [tryisleta.com](https://tryisleta.com) &nbsp;·&nbsp; [What's new](release-notes/) &nbsp;·&nbsp; [Contributing](CONTRIBUTING.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.1.1-blue.svg)
 ![Platform](https://img.shields.io/badge/macOS-26%2B-lightgrey.svg)
 ![Silicon](https://img.shields.io/badge/silicon-Apple-black.svg)
 ![Price](https://img.shields.io/badge/price-free-brightgreen.svg)
@@ -325,9 +325,10 @@ Every package has a `README.md` saying what it owns **and what it deliberately d
 **The docs are the interesting part.** Almost every entry in them was measured on real hardware,
 most of it after a session was lost to the thing it warns about. `docs/PLATFORM-CONSTRAINTS.md` and
 `docs/TRAPS.md` in particular are a long list of macOS APIs that return `success` and do nothing.
-`CLAUDE.md` is the map that says which file to read before touching which area. `docs/PROGRESS.md`
-records what was **withdrawn** as carefully as what shipped, because a removed feature is a
-decision a later reader has to be able to find.
+`CLAUDE.md` is the map that says which file to read before touching which area. Each module's
+`README.md` records what that module **will not own** as carefully as what it does, because a
+withdrawn feature is a decision a later reader has to be able to find — seven of them have gone that
+way, and the measurements behind them outlived the code.
 
 </details>
 

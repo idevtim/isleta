@@ -85,8 +85,8 @@ struct ActivityPinTests {
 
     // MARK: - The pin against the rest of the stack
 
-    /// PROGRESS.md's "an interrupting activity can still preempt a pinned one", at the resolution
-    /// it actually matters: the keypress the user just made preempts, and it does so *immediately*
+    /// "An interrupting activity can still preempt a pinned one", at the resolution it actually
+    /// matters: the keypress the user just made preempts, and it does so *immediately*
     /// rather than after the pin lapses.
     @Test("an interrupting activity arriving after the swipe preempts the pin")
     func interruptingArrivingLaterPreempts() {
@@ -216,7 +216,7 @@ struct ActivityPinTests {
 
     // MARK: - Expiry
 
-    /// The pin's own deadline, which is the cost PROGRESS.md accepted: a second reason for the
+    /// The pin's own deadline, which is the cost the design accepted: a second reason for the
     /// island to move on its own. It arrives as an ordinary `ActivityChange`.
     @Test("a pin lapses on its own and ordinary ordering resumes")
     func pinLapses() {
@@ -270,7 +270,8 @@ struct ActivityPinTests {
         #expect(stack.nextDeadline == nil)
     }
 
-    /// The rule PROGRESS.md states outright. The pinned activity expiring takes the pin with it, so
+    /// The rule stated outright on `ActivityStack.pin`. The pinned activity expiring takes the pin
+    /// with it, so
     /// the next time that source presents — the next track, the next keypress — it arrives in
     /// ordinary order rather than jumping the queue for a swipe made minutes ago.
     @Test("an activity expiring out of the stack takes its pin with it")

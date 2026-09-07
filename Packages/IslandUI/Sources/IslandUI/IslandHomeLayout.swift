@@ -197,10 +197,27 @@ public enum IslandHomeLayout {
         transportButtonSize.width * 3 + transportButtonSpacing * 2
     }
 
+    /// Whether the music column draws the badge row at all.
+    ///
+    /// **A badge is a fact about the track the column is naming, so no track means no badge.** The
+    /// format outlives its track by design — `NowPlayingController.audioFormat` is pushed in on the
+    /// queue's clock rather than the snapshot's, and the queue is republished only when its window
+    /// changes — so a column already saying "Not playing" was carrying the last song's "Lossless"
+    /// underneath it, which reads as the island naming the silence.
+    ///
+    /// Stated here rather than in the view because the app shell asks the same question to size the
+    /// island (`AppDelegate.contentHeight`) and the view asks it to draw. Two answers is the island
+    /// sized for one arrangement and drawing another, which is what `musicColumnHeight` takes a
+    /// parameter to prevent in the first place.
+    public static func drawsFormatRow(hasTrack: Bool, hasFormat: Bool) -> Bool {
+        hasTrack && hasFormat
+    }
+
     /// How tall the music column wants to be.
     ///
     /// - Parameter hasAudioFormat: whether the playing track has a badge to draw under the artist.
-    ///   See `formatLineHeight` for why this is a parameter and not a constant.
+    ///   See `formatLineHeight` for why this is a parameter and not a constant, and
+    ///   `drawsFormatRow(hasTrack:hasFormat:)` for what has to be true before it can be.
     public static func musicColumnHeight(hasAudioFormat: Bool = false) -> CGFloat {
         artworkSide
             + artworkSpacing

@@ -169,7 +169,7 @@ came out as washes where the same comparison run serially is 40%.
 **Check the frame count before believing a zero.** A valid 8-cycle swipe window delivers ~960–1010
 frames; a zero-drop row with no frames beside it is a display that went to sleep.
 
-**Interleave the arms.** Everything here is a paired delta — see `docs/PERF.md` — and the numbers
+**Interleave the arms.** Everything here is a paired delta — see `docs/PERFORMANCE.md` — and the numbers
 drift upward across a long run, so only the within-pair difference means anything. `--hitch-legacy-width` is the control arm for the page
 carousel's own change and exists for exactly that (`IslandScreenModel.contentBodyWidth`), the way
 `--hitch-rows N` and `--hitch-no-icons` answer *why* rather than *whether* for the drop history.

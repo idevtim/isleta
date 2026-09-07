@@ -115,8 +115,9 @@ Every pixel Isleta draws, and every curve it moves along.
   a full one**: a `rotation3DEffect` of 360° on a flat SF Symbol makes it one pixel wide at 90° and
   draws it mirrored from 90° to 270°, so the first version of this had the AirPods vanish mid-arrival
   and come back as the wrong hardware. It was caught on a screenshot, because every frame of it is
-  individually plausible. It also never repeats: PERF.md's open Milestone 9.6 finding is that a small
-  continuously-redrawing flank appears to cost the whole transparent panel a repaint.
+  individually plausible. It also never repeats: a small continuously-redrawing flank appears to cost
+  the whole transparent panel a repaint — the open finding behind §9's rule about continuous
+  animation, in `docs/PERFORMANCE.md`.
 - **The shelf's model and geometry** (`ShelfItem`, `ShelfContents`, `ShelfLayout`, `ShelfModel`,
   `ShelfLayerView`) — what the shelf holds, where its tiles and controls are, and what they look
   like. `ShelfContents` and `ShelfLayout` are pure values with no I/O, so capacity, duplicates,
@@ -342,21 +343,26 @@ when a provider supplied no label: a persisted enum raw value, in English, on a 
     per row on a lazy stack's build path, and detects bare domains and dates — so "see you at 3 on
     Tuesday" would acquire a chip.
 
-- **Haptics on the lock screen.** The card and the padlock buzzed on every crossing and on both
-  press edges until 2026-08-28 — `updatePointer` and `updateCardPress` answered *which* region had
-  been entered, and `LockScreenHover` existed to carry that answer to the tick. All three are gone.
-  §7's vocabulary is the island's, where the surface moves under a pointer that arrived without
-  being asked; a locked screen is a person looking straight at the button they are pointing at, and
+- **The card's and the controls' haptics on the lock screen.** The card and the padlock buzzed on
+  every crossing and on both press edges until 2026-08-28 — `updatePointer` and `updateCardPress`
+  answered *which* region had been entered, and `LockScreenHover` existed to carry that answer to
+  the tick. The transport buttons', the progress line's and both press edges' taps are gone and
+  stay gone: a locked screen is a person looking straight at the button they are pointing at, and
   the lit wash already says it is live. Three buzzes for one glance at a track title is the feature
   announcing itself.
 
-  **What the removal cost, so nobody re-derives it:** the *edge* in `updateCardPress` is load-bearing
-  and stayed — acting on the state would send a skip thirty times a second for as long as somebody
-  leaned on the trackpad — and that it sends exactly one command per press is asserted through what
-  the player receives rather than through a return value. `updatePointer`'s edge was not
-  load-bearing: what the surface draws is a function of where the pointer is now, so the three
-  assignments are all that is left of it. Haptics remain everywhere else, including
-  `NowPlayingViews`' own arrival tick on the open island.
+  **The island's own tap came back on 2026-09-07**, on the owner's report that the locked notch felt
+  dead under a hand the unlocked one answers — and it is the one crossing §7's vocabulary was
+  written for, not an exception to it: the pointer arriving on the island, tapped with the same
+  `Haptics.peek()` the unlocked island performs, drawn as the same peek. So `updatePointer` answers
+  a `Bool` again, for that one edge, and `LockScreenCardView`'s pointer clock is the only caller.
+
+  **What the rest of the removal cost, so nobody re-derives it:** the *edge* in `updateCardPress` is
+  load-bearing and stayed — acting on the state would send a skip thirty times a second for as long
+  as somebody leaned on the trackpad — and that it sends exactly one command per press is asserted
+  through what the player receives rather than through a return value. The controls' crossings were
+  not load-bearing: what the surface draws is a function of where the pointer is now, so the three
+  assignments are all that is left of them.
 
 - **Windows.** No `NSPanel`, no hit testing, no screen enumeration. `IslandBlurRootView` is the near
   miss and stays on the right side of the line: it draws an `NSVisualEffectView`, and the window that
@@ -436,8 +442,9 @@ against a static control both times: the `Canvas` version measured **4.79 % and 
 control of 0.073 % and 25.3 MB; the `CALayer` version measures **0.11–0.29 % and 22.6 MB** against a
 control of 0.031–0.116 % and 22.7 MB. The memory difference is the unambiguous half — a playing track
 used to cost §9's whole 60 MB budget four and a half times over and now costs the same as an island
-with nothing on it. The CPU figures here are lower than PERF.md's 17.7 % for the reason recorded
-there: the cost tracks the display's *actual* refresh rate, so only the paired delta means anything,
+with nothing on it. The CPU figures here are lower than the 17.7 % in `docs/PERFORMANCE.md` for the
+reason recorded there: the cost tracks the display's *actual* refresh rate, so only the paired delta
+means anything,
 and that went from **+4.72 pp** to **+0.04–0.22 pp**.
 
 ## What is drawable, and when

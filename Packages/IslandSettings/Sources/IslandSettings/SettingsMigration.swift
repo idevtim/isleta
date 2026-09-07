@@ -104,6 +104,7 @@ public enum SettingsMigration {
         if version < 21 { migrateV20ToV21(&object) }
         if version < 22 { migrateV21ToV22(&object) }
         if version < 23 { migrateV22ToV23(&object) }
+        if version < 25 { migrateV24ToV25(&object) }
 
         object["schemaVersion"] = IsletaConfiguration.currentSchemaVersion
         return object
@@ -703,6 +704,27 @@ public enum SettingsMigration {
     /// different states of the file, and so are *absent* and *stale*.
     static func migrateV22ToV23(_ object: inout [String: Any]) {
         object["suppressSystemHUDs"] = nil
+    }
+
+    /// Version 24 → 25: both HUD switches start **on** for everybody.
+    ///
+    /// `migrateV22ToV23`'s shape, in the other direction and for a different reason. That step
+    /// cleared the key because a stored answer predated the mechanism and could not be read as
+    /// consent; this one clears both keys because the *default* moved, and a blob written under the
+    /// old one carries an explicit `false` that would otherwise pin every existing install to it.
+    /// Clearing makes the decoder fall back, which is now `true`.
+    ///
+    /// **This flips people who turned it off deliberately, and nothing here can tell them apart** —
+    /// the record stores the value, not whether a hand set it, and a "user has touched this" bit
+    /// invented now would be false for every file already written. That is the cost of the reversal
+    /// and it was taken with the cost named; the switch is two clicks away in Settings, the first
+    /// run asks for the Accessibility grant the whole thing is gated on, and nothing is suppressed
+    /// without it.
+    ///
+    /// There is no v23 → v24 step: schema 24 changed no key's meaning.
+    static func migrateV24ToV25(_ object: inout [String: Any]) {
+        object["suppressSystemHUDs"] = nil
+        object["suppressBrightnessHUD"] = nil
     }
 
     static func migrateV21ToV22(_ object: inout [String: Any]) {

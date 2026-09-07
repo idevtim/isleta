@@ -29,7 +29,7 @@ public enum ActivityTint: Equatable, Sendable, CaseIterable {
 /// no special case at all — `rate` is zero, so `position(at:)` returns the same number forever and
 /// nothing on screen has any reason to redraw.
 ///
-/// `Date` rather than a monotonic instant, matching `ActivityExpiry` — see PROGRESS.md. The player
+/// `Date` rather than a monotonic instant, matching `ActivityExpiry`. The player
 /// reports a wall-clock timestamp and there is no conversion to a monotonic clock that does not
 /// reintroduce the same skew. A clock correction mis-places the playhead by the size of the
 /// correction until the next update, which is a cosmetic error in a bar 200pt wide.

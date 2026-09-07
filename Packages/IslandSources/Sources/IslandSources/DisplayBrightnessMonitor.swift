@@ -55,8 +55,8 @@ public final class UnavailableBrightnessMonitor: DisplayBrightnessMonitoring {
 /// §Working agreements sanction two private paths — the `mediaremote-adapter` helper and
 /// `SkyLightOverlaySpace` — and say a third needs the same measurement those two got first.
 /// `BluetoothDeviceMonitor` was the third. This is the fourth, and it is the only one that
-/// *replaces a documented finding*: through 1.3.0 this codebase stated in four release notes, in
-/// PROGRESS.md and in `SystemHUDBrightness` that brightness had no public route **and no change
+/// *replaces a documented finding*: through 1.3.0 this codebase stated in four release notes and in
+/// `SystemHUDBrightness` that brightness had no public route **and no change
 /// notification anywhere**. The second half was the load-bearing claim, because a value that
 /// cannot be observed cannot drive a HUD however well it reads. Both halves are false.
 ///
@@ -80,8 +80,8 @@ public final class UnavailableBrightnessMonitor: DisplayBrightnessMonitoring {
 ///   possible.** `IODisplayParameters` → `brightness` reads a plausible `32768/65536`, and
 ///   `rawBrightness` and `BrightnessMilliNits` sit beside it looking live at `1488/2047` and
 ///   `381794/1599999`. **All three are frozen constants**: they did not move a digit while actual
-///   brightness went 0.835 → 0.20 → 1.00 → 0.67. PROGRESS.md previously recorded this as "could not
-///   be shown to track the panel, so it may be a constant"; it is not a maybe.
+///   brightness went 0.835 → 0.20 → 1.00 → 0.67. This was previously recorded as "could not be shown
+///   to track the panel, so it may be a constant"; it is not a maybe.
 /// - **`IOServiceAddInterestNotification` on that node returns `KERN_SUCCESS` and never fires.**
 ///   Same shape as the KVO-on-battery-percentage trap in `BluetoothDeviceBattery`: registration
 ///   succeeds, and the callback is never called, so the code reads as correct forever.
@@ -90,8 +90,8 @@ public final class UnavailableBrightnessMonitor: DisplayBrightnessMonitoring {
 ///
 /// ## The trap that invalidated the earlier measurement
 ///
-/// PROGRESS.md recorded that the registry property "could not be shown to track the panel over ten
-/// synthesized brightness keypresses". **Synthesized brightness keys do not change brightness on
+/// The earlier finding was that the registry property "could not be shown to track the panel over
+/// ten synthesized brightness keypresses". **Synthesized brightness keys do not change brightness on
 /// Apple Silicon at all.** An `NSEventTypeSystemDefined` subtype-8 media key for
 /// `NX_KEYTYPE_BRIGHTNESS_UP`/`DOWN`, posted to `kCGHIDEventTap` from a process with
 /// `AXIsProcessTrusted() == true`, moved the value by exactly zero across four presses — the keys
