@@ -856,6 +856,31 @@ Never invent a symbol.
   `OverlaySpace.swift`'s comment still claims `Int32.max`, and the discrepancy is **deliberately not
   fixed**: the island's behavior is verified on hardware at the level it is actually running at, and
   changing it is a separate change with its own probe.
+- **The AirPods connect banner is not an OSD and cannot be suppressed the way volume and brightness
+  are — measured 2026-09-07, macOS 27.0, MacBook with a notch, AirPods Pro.** Asked for as "do the
+  HUDs for the Bluetooth headphones", and the answer is a platform constraint rather than work not
+  yet done. Two instruments, one connect:
+  - **The window.** `CGWindowListCopyWindowInfo` sampled at 5 Hz across the connect shows a new
+    on-screen window 2.0 s after the pairing completes — 352×152 at (688, 33), which is top-centre
+    under the notch — and its `kCGWindowOwnerName` is **`MenuBarAgent`**
+    (`/System/Library/CoreServices/MenuBarAgent.app`, `com.apple.MenuBarAgent`).
+  - **The log.** `MenuBarAgent` registers three `controlcenter-*` FrontBoard scenes 0.35 s before
+    that window appears, hosting `osservice<com.apple.controlcenter>` (pid 1147), whose
+    `com.apple.controlcenter:sound` subsystem is publishing the very content the banner draws —
+    `Update device … battery: level: { level: 100.0%, aux: 72.0%, mainSymbol: airpods.pro.gen1 }`.
+  So the banner is **ControlCenter's scene, drawn by the process that hosts the whole menu bar**.
+  **`OSDUIHelper` is not involved at all**, and the strongest evidence is negative: it was not
+  running during the connect — idle-exited, and Isleta's own suppression was on at the time — and the
+  banner appeared anyway.
+  **Why that closes the question rather than opening it.** The volume mechanism works because
+  `OSDUIHelper` is a disposable helper whose only job is drawing OSDs: `SIGSTOP` costs the user
+  nothing else, and launchd respawns it. The equivalent here would be freezing `MenuBarAgent` — the
+  menu bar itself, including Isleta's own status item and every third-party one — or `ControlCenter`,
+  which owns Control Center, the Wi-Fi, Bluetooth and Sound menus, and the AirPods controls the user
+  reaches for next. Neither is a helper, neither is disposable, and freezing either is a broken Mac
+  rather than a quiet one. There is no public route to suppress another process's scene, and the
+  private ones reach the same two processes. **Isleta announces the connection in the island and
+  leaves Apple's banner alone.**
 - **Suppressing Apple's HUDs: consuming the key at `.cghidEventTap` works — measured 2026-08-30**,
   reversing the two objections that made "ship alongside the system HUD" the answer.
   `HUDConsumeSelfTest` (`--hud-consume-test`), signed Debug build with Accessibility granted, macOS
