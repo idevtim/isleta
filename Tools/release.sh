@@ -356,6 +356,39 @@ cp "$RELEASE_NOTES" "$UPDATES_DIR/$APP_NAME-$VERSION.md"
   "$UPDATES_DIR"
 
 cp "$UPDATES_DIR/appcast.xml" "$APPCAST_PATH"
+
+# `generate_appcast` titles a **new** item after the app bundle — "Isleta" — and normalises the
+# older ones to their version string on the next run. So the newest entry is always the odd one out
+# in its own feed: 2.1.0 shipped titled "Isleta" and only became "2.1.0" when 2.1.1 was generated
+# over the top of it. This settles it at release time instead.
+#
+# **Safe to rewrite after signing, and that is not obvious.** `generate_appcast --help` says to
+# re-run it after any manual edit "to ensure all signatures are updated" — that is about the
+# `sparkle:edSignature` on each enclosure and about feed-level signing. The enclosure signature signs
+# the *archive's bytes*, not the XML around it, and this feed carries no feed-level signature, so a
+# title is text nothing has signed.
+#
+# Sparkle's update alert never shows it: the panel reads "A new version of Isleta is available!"
+# from the host bundle and the versions from `sparkle:shortVersionString`. This is for anyone reading
+# the feed, and for the entry not to disagree with the three below it.
+python3 - "$APPCAST_PATH" "$VERSION" <<'RETITLE'
+import re, sys
+
+path, version = sys.argv[1], sys.argv[2]
+feed = open(path, encoding="utf-8").read()
+
+def retitle(match):
+    item = match.group(0)
+    if not re.search(rf"<sparkle:shortVersionString>{re.escape(version)}</sparkle:shortVersionString>", item):
+        return item
+    return re.sub(r"<title>.*?</title>", f"<title>{version}</title>", item, count=1, flags=re.S)
+
+updated = re.sub(r"<item>.*?</item>", retitle, feed, flags=re.S)
+if updated != feed:
+    open(path, "w", encoding="utf-8").write(updated)
+    print(f"   ✓ feed entry titled {version}")
+RETITLE
+
 echo "📰 appcast.xml updated"
 
 # ─── Publish ────────────────────────────────────────────────────────────────
