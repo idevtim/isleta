@@ -587,6 +587,15 @@ public struct NowPlayingAdapterLocation: Equatable, Sendable {
         [scriptURL.path, frameworkURL.path, "get"]
     }
 
+    /// A one-shot read of the playing entry's audio format: `queue --length=1`.
+    ///
+    /// **The only route that answers after the player has restarted** — the stream re-emits its
+    /// queue without `audioFormat` in that state, measured 2026-09-08. See `NowPlayingFormatReader`,
+    /// which is also where the cost of spawning for it is argued.
+    public var audioFormatArguments: [String] {
+        [scriptURL.path, frameworkURL.path, "queue", "--length=1"]
+    }
+
     /// A transport command: `send <MRCommand id>`.
     public func sendArguments(_ command: NowPlayingCommand) -> [String] {
         [scriptURL.path, frameworkURL.path, "send", String(command.rawValue)]

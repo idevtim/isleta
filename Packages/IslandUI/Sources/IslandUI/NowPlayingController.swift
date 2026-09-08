@@ -418,12 +418,21 @@ public final class NowPlayingController {
         reduceMotion: Bool
     ) {
         self.reduceMotion = reduceMotion
-        if let playerBundleIdentifier, playerBundleIdentifier != self.playerBundleIdentifier {
+        let previousPlayer = self.playerBundleIdentifier
+        if let playerBundleIdentifier, playerBundleIdentifier != previousPlayer {
             // A different application's queue. What the user asked Music for says nothing about
             // Spotify, and leaving the highlight lit would be the island asserting a setting it has
             // never been told anything about.
             isShuffling = false
             repeatMode = .off
+            // **The badge goes with the queue it was read from, and this is the one event that
+            // invalidates it.** `reset()` deliberately leaves the format alone — see it for the
+            // asymmetry that cost 2.1.1 the badge entirely — but a *different player* is a
+            // different queue, and the next `onQueue` push is the only thing that will say what
+            // this track is. Guarded on there having been a previous player: the first snapshot of
+            // a session moves this from nil to Music, and a queue line often lands before it, so
+            // clearing on that transition would wipe the format that had just arrived.
+            if previousPlayer != nil { audioFormat = nil }
         }
         // Leaving a station for a queue changes nothing else about the track, so the comparison has
         // to include it or the two controls stay dimmed until something unrelated moves.
@@ -756,12 +765,24 @@ public final class NowPlayingController {
         canSkipBackFifteen = false
         canSkipForwardFifteen = false
         playbackRate = nil
-        // With the track it describes. This arrives on the **queue's** clock — see
-        // `applyAudioFormat` — and the queue is republished only when its window changes, so a
-        // player that stops mid-list never pushes a queue again and the badge stood there over
-        // "Not playing" until it was cleared here. A format is a fact about a song, and there
-        // isn't one.
-        audioFormat = nil
+        // **`audioFormat` is deliberately not cleared here, and this is the headstone of a bug that
+        // shipped in 2.1.1.** Clearing it looks obviously right — the track is going away — and it
+        // is wrong because of an asymmetry: this runs whenever the player reports nothing
+        // (`NowPlayingBridge`, on every stop and every quit), while the *only* thing that can
+        // re-supply a format is `onQueue`, which the adapter publishes **only when the queue window
+        // changes** (`NowPlayingAdapterReader.publishQueueIfChanged`). Stop a playlist and resume it
+        // and the window is identical, so nothing pushes again and the badge never comes back — for
+        // the rest of the session, in every surface at once, which is exactly how it was reported.
+        //
+        // What this was trying to fix is real and is fixed in the right place: a badge must not
+        // stand under "Not playing". That is `IslandHomeLayout.drawsFormatRow(hasTrack:hasFormat:)`
+        // for the home column, and every other surface that draws the badge already exists only
+        // while there is a track — the open player and the music page are built from an
+        // `ActivityContent`, the lip and the lock card from `isPlayingOnScreen`. A value nothing can
+        // restore must not be cleared by something that fires on its own.
+        //
+        // A format that has genuinely stopped describing the track is cleared in `apply` instead,
+        // where a *different player* is the event that invalidates it.
         // **`outputDevices` is deliberately not cleared.** It is a fact about the machine, not about
         // the track — the Mac still has speakers when the music stops — and clearing it would empty
         // the Output tab every time playback ended.

@@ -856,6 +856,23 @@ Never invent a symbol.
   `OverlaySpace.swift`'s comment still claims `Int32.max`, and the discrepancy is **deliberately not
   fixed**: the island's behavior is verified on hardware at the level it is actually running at, and
   changing it is a separate change with its own probe.
+- **The streamed queue stops carrying `audioFormat` after the player restarts, and a one-shot read
+  still returns it — measured 2026-09-08, macOS 27.0, Music, AirPods-free desk.** The audio format
+  rides on the stream's `{"type":"queue"}` line, on the entry at index 0, and nowhere else: `get`
+  carries no format key at all (checked — no key whose name contains "format", "audio" or "codec").
+  Quit Music, reopen it and press play, and the stream emits a **full five-entry window with
+  `audioFormat` absent from the current entry** — twice over, including in answer to a `length`
+  control line asking it to re-send. A `queue --length=1` spawned against the same player in the same
+  second returned the field in full: `sampleRate 44100, bitDepth 0, bitrate 0, codec 1902928227,
+  tier 2, spatialized false`. So the field is not gone from MediaRemote; it is missing from the
+  *streamed* emission until the queue genuinely changes, which is why the reported symptom was a
+  badge that returned only after "next and then previous".
+  **The consequence for the code:** the stream is the route that answers in every ordinary state, and
+  `NowPlayingFormatReader` is a second route — one `perl queue --length=1` per ask — for the state it
+  cannot. `NowPlayingFormatRefresh` bounds the asking at three per track, a second apart, because a
+  player that has just been reopened answers an immediate read with **nothing**, 29 ms later: an ask
+  that finds nothing must not count as the track's answer. That last sentence is a bug that shipped
+  in the first version of this fix and was caught by the owner, not by a test.
 - **The AirPods connect banner is not an OSD and cannot be suppressed the way volume and brightness
   are — measured 2026-09-07, macOS 27.0, MacBook with a notch, AirPods Pro.** Asked for as "do the
   HUDs for the Bluetooth headphones", and the answer is a platform constraint rather than work not

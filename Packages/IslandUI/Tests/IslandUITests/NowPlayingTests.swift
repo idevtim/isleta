@@ -836,18 +836,54 @@ struct NowPlayingCoverColorTests {
         #expect(controller.barColors(increaseContrast: false) == nil)
     }
 
-    /// The badge goes with the track, and the track is what a stop takes away.
+    /// **The regression that shipped in 2.1.1: a stop must not take the badge with it.**
     ///
-    /// The format rides in on the **queue's** clock, and the queue is republished only when its
-    /// window changes — so a player that stops mid-list pushes no queue again, and before this the
-    /// last song's "Lossless" stood under the "Not playing" placeholder.
-    @Test("the audio format goes with the track")
-    func resetClearsTheAudioFormat() {
+    /// `reset()` runs on every stop and every player quit, and the *only* thing that can put a
+    /// format back is an `onQueue` push — which the adapter emits only when the queue window
+    /// changes. Stop a playlist and resume it and the window is identical, so clearing here meant
+    /// the badge never returned, in every surface at once, for the rest of the session.
+    ///
+    /// What a stop was meant to fix is the badge standing under "Not playing", and that is
+    /// `IslandHomeLayout.drawsFormatRow(hasTrack:hasFormat:)`'s job — see `theBadgeRowNeedsATrack`.
+    @Test("a stop leaves the format alone, because nothing else would put it back")
+    func resetKeepsTheAudioFormat() {
         let controller = controller()
         controller.applyAudioFormat(AudioFormat(mediaRemoteFields: ["sampleRate": 44100]))
         #expect(controller.audioFormat != nil)
         controller.reset()
-        #expect(controller.audioFormat == nil)
+        #expect(controller.audioFormat != nil, "the queue will not push again for the same window")
+    }
+
+    /// A different player is a different queue, and it is the one event that does invalidate it.
+    @Test("switching players clears the format")
+    func aDifferentPlayerClearsTheAudioFormat() {
+        let controller = controller()
+        controller.apply(
+            isPlaying: true, canSkip: true, isTransportAvailable: true,
+            playerBundleIdentifier: "com.apple.Music", reduceMotion: true
+        )
+        controller.applyAudioFormat(AudioFormat(mediaRemoteFields: ["sampleRate": 44100]))
+        #expect(controller.audioFormat != nil)
+
+        controller.apply(
+            isPlaying: true, canSkip: true, isTransportAvailable: true,
+            playerBundleIdentifier: "com.spotify.client", reduceMotion: true
+        )
+        #expect(controller.audioFormat == nil, "Spotify's track is not Music's")
+    }
+
+    /// **The first player of a session is not a switch**, and this is the ordering that made the
+    /// guard necessary: the queue line carrying the format often lands before the snapshot that
+    /// names the app, so treating nil → Music as a change would wipe a format that had just arrived.
+    @Test("the first player named in a session keeps the format that arrived before it")
+    func theFirstPlayerKeepsTheAudioFormat() {
+        let controller = NowPlayingController()
+        controller.applyAudioFormat(AudioFormat(mediaRemoteFields: ["sampleRate": 44100]))
+        controller.apply(
+            isPlaying: true, canSkip: true, isTransportAvailable: true,
+            playerBundleIdentifier: "com.apple.Music", reduceMotion: true
+        )
+        #expect(controller.audioFormat != nil)
     }
 
     @Test("a palette read for a different number of bars is refused, not padded")

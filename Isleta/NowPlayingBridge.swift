@@ -45,6 +45,10 @@ final class NowPlayingBridge {
     /// that has grown or shrunk under the reader.
     var onQueueChanged: (@MainActor ([NowPlayingQueueRow]) -> Void)?
 
+    /// When to ask the helper to re-send the queue because the playing track has no audio format.
+    /// The rule and its reasoning are in `NowPlayingFormatRefresh`; this is where it is kept.
+    private var formatRefresh = NowPlayingFormatRefresh()
+
     /// Called on the **edge** — the player started or stopped — and never on the payloads in
     /// between, of which there are one or two a second while a track plays.
     ///
@@ -157,6 +161,13 @@ final class NowPlayingBridge {
         //
         // `NowPlayingQueueItem` stops here for the reason `NowPlayingUpNext` does: it comes out of
         // a spawned Perl process, and IslandUI has to build and preview with nothing granted.
+        // A format the stream could not carry, read one-shot — see `NowPlayingFormatReader`. It only
+        // ever *arrives* here: nothing on this path can take a badge away, which is what makes it
+        // safe to ask for whenever one is missing.
+        source.onAudioFormat = { [weak self] format in
+            self?.controller.applyAudioFormat(format)
+        }
+
         source.onQueue = { [weak self] items in
             guard let self else { return }
             let rows = items.map {
@@ -178,7 +189,15 @@ final class NowPlayingBridge {
             //
             // The *playing* entry only. Every entry after it answers nil, which is not a gap: the
             // badge is about what is playing.
-            self.controller.applyAudioFormat(items.first { $0.isCurrent }?.audioFormat)
+            let currentFormat = items.first { $0.isCurrent }?.audioFormat
+            // **A push that takes the format away earns one more ask.** The window that clears it is
+            // usually a player on its way out — a one-entry queue with no metadata, measured while
+            // Music was quitting — and a track that really has no format settles after the second
+            // ask. See `NowPlayingFormatRefresh`.
+            if currentFormat == nil, self.controller.audioFormat != nil {
+                self.formatRefresh.formatWasTakenAway()
+            }
+            self.controller.applyAudioFormat(currentFormat)
         }
 
         // The output devices, likewise — CoreAudio's `AudioDeviceID` and transport type stop here,
@@ -243,6 +262,21 @@ final class NowPlayingBridge {
                 artist: snapshot?.upNext?.artist
             )
             if snapshot == nil { self.controller.reset() }
+            // **The format arrives on the queue's line and nothing else, and that line is emitted
+            // only when the player says its queue changed** — so a player that quits and comes back
+            // on the same track publishes a track with no format and never corrects it. Ask for one,
+            // at most once per track. The helper answers by re-emitting the queue; the rule for when
+            // to ask is `NowPlayingFormatRefresh`, and the reported symptom was a badge that stayed
+            // missing "until I hit next and then previous".
+            if let snapshot {
+                let identity = snapshot.artworkIdentity ?? snapshot.title
+                let hasFormat = self.controller.audioFormat != nil
+                if self.formatRefresh.shouldAsk(forTrack: identity, hasFormat: hasFormat, now: Date()) {
+                    self.source.refreshAudioFormat()
+                }
+            } else {
+                self.formatRefresh.playerWentAway()
+            }
             // Read back off the controller rather than from the snapshot, so this reports what the
             // island is actually drawing: `reset()` above puts it to false for a player that has
             // gone away, and a snapshot-derived edge would miss that.

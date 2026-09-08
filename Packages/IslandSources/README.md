@@ -81,6 +81,15 @@ prompt in one and an explanation in the other.
   256px thumbnail off the main thread, and retained one at a time. See "Deliberately does not own"
   for the measurement that forced the split.
 
+- **`NowPlayingFormatReader` and `NowPlayingFormatRefresh`** — the audio badge's second route, and
+  the rule that bounds it. The format ("Lossless", "Dolby Atmos") rides on the stream's queue line
+  and nowhere else, and **after a player quits and reopens, the stream emits a full queue with the
+  field missing** while a one-shot `queue --length=1` against the same player returns it — measured
+  2026-09-08, and the reason the badge used to come back only on "next and then previous". So the
+  reader spawns for it, the way `NowPlayingArtworkLoader` spawns for a cover, and the refresh rule
+  keeps that to three asks per track a second apart: a player still coming up answers an immediate
+  read with nothing in 29 ms, so an ask that finds nothing must not count as the track's answer.
+
 - **`NowPlayingUpNext`** — the track that comes after this one, and nothing else about the queue.
   `NowPlayingQueueWindow` is the pure parse and the whole of the rule is one number: **index 0 of
   the window is the current track, so index 1 is the next song.** The queue MediaRemote vends *is*

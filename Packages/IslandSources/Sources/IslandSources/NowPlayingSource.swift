@@ -106,6 +106,11 @@ public final class NowPlayingSource: ActivitySource {
         self.artwork = artwork
     }
 
+    /// The one-shot audio-format read, live on the adapter route alone — `artwork`'s arrangement and
+    /// its reasoning: the scripting route cannot answer this at all, and handing it a reader that
+    /// always answered nothing would be a route pretending to have a capability.
+    var formatReader: NowPlayingFormatReader?
+
     /// Picks the best route this build and machine can manage.
     ///
     /// Order is adapter, then scripting, and never a fallback *chain* at runtime. Running both at
@@ -129,6 +134,7 @@ public final class NowPlayingSource: ActivitySource {
                 transport: NowPlayingAdapterTransport(bundle: bundle),
                 artwork: NowPlayingArtworkLoader(bundle: bundle)
             )
+            self.formatReader = NowPlayingFormatReader(bundle: bundle)
         } else {
             IslandLog.nowPlaying.info("route: AppleScript push fallback — adapter unavailable (\(adapter.authorization))")
             self.init(provider: NowPlayingScriptProvider())
@@ -155,6 +161,21 @@ public final class NowPlayingSource: ActivitySource {
         adapterProvider?.onQueue = onQueue
         provider.start()
     }
+
+    /// Asks for the playing track's audio format with a one-shot read, answering on `onAudioFormat`.
+    ///
+    /// A no-op without the adapter — the scripting route has no queue and therefore no format at
+    /// all. **Only ever delivers a format it found**: see `NowPlayingFormatReader.read`, which is
+    /// also where the measurement that makes this a second route rather than a duplicate lives, and
+    /// `NowPlayingFormatRefresh` for what keeps it to once a track.
+    public func refreshAudioFormat() {
+        formatReader?.read { [weak self] format in
+            self?.onAudioFormat?(format)
+        }
+    }
+
+    /// A format that arrived out of band, from `refreshAudioFormat`.
+    public var onAudioFormat: ((AudioFormat) -> Void)?
 
     public func stop() {
         tearDown(waitingForChildren: false)
