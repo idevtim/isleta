@@ -33,9 +33,29 @@ done
 echo "==> localization"
 python3 Tools/localization-audit.py
 
+# **The status is taken from `xcodebuild` and not from the pipeline**, and that is the whole of this
+# block. `xcodebuild … | grep …` under `pipefail` reports whichever end failed, and the `|| true`
+# that stops a *no matches* grep from killing the run swallowed the build's own exit code with it —
+# so a failing app build printed "** BUILD FAILED **", the script carried on to the localization
+# audit, and `check.sh` exited 0. Every package above is checked by `set -e`; this one step, the one
+# that builds the thing that actually ships, was not.
+#
+# `tee` keeps the filtered output arriving live and puts the whole log somewhere readable, because
+# the grep drops the lines that say *which* file failed — and `${PIPESTATUS[0]}` is read in the
+# `||` branch, before anything else can reset it.
 echo "==> Isleta.app"
+APP_BUILD_LOG="$PWD/.build/xcode-build.log"
+mkdir -p "$(dirname "$APP_BUILD_LOG")"
+app_build_status=0
 xcodebuild -project Isleta.xcodeproj -scheme Isleta -configuration Debug \
-    -derivedDataPath .build/xcode build | grep -E "error:|warning:|BUILD" || true
+    -derivedDataPath .build/xcode build 2>&1 \
+    | tee "$APP_BUILD_LOG" \
+    | grep -E "error:|warning:|BUILD" || app_build_status=${PIPESTATUS[0]}
+if [ "$app_build_status" -ne 0 ]; then
+    echo "Isleta.app failed to build (xcodebuild exit $app_build_status)."
+    echo "The full log is at $APP_BUILD_LOG — the lines above are only what matched the filter."
+    exit "$app_build_status"
+fi
 
 # The other half of the localization audit, and it can only run once the app exists: neither
 # xcodebuild nor SwiftPM prunes a deleted `.lproj`, so an incremental build can carry a language the

@@ -21,6 +21,16 @@ swift test --package-path Packages/IslandKit --filter IslandShapeTests
 Tests are **swift-testing** (`@Suite`/`@Test`/`#expect`), not XCTest — `--filter` matches the *type*
 name (`IslandShapeTests`), not the `@Suite` display name, and a filter that matches nothing exits 1.
 
+**The app build's exit code was swallowed until 2026-09-10, and the script exited 0 with
+`** BUILD FAILED **` on screen.** The line was `xcodebuild … | grep -E "error:|warning:|BUILD" ||
+true`: the `|| true` is there because `grep` exits 1 when nothing matches, and under `pipefail` it
+took the *build's* status with it. So the one step that compiles the thing that actually ships was
+the one step `set -e` could not see, and the built-app localization audit after it then ran against
+the previous good bundle. The status is now taken from `${PIPESTATUS[0]}` and the run stops there;
+`tee` puts the whole log in `.build/xcode-build.log`, because the filter drops the lines that name
+the failing file. Verified both ways — a deliberate type error in `Isleta/` exits 65 and a clean
+tree exits 0.
+
 **`Tools/check.sh` builds Debug, so a Release-only warning-as-error escapes it.** Caught 2026-08-23:
 `let isUpNextDemo = false` behind `#else` made an `if` branch provably dead in Release, which
 `SWIFT_TREAT_WARNINGS_AS_ERRORS` turns into a build failure — green check, failed release. Any
