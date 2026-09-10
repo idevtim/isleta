@@ -524,6 +524,13 @@ public final class IslandScreenModel {
     /// Which page to draw, defaulting to home where no page model was injected.
     public var currentPage: IslandPage { page?.current ?? .home }
 
+    /// The pages the carousel is turning between right now — what the dots draw and what the two
+    /// neighbours either side of a live swipe are. See `IslandPageRoster`.
+    ///
+    /// Every page where no page model was injected, which is the same answer `IslandPageModel`
+    /// starts at and for the same reason: an un-wired preview is not a Mac with nothing playing.
+    public var pageRoster: IslandPageRoster { page?.roster ?? .all }
+
     /// Whether a page — or the schedule drilled into from one — is drawing in the island's body.
     ///
     /// **The one answer to "who owns the body right now", asked by both the thing that draws a page
@@ -1064,7 +1071,7 @@ public final class IslandScreenModel {
     /// the same sign convention `SwipeController` publishes its turn direction with.
     public var pageBeingDraggedTo: IslandPage? {
         guard let page, swipe.isPaging, swipe.progress != 0 else { return nil }
-        return page.current.stepped(by: swipe.progress < 0 ? 1 : -1)
+        return page.page(steppedBy: swipe.progress < 0 ? 1 : -1)
     }
 
     /// How far through that drag the finger is, `0`…`1`. Unsigned: which page it is going to is
@@ -1086,6 +1093,17 @@ public final class IslandScreenModel {
     /// happening on and answered app-wide everywhere else.
     public var showsPageDots: Bool {
         guard let page else { return false }
+        // **Nothing under the greeting.** "Welcome back" opens the island by itself, at the one
+        // moment the user has not asked it for anything — so a row of dots appearing with it is the
+        // island answering a question nobody put to it, and the dots' whole argument
+        // (`IslandPageModel.indicatorDwell`) is that they are only ever news at the moment somebody
+        // *changes* page. The greeting says its piece and goes; the dots come back with the next
+        // open, which is the first one the user asked for.
+        //
+        // The room they sit in is untouched — see the note above on the difference. The strip's
+        // height is reserved for as long as the island is open and cannot follow its contents
+        // without moving the island's bottom edge and the hit region pinned to it.
+        if presentedKind == .welcomeBack { return false }
         return page.isIndicatorVisible || swipe.isPaging
     }
 

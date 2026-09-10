@@ -67,6 +67,7 @@ enum SwipeSelfTest {
         isExpanded: @escaping @MainActor () -> Bool,
         expand: @escaping @MainActor () -> Void,
         currentPage: @escaping @MainActor () -> IslandPage,
+        roster: @escaping @MainActor () -> IslandPageRoster,
         completion: @escaping @MainActor (String) -> Void
     ) {
         guard let target = controller.debugInfo().first else {
@@ -172,15 +173,21 @@ enum SwipeSelfTest {
         // velocity for a flick to be made of. Four samples of 60 is 240pt — a real swipe, and the
         // only kind that turns a page now. At the old 12 this walked three pages without moving,
         // which is what caught the change.
-        for _ in 0..<IslandPage.allCases.count {
+        // **The roster's count, not the enum's.** The music page is on the carousel only while
+        // something is playing (`IslandPageRoster`), and a self-test that walked three steps on a
+        // silent Mac would go round a two-page carousel once and a half and report that the pages
+        // do not wrap. The roster is read once, before the walk, because it cannot change under one:
+        // nothing in this test starts or stops a track.
+        let carousel = roster()
+        for _ in 0..<carousel.count {
             _ = gesture(deltaX: -60)
             settle()
             walked.append(currentPage())
         }
-        lines.append("opened on \(pageAtOpen.rawValue), swiped left ×\(IslandPage.allCases.count) → "
+        lines.append("opened on \(pageAtOpen.rawValue), swiped left ×\(carousel.count) → "
                      + walked.map(\.rawValue).joined(separator: " → "))
         let wrappedHome = walked.last == pageAtOpen
-        let visitedAll = Set(walked).count == IslandPage.allCases.count
+        let visitedAll = Set(walked).count == carousel.count
         // The open island must not have stowed on any of that — the two gestures share an axis and
         // are kept apart only by `IslandStowGesture` ignoring an open island.
         let stowedWhilePaging = isStowed()
@@ -189,7 +196,7 @@ enum SwipeSelfTest {
         settle()
         let steppedBack = currentPage()
         lines.append("swiped right → \(steppedBack.rawValue)")
-        let wentBackwards = steppedBack == pageAtOpen.previous
+        let wentBackwards = steppedBack == carousel.previous(before: pageAtOpen)
 
         // **Two swipes with nothing between them**, and the `settle()` above is deliberately the
         // last one before them. This is the case the carousel was rebuilt for on 2026-08-28: a turn
@@ -207,7 +214,7 @@ enum SwipeSelfTest {
         settle()
         let afterChained = currentPage()
         lines.append("swiped left twice with no pause between → \(afterChained.rawValue)")
-        let chainedBothTurns = afterChained == beforeChained.next.next
+        let chainedBothTurns = afterChained == carousel.stepped(from: beforeChained, by: 2)
 
         let frontmostAfter = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "none"
         lines.append("frontmost after: \(frontmostAfter), panel isKeyWindow: \(window.isKeyWindow), isMainWindow: \(window.isMainWindow)")

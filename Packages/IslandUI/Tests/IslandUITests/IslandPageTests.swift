@@ -12,27 +12,30 @@ struct IslandPageTests {
 
     @Test("two fingers left walks forward and comes back to home")
     func nextWraps() {
-        #expect(IslandPage.home.next == .music)
-        #expect(IslandPage.music.next == .weather)
-        #expect(IslandPage.weather.next == .home)
+        let roster = IslandPageRoster.all
+        #expect(roster.next(after: .home) == .music)
+        #expect(roster.next(after: .music) == .weather)
+        #expect(roster.next(after: .weather) == .home)
     }
 
     @Test("two fingers right walks back the other way")
     func previousWraps() {
-        #expect(IslandPage.home.previous == .weather)
-        #expect(IslandPage.weather.previous == .music)
-        #expect(IslandPage.music.previous == .home)
+        let roster = IslandPageRoster.all
+        #expect(roster.previous(before: .home) == .weather)
+        #expect(roster.previous(before: .weather) == .music)
+        #expect(roster.previous(before: .music) == .home)
     }
 
     /// `SwipeTracker.Outcome.commit(steps:)` carries an integer rather than a direction, so a flick
     /// fast enough to cross two pages says so in one sample.
     @Test("a multi-page step wraps in both directions", arguments: [-7, -4, -3, -2, -1, 0, 1, 2, 3, 4, 7])
     func steppingWraps(steps: Int) {
-        for page in IslandPage.allCases {
-            let landed = page.stepped(by: steps)
+        let roster = IslandPageRoster.all
+        for page in roster.pages {
+            let landed = roster.stepped(from: page, by: steps)
             // Stepping by the count is the identity, so any step is congruent to one inside it.
-            #expect(landed == page.stepped(by: steps + IslandPage.allCases.count))
-            #expect(IslandPage.allCases.contains(landed))
+            #expect(landed == roster.stepped(from: page, by: steps + roster.count))
+            #expect(roster.contains(landed))
         }
     }
 
@@ -40,15 +43,16 @@ struct IslandPageTests {
     /// remainder keeps the sign of the dividend, so `(0 - 1) % 3` is `-1` and indexes off the front.
     @Test("stepping back from the first page wraps rather than trapping")
     func steppingBackFromHome() {
-        #expect(IslandPage.home.stepped(by: -1) == .weather)
-        #expect(IslandPage.home.stepped(by: -3) == .home)
-        #expect(IslandPage.home.stepped(by: -4) == .weather)
+        let roster = IslandPageRoster.all
+        #expect(roster.stepped(from: .home, by: -1) == .weather)
+        #expect(roster.stepped(from: .home, by: -3) == .home)
+        #expect(roster.stepped(from: .home, by: -4) == .weather)
     }
 
     @Test("a step of nothing stays put")
     func zeroIsIdentity() {
-        for page in IslandPage.allCases {
-            #expect(page.stepped(by: 0) == page)
+        for page in IslandPageRoster.all.pages {
+            #expect(IslandPageRoster.all.stepped(from: page, by: 0) == page)
         }
     }
 
@@ -56,21 +60,23 @@ struct IslandPageTests {
     /// clicked: home to weather is one step back, not two forward.
     @Test("the shortest signed path wraps rather than always going forward")
     func shortestStepsWrap() {
-        #expect(IslandPage.home.steps(to: .home) == 0)
-        #expect(IslandPage.home.steps(to: .music) == 1)
-        #expect(IslandPage.home.steps(to: .weather) == -1)
-        #expect(IslandPage.weather.steps(to: .home) == 1)
-        #expect(IslandPage.weather.steps(to: .music) == -1)
-        #expect(IslandPage.music.steps(to: .home) == -1)
+        let roster = IslandPageRoster.all
+        #expect(roster.steps(from: .home, to: .home) == 0)
+        #expect(roster.steps(from: .home, to: .music) == 1)
+        #expect(roster.steps(from: .home, to: .weather) == -1)
+        #expect(roster.steps(from: .weather, to: .home) == 1)
+        #expect(roster.steps(from: .weather, to: .music) == -1)
+        #expect(roster.steps(from: .music, to: .home) == -1)
     }
 
     /// Whatever it answers, walking that many steps has to land there — otherwise the slide goes one
     /// way and the page goes another.
     @Test("the shortest path actually reaches the page it is asked about")
     func shortestStepsLand() {
-        for from in IslandPage.allCases {
-            for to in IslandPage.allCases {
-                #expect(from.stepped(by: from.steps(to: to)) == to)
+        let roster = IslandPageRoster.all
+        for from in roster.pages {
+            for to in roster.pages {
+                #expect(roster.stepped(from: from, by: roster.steps(from: from, to: to)) == to)
             }
         }
     }
@@ -115,7 +121,7 @@ struct IslandPageModelTests {
     func zeroStepIsNotAChange() {
         let model = IslandPageModel()
         #expect(!model.step(by: 0))
-        #expect(!model.step(by: IslandPage.allCases.count))
+        #expect(!model.step(by: model.roster.count))
     }
 
     /// **The direction is published separately from the page, and that separation is the fix.**
@@ -155,7 +161,7 @@ struct IslandPageModelTests {
         let model = IslandPageModel()
         model.setTurnDirection(-1)
         #expect(!model.step(by: 0))
-        #expect(!model.step(by: IslandPage.allCases.count))
+        #expect(!model.step(by: model.roster.count))
         #expect(!model.go(to: model.current))
         #expect(model.current == .home)
         #expect(model.lastTurn == -1)
@@ -237,5 +243,149 @@ struct IslandPageModelTests {
         #expect(model.canTurn)
         model.canTurn = false
         #expect(!model.canTurn)
+    }
+}
+
+/// The music page comes and goes with the music. `IslandPageRoster` argues why; this pins what.
+@MainActor
+@Suite("What is on the carousel")
+struct IslandPageRosterTests {
+
+    /// Nothing injected is every page — a preview and a test with no shell are not a Mac with
+    /// nothing playing, and §3 says IslandUI has to be complete with nothing wired to it.
+    @Test("a model nobody has told about the music has every page")
+    func startsWithEveryPage() {
+        #expect(IslandPageModel().roster.pages == IslandPage.allCases)
+    }
+
+    @Test("nothing playing takes the music page off the carousel")
+    func silenceHidesMusic() {
+        let model = IslandPageModel()
+        model.setMusicAvailable(false)
+        #expect(model.roster.pages == [.home, .weather])
+    }
+
+    @Test("a track starting puts it back")
+    func musicComesBack() {
+        let model = IslandPageModel()
+        model.setMusicAvailable(false)
+        model.setMusicAvailable(true)
+        #expect(model.roster.pages == IslandPage.allCases)
+    }
+
+    /// **The two-page carousel still wraps**, in both directions, and both neighbours of home are
+    /// the weather. That is what a two-page carousel is; the alternative is an end-stop the user
+    /// has to learn.
+    @Test("two pages wrap the way three do")
+    func twoPagesWrap() {
+        let model = IslandPageModel()
+        model.setMusicAvailable(false)
+        #expect(model.page(steppedBy: 1) == .weather)
+        #expect(model.page(steppedBy: -1) == .weather)
+        #expect(model.page(steppedBy: 2) == .home)
+        #expect(model.step(by: 1))
+        #expect(model.current == .weather)
+        #expect(model.step(by: 1))
+        #expect(model.current == .home)
+    }
+
+    /// A swipe cannot land on a page that is not there. This is the one that would show up as the
+    /// island turning to an empty player.
+    @Test("a swipe never lands on the music page while nothing is playing")
+    func swipeSkipsTheMusicPage() {
+        let model = IslandPageModel()
+        model.setMusicAvailable(false)
+        for steps in -6...6 {
+            #expect(model.page(steppedBy: steps) != .music)
+        }
+    }
+
+    /// Nor can a dot, or a menu row that raced the track ending. `go(to:)` is where every jump
+    /// arrives, so refusing here is refusing everywhere.
+    @Test("a jump to a page that is not on the carousel is refused")
+    func goRefusesAPageThatIsNotThere() {
+        let model = IslandPageModel()
+        model.setMusicAvailable(false)
+        #expect(!model.go(to: .music))
+        #expect(model.current == .home)
+    }
+
+    /// **The page under the user is never taken away.** A track ending while the player is open
+    /// leaves the page where it is, saying "Not playing", rather than the island turning a page by
+    /// itself because a song finished.
+    @Test("the page you are standing on stays on the carousel")
+    func standingOnMusicKeepsIt() {
+        let model = IslandPageModel()
+        #expect(model.go(to: .music))
+        model.setMusicAvailable(false)
+        #expect(model.current == .music)
+        #expect(model.roster.contains(.music))
+        #expect(model.roster.pages == IslandPage.allCases)
+    }
+
+    /// And it goes the moment they leave it — which is the other half of the same rule, and the
+    /// reason it lives inside the model rather than in the shell that pushes the track.
+    @Test("it goes when the user turns away from it")
+    func leavingMusicDropsIt() {
+        let model = IslandPageModel()
+        #expect(model.go(to: .music))
+        model.setMusicAvailable(false)
+        #expect(model.go(to: .home))
+        #expect(model.roster.pages == [.home, .weather])
+    }
+
+    /// The memory is kept and *resolved*: somebody who lives on the player still lives there, and
+    /// comes back to it the next time there is something to play.
+    @Test("closing on the music page with nothing playing comes back to home")
+    func resetResolvesTheRememberedPage() {
+        let model = IslandPageModel()
+        #expect(model.go(to: .music))
+        model.setMusicAvailable(false)
+        #expect(model.pageAfterReset == .home)
+        model.reset()
+        #expect(model.current == .home)
+        #expect(model.rememberedPage == .music, "the memory is kept, not corrected")
+        #expect(model.roster.pages == [.home, .weather])
+
+        // And the next track brings both back.
+        model.setMusicAvailable(true)
+        #expect(model.pageAfterReset == .music)
+        model.reset()
+        #expect(model.current == .music)
+    }
+
+    /// The shell asks `pageAfterReset` rather than comparing against `rememberedPage`, because the
+    /// two differ in exactly the case that matters — see `AppDelegate.resetPageAfterClose`.
+    @Test("a close from the music page has somewhere to go even though the memory agrees with it")
+    func closeFromMusicMovesEvenWhenRemembered() {
+        let model = IslandPageModel()
+        #expect(model.go(to: .music))
+        model.setMusicAvailable(false)
+        #expect(model.current == model.rememberedPage)
+        #expect(model.current != model.pageAfterReset)
+    }
+
+    /// Home is on every roster there is, so there is always a page to be on and always a page to
+    /// come back to.
+    @Test("home is never taken off the carousel")
+    func homeIsAlwaysThere() {
+        let model = IslandPageModel()
+        model.setMusicAvailable(false)
+        #expect(model.roster.contains(.home))
+        #expect(model.roster.contains(.weather))
+    }
+
+    /// A page that is not on the roster has nowhere to step from, and lands on home rather than
+    /// trapping. Unreachable through the model — it keeps the current page on the roster — and
+    /// pinned because the arithmetic is public and the alternative is an index off the front.
+    @Test("stepping from a page that is not on the roster lands on home")
+    func steppingFromAMissingPage() {
+        let model = IslandPageModel()
+        model.setMusicAvailable(false)
+        let roster = model.roster
+        #expect(roster.stepped(from: .music, by: 1) == .home)
+        #expect(roster.steps(from: .music, to: .weather) == 0)
+        #expect(roster.resolved(.music) == .home)
+        #expect(roster.resolved(.weather) == .weather)
     }
 }

@@ -1,4 +1,5 @@
 import CoreGraphics
+import IslandActivities
 import IslandKit
 import Testing
 
@@ -186,6 +187,63 @@ struct PageDotsVisibilityTests {
 
         m.setExpanded(true, reduceMotion: true)
         #expect(!m.showsPageDots)
+    }
+
+    /// **The greeting opens the island by itself**, at the one moment nobody asked it for anything —
+    /// so the dots are not drawn under it. They come back with the next open, which is the first one
+    /// the user asked for.
+    @Test("a welcome back draws no dots")
+    func theGreetingDrawsNoDots() {
+        let m = model()
+        let pages = IslandPageModel()
+        m.page = pages
+        m.setExpanded(true, reduceMotion: true)
+        #expect(m.showsPageDots)
+
+        let greeting = BuiltInActivity.welcomeBack(greeting: "Welcome back")
+        m.setActivity(
+            ActivityStage(primary: greeting, primaryFlank: ActivityKind.welcomeBack.flankAffinity),
+            change: .presented(greeting.id),
+            reduceMotion: true
+        )
+        #expect(!m.showsPageDots)
+
+        // And a live swipe does not bring them back: the greeting is still what the island is
+        // saying, and this is the one state that is not about the pages at all.
+        m.swipe.beginPaging(toward: nil, span: 368)
+        #expect(!m.showsPageDots)
+        m.swipe.endPaging()
+
+        // They come back when the greeting goes.
+        m.setActivity(nil, change: .dismissed(greeting.id), reduceMotion: true)
+        #expect(m.showsPageDots)
+    }
+
+    /// The room stays reserved either way, like every other state of the dots: the strip's height
+    /// cannot follow its contents without moving the island's bottom edge.
+    @Test("the greeting does not change what the strip reserves")
+    func theGreetingDoesNotMoveTheEdge() {
+        let open = IslandShapeMetrics(
+            bodySize: CGSize(width: 368, height: 200),
+            topCornerRadius: 0,
+            bottomCornerRadius: 22
+        )
+        let m = IslandScreenModel(
+            metricsByForm: [.expanded: open, .expandedWithPageIndicator: open],
+            notchKind: .hardware,
+            cutoutSize: CGSize(width: 185, height: 32)
+        )
+        m.page = IslandPageModel()
+        m.setExpanded(true, reduceMotion: true)
+
+        let greeting = BuiltInActivity.welcomeBack(greeting: "Welcome back")
+        m.setActivity(
+            ActivityStage(primary: greeting, primaryFlank: ActivityKind.welcomeBack.flankAffinity),
+            change: .presented(greeting.id),
+            reduceMotion: true
+        )
+        #expect(!m.showsPageDots)
+        #expect(m.hasPageIndicator)
     }
 
     /// A live swipe keeps them lit whatever the clock says: the carousel is being dragged, so the

@@ -16,7 +16,10 @@ it renders a floating island pinned to the top center.
 
 **Two surfaces, and keeping them apart is the design.** *Pages* are what a person browses — `home →
 music → weather`, wrapping, turned by a two-finger swipe on an open island, with an indicator under
-the cutout. They are a fixed enum (`IslandPage`), so they are always all there. *Activities* are what
+the cutout. They are a fixed enum (`IslandPage`), so what a person can look at is never a function
+of what happened to arrive — with one condition, added in 2.2.0: the music page is on the carousel
+only while something is playing, because a page whose answer is "Not playing" is a third of the
+gesture spent on nothing (`IslandPageRoster`). *Activities* are what
 arrives: a volume key, a timer finishing, a call, a device connecting. They take the stage because
 something happened and they leave on their own. A feature that announces something the user is
 already looking at belongs to neither, and has seven times now been withdrawn — see below.

@@ -245,9 +245,13 @@ public final class IOBluetoothDeviceMonitor: NSObject, BluetoothDeviceMonitoring
         guard connectNotification == nil, !isWakingCoordinator else { return }
         isWakingCoordinator = true
         self.onConnect = onConnect
-        Self.coordinatorQueue.async {
+        // `[weak self]` on the *outer* closure as well as the inner one. The compiler rejects a
+        // weak capture inside a closure that has already captured `self` strongly by implication —
+        // and the two would disagree about lifetime anyway: this hop exists so a monitor that goes
+        // away while the coordinator is waking takes its registration with it.
+        Self.coordinatorQueue.async { [weak self] in
             let present = IOBluetoothHostController.default() != nil
-            Task { @MainActor [weak self] in self?.register(hostControllerPresent: present) }
+            Task { @MainActor in self?.register(hostControllerPresent: present) }
         }
     }
 

@@ -38,7 +38,9 @@ public enum IslandPageIndicatorLayout {
     ///
     /// A constant, and it has to be: `islandPath` tracks a settled shape, so a strip whose height
     /// followed its contents would move the island's bottom edge — and the clickable region with it.
-    /// The page count is fixed, so there is nothing for it to follow anyway.
+    /// One row of dots is one row of dots however many are in it, so there is nothing here for the
+    /// page count to move: a page joining or leaving the carousel changes the row's *width*, which
+    /// is inside the body and moves no edge.
     public static var height: CGFloat { dotSide + topPadding + bottomPadding }
 
     /// The hit target around each dot.
@@ -56,7 +58,10 @@ public enum IslandPageIndicatorLayout {
     }
 }
 
-/// The three dots at the bottom of the open island: which page you are on, and how many there are.
+/// The dots at the bottom of the open island: which page you are on, and how many there are.
+///
+/// Two or three of them — the music page is on the carousel only while something is playing, and
+/// the row is drawn from `IslandPageRoster` so the count is the truth about what a swipe can reach.
 ///
 /// ## Why there is an indicator at all
 ///
@@ -82,6 +87,11 @@ public enum IslandPageIndicatorLayout {
 /// first responder. `.buttonStyle(.plain)` is required rather than cosmetic — the default macOS
 /// style draws a bezel, and a bezel on pure `#000000` is a gray rectangle in a notch.
 struct IslandPageIndicatorView: View {
+
+    /// The dots to draw, in order. `IslandPageRoster`'s list rather than every case of the enum:
+    /// the music page is on the carousel only while something is playing, and a dot for a page a
+    /// swipe cannot reach is a signpost to nowhere.
+    let pages: [IslandPage]
 
     let current: IslandPage
 
@@ -119,8 +129,8 @@ struct IslandPageIndicatorView: View {
     /// it — two seconds after the user stopped touching anything.
     ///
     /// Faded rather than removed also keeps the row in the accessibility tree, which is the point:
-    /// VoiceOver reaches the three pages through these buttons, and a control that disappears on a
-    /// clock is a control a screen reader cannot be given.
+    /// VoiceOver reaches the pages through these buttons, and a control that disappears on a clock
+    /// is a control a screen reader cannot be given.
     let isVisible: Bool
 
     let onSelect: (IslandPage) -> Void
@@ -139,7 +149,7 @@ struct IslandPageIndicatorView: View {
 
     var body: some View {
         HStack(spacing: IslandPageIndicatorLayout.dotSpacing) {
-            ForEach(IslandPage.allCases, id: \.self) { page in
+            ForEach(pages, id: \.self) { page in
                 Button { onSelect(page) } label: {
                     Circle()
                         .fill(fill(for: page))
@@ -169,11 +179,16 @@ struct IslandPageIndicatorView: View {
         .frame(height: IslandPageIndicatorLayout.height)
         .frame(maxWidth: .infinity, alignment: .center)
         .opacity(isVisible ? 1 : 0)
+        // A page joining or leaving the carousel re-centres the row, and it takes the same crossfade
+        // the dots arrive and leave on rather than snapping. It is not a shape change — the strip's
+        // height is reserved either way — so it is `Motion.contentSwap` like everything else that
+        // changes what the island is *saying*. No inline duration, §6.1.
         // `Motion.contentSwap`, the token every other change to what the island is *saying* travels
         // on. The dots arriving and leaving is not the island changing shape — the strip's height is
         // reserved either way — so it takes the crossfade rather than a spring, and it takes the
         // same one a track title changing does. No inline duration, §6.1.
         .animation(Motion.contentSwap, value: isVisible)
+        .animation(Motion.contentSwap, value: pages)
         // Sized to the whole strip, not to the dots: the region that brings them back is the band
         // the pointer would travel into to reach them, and aiming at a 6pt circle that is not drawn
         // yet is not something anyone can do. `PointerPresence` rather than `.onHover` for the

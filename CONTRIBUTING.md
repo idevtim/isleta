@@ -140,7 +140,8 @@ Every module has a `README.md` saying what it owns **and what it deliberately do
 ## Two surfaces, and keeping them apart is the design
 
 **Pages** are what a person browses — `home → music → weather`, wrapping, turned by a two-finger
-swipe. They are a fixed enum, so they are always all there.
+swipe. They are a fixed enum, so what a person can look at is never a function of what happened to
+arrive. The music page is the one condition: it is on the carousel only while something is playing.
 
 **Activities** are what arrives — a volume key, a timer finishing, a call, a device connecting.
 They take the stage because something happened, and they leave on their own.

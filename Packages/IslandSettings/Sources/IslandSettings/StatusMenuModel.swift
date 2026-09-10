@@ -154,9 +154,14 @@ public enum StatusMenuModel {
         /// One optional rather than the `bringsSomethingForward` flag plus a mandatory string it
         /// used to be, and the change is what the pages made of this menu. A row that brings
         /// something the island *holds* to the front can be blocked by there being nothing to hold;
-        /// a row that turns to a **page** cannot, because the pages are a fixed enum and are
-        /// therefore always all there (`IslandPage`). Two fields let those disagree — a nil reason
-        /// beside a true flag, or a reason nothing could ever read.
+        /// a row that turns to a **page** cannot, because a page is there whether or not anything
+        /// has arrived (`IslandPage`). Two fields let those disagree — a nil reason beside a true
+        /// flag, or a reason nothing could ever read.
+        ///
+        /// The music row is the exception that proves it, and it was already written that way: it
+        /// carries a reason, because the page it turns to is on the carousel only while something
+        /// is playing (`IslandPageRoster`) — so the row and the carousel now go dark together
+        /// rather than the row promising a page a swipe could not reach.
         ///
         /// Written as a fact rather than a cause. The model cannot know *why* nothing is playing —
         /// paused, no player running, the adapter refused — and a row that guesses is a row that is

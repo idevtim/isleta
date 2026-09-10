@@ -469,7 +469,9 @@ sample, about 120 a second. Under Observation that makes any page body which rea
 the frame rate, and during a drag there are **three** live pages, so a day, a player and a forecast
 were all being rebuilt per sample. Measured 2026-08-31: an empty island's swipe drops zero frames and
 a loaded one drops a dozen per four turns, which is the whole tell — the cost is not the carousel,
-it is what the carousel is carrying. So a page asks `IslandScreenModel.contentBodyWidth`, which is the
+it is what the carousel is carrying. (A silent Mac draws two of the three since 2.2.0 — the music
+page is on the carousel only while something is playing — which makes that number smaller and
+changes nothing about the argument.) So a page asks `IslandScreenModel.contentBodyWidth`, which is the
 same number without the drag applied, and `IslandLayout.bodyOrigin` has a spelling that takes a width
 rather than a shape. **The width genuinely cannot move under a drag** — all three pages are
 `IslandLayout.expandedBodySize.width` and only their heights differ, and the one surface that is
@@ -481,7 +483,8 @@ shape of the page being left. Measured as a paired delta against an interleaved 
 what `docs/PERFORMANCE.md` asks of any number claimed here; two other suspects were measured on the
 same run and found not to be the cause.
 
-**`--swipe-test` walks it.** It turns three pages and back, then swipes twice with no pause between
+**`--swipe-test` walks it.** It turns the whole carousel and back — as many pages as are on it,
+which is two on a Mac with nothing playing — then swipes twice with no pause between
 and checks *both* turns landed — a one-step check cannot tell "it turned twice" from "it turned once
 and stopped", which is the whole symptom. Two steps and no settle in between, deliberately. Reverted
 against the previous implementation the same binary reports
@@ -493,6 +496,13 @@ Decided 2026-08-29, on the report that three permanent marks under every page ar
 three pages" to somebody who has not moved for a minute and is reading a forecast. **The row of dots
 is a signpost, not a control bar.** What it says is only ever news at the moment the page changes:
 which of the three you arrived on, and that there are others either side.
+
+**And they are not drawn under the greeting at all** (2026-09-10). "Welcome back" opens the island
+by itself, at the one moment the user has not asked it for anything, so a row of dots appearing with
+it is the island answering a question nobody put to it. `IslandScreenModel.showsPageDots` is where
+that is refused; the *room* the strip sits in is untouched, because the strip's height is reserved
+for as long as the island is open and cannot follow its contents without moving the island's bottom
+edge and the hit region pinned to it.
 
 So the dots are lit at a page change, held for `IslandPageModel.indicatorDwell` — **1.2s** — and
 faded on `Motion.contentSwap`. It was 2s, on the argument that that is what a row of three dots is

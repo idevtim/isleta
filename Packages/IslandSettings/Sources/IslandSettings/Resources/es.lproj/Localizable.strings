@@ -35,6 +35,8 @@
 "general.lockScreen" = "Pantalla de bloqueo";
 "general.lockScreen.caption" = "Lo que se está reproduciendo, en la pantalla de bloqueo, mientras estás lejos del Mac. Muestra la carátula, la pista y cuánto lleva sonando: no tiene botones, porque macOS no permite pulsar ahí nada más que el campo de la contraseña. Cualquiera que pase junto al Mac puede ver qué estás escuchando.";
 "general.lockScreen.show" = "Mostrar en la pantalla de bloqueo lo que se reproduce";
+"general.lockScreen.unlockSound" = "Reproducir un sonido al desbloquear el Mac";
+"general.lockScreen.unlockSound.caption" = "Un sonido breve cuando vuelves y el Mac se desbloquea. Al bloquearse no suena nada: el candado que entra en la muesca ya lo dice por sí solo, y a una sala que ya has abandonado.";
 
 "general.menuBar" = "Barra de menús";
 "general.menuBar.show" = "Mostrar Isleta en la barra de menús";

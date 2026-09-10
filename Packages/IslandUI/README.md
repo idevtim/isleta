@@ -245,8 +245,8 @@ Every pixel Isleta draws, and every curve it moves along.
     the default 368 — because it is two lists side by side rather than a column of rows.
     `IslandLayout.expandedWidth` clamps the request so it can only ever widen the island; see that
     function for why a *narrower* one is not expressible.
-  - It wears **no page indicator**. The dots say which of three pages you are on, and this is not
-    one of them — a page turn is refused while it is up. `IslandScreenModel.hasPageIndicator` is the
+  - It wears **no page indicator**. The dots say which page of the carousel you are on, and this is
+    not one of them — a page turn is refused while it is up. `IslandScreenModel.hasPageIndicator` is the
     single property both the shape and the body's own room read, so the strip and the height
     reserved for it cannot disagree.
   - Its two days are **pulled and then forgotten** — `CalendarSource.events(on:)` twice when the
@@ -493,6 +493,31 @@ the title and the artist — and `ActivityLayerView` gives the region up for it,
 would otherwise answer `.compact` and draw the activity's badge in the same rectangle. It does not
 contradict `flankedHeightGrowth` being zero: that rule is about a strip hanging under the notch *at
 rest*, and this one is under the pointer and gone when the pointer is.
+
+## The pages, and what is on the carousel
+
+`IslandPage` is the fixed enum of surfaces a person can browse — `home`, `music`, `weather` —
+and `IslandPageRoster` is the ordered list of the ones a swipe is currently walking. The two are
+not the same list, and since 2.2.0 they differ in one case: **the music page is on the carousel
+only while something is playing.** A page whose answer is "Not playing" is a third of the gesture
+spent on nothing, and it put the forecast two flicks away for somebody who plays no music at all.
+
+What did *not* go with it is the answer itself — the home page keeps its music column and keeps
+saying "Not playing" there, because that column is one half of a page somebody is looking at for
+the other half.
+
+Two rules hold the rest of it together, and both live on `IslandPageModel` so no caller can forget
+them:
+
+- **The page you are standing on is always on the roster.** A track ending while the player is open
+  leaves it where it is; the page goes when the user turns away from it or when the island closes.
+  The alternative is the island turning a page by itself because a song finished.
+- **The remembered page is resolved rather than corrected.** Somebody who lives on the player still
+  lives there: closing on music with nothing playing comes back to home, and the next track brings
+  the memory back with it.
+
+The shell holds the answer while a page is moving (`AppDelegate.refreshMusicPage`), because the
+roster decides what a swipe's neighbours are and what its commit lands on.
 
 ## The swipe (§5)
 

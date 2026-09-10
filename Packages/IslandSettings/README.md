@@ -7,8 +7,8 @@ What the user has asked Isleta to do, where that answer is kept, and the window 
 - **`IsletaConfiguration`** — the configuration model. A value type: whole copies are handed out, so
   no reader ever sees half an edit, and `Equatable` is what lets a no-op "change" be dropped instead
   of echoing round the callbacks. The global toggle shortcut (§5), the per-source switches, the glance's
-  calendars and place, the lock-screen card, the hidden-application list, HUD suppression, and
-  whether updates are checked automatically. **Every field in
+  calendars and place, the lock-screen card, the unlock sound, the hidden-application list, HUD
+  suppression, and whether updates are checked automatically. **Every field in
   it has a live reader** — that is the rule the record is kept to, and schema 4 is where the two that
   did not were removed.
 - **`SourceToggles`** — which of Isleta's sources may run (§8.1.4), keyed by `ActivityKind`. That
@@ -430,6 +430,19 @@ the hardware rather than about the build, so the app shell answered `hasSynthesi
 card came and went with the display. The pattern is worth keeping even though the setting is not: a
 caption saying "this may do nothing on your Mac" was the previous answer and is worse, because the
 user drags it, sees nothing change, and now has a sentence to disbelieve.
+
+**One setting has been folded and then unfolded**, which is worth a paragraph because the second
+move is the unusual one. Schema 17 had `playsLockScreenSounds` beside `showsNowPlayingOnLockScreen`;
+schema 18 folded it in, on the argument that "show me what is playing" and "make a noise" are the
+same *decision*. Schema 26 undid that. What the fold got wrong is that the two are about different
+people — the card is shown to whoever walks past a Mac its owner has left, and the sound is heard by
+the owner coming back — so the combination it called unsettable turned out to be one people wanted.
+
+The step that undoes it is the shape any un-fold has to take: **seed, do not default.** The new key
+is absent from every file written before it, and the lenient decoder reads absent as `false`, which
+would have taken the sound away from every Mac that had been making it since 2.0 with nothing
+anywhere saying why. `migrateV25ToV26` copies the value out of the field that had been standing in
+for it instead. See `LockScreenSettingsTests`, which pins both directions.
 
 ## The first run
 

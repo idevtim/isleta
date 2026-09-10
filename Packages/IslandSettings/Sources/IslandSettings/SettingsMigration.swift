@@ -105,6 +105,7 @@ public enum SettingsMigration {
         if version < 22 { migrateV21ToV22(&object) }
         if version < 23 { migrateV22ToV23(&object) }
         if version < 25 { migrateV24ToV25(&object) }
+        if version < 26 { migrateV25ToV26(&object) }
 
         object["schemaVersion"] = IsletaConfiguration.currentSchemaVersion
         return object
@@ -525,6 +526,11 @@ public enum SettingsMigration {
     /// case is the cost of the fold and it is stated rather than hidden — it is a combination the
     /// pane no longer offers, and there is no honest way to keep it without keeping the switch.
     ///
+    /// **Undone by `migrateV25ToV26`**, which gives the sound a key of its own again and seeds it
+    /// from the field it was folded into. The old key is still not carried across: a value dropped
+    /// here has been gone for eight schema versions, and a file that still holds one predates this
+    /// step and cannot reach that one.
+    ///
     /// ## No type sweep
     ///
     /// Every other additive step in this file ends with one, because a `defaults write` of the wrong
@@ -725,6 +731,34 @@ public enum SettingsMigration {
     static func migrateV24ToV25(_ object: inout [String: Any]) {
         object["suppressSystemHUDs"] = nil
         object["suppressBrightnessHUD"] = nil
+    }
+
+    /// Version 25 → 26: the unlock sound gets its own key back, seeded from the card's.
+    ///
+    /// **An addition that cannot be left to the decoder**, unlike most of them. `playsUnlockSound`
+    /// is absent from every file written before this schema, and absent reads as its default —
+    /// `false` — which would take the sound away from everybody who has had it since schema 18
+    /// folded it into `showsNowPlayingOnLockScreen`. Nobody would have asked for that, and the only
+    /// evidence of it is a Mac that has stopped making a noise.
+    ///
+    /// So the value is copied across from the field that has been standing in for it, which is what
+    /// that field has meant since 18: the card on meant the sound on. A user who wanted the card
+    /// without the sound could not say so until now and gets one unlock's worth of surprise before
+    /// the new switch is there to turn off, which is the honest cost of unfolding and is the smaller
+    /// of the two.
+    ///
+    /// The type check is `removeNonBooleans`' reason for existing: `defaults write` can leave a
+    /// string in `showsNowPlayingOnLockScreen`, and seeding from one would put a string in a key
+    /// that must hold a boolean. A blob with no card key at all — every file older than schema 16 —
+    /// is left alone and falls through to the default, which is right: silence is what those
+    /// installs have always had.
+    static func migrateV25ToV26(_ object: inout [String: Any]) {
+        removeNonBooleans(["playsUnlockSound"], from: &object)
+        guard object["playsUnlockSound"] == nil else { return }
+        guard let card = object["showsNowPlayingOnLockScreen"],
+              CFGetTypeID(card as CFTypeRef) == CFBooleanGetTypeID()
+        else { return }
+        object["playsUnlockSound"] = card
     }
 
     static func migrateV21ToV22(_ object: inout [String: Any]) {

@@ -563,11 +563,15 @@ public struct SettingsView: View {
     /// - **It shows to whoever is in the room.** That is the actual trade, and it is the reason this
     ///   is a switch rather than something Isleta just does.
     ///
-    /// **One switch, where 2.0 had two.** The second governed the lock and unlock sounds, on the
-    /// argument that "show me what is playing" and "make a noise" are different questions. They are,
-    /// and they are not different *decisions* — see `IsletaConfiguration.showsNowPlayingOnLockScreen`.
-    /// The caption names the sound so a user knows what they are agreeing to before they hear it in
-    /// a meeting.
+    /// **Two switches, where 2.1 had one**, and the second is the sound. They were folded together
+    /// at schema 18 on the argument that "show me what is playing" and "make a noise" are the same
+    /// decision; they are not, because they are about different people — the card is shown to
+    /// whoever walks past a Mac its owner has left, and the sound is heard by the owner coming
+    /// back. See `IsletaConfiguration.playsUnlockSound`.
+    ///
+    /// The sound's caption says when it plays and that it is the only one, because the question a
+    /// person asks of a switch called "unlock sound" is whether their Mac is also going to make a
+    /// noise when it locks in a meeting. It does not, and has not since 2026-08-26.
     ///
     /// What is deliberately *not* said is anything about SkyLight or space levels. The user is
     /// choosing a feature, not auditing an implementation, and `docs/NAMING.md` is explicit that a
@@ -579,8 +583,7 @@ public struct SettingsView: View {
                 What is playing, on the Lock Screen, while you are away from the Mac. It shows the \
                 artwork, the track and how far through it is — it has no buttons, because macOS does \
                 not let anything but the password field be tapped there. Anyone who walks past the \
-                Mac can see what you are listening to, and coming back plays a short sound of \
-                macOS's own.
+                Mac can see what you are listening to.
                 """)) {
                 Toggle(
                     settingsText("general.lockScreen.show", "Show what is playing on the Lock Screen"),
@@ -590,6 +593,22 @@ public struct SettingsView: View {
                             store.update { $0.showsNowPlayingOnLockScreen = newValue }
                         }
                     )
+                )
+            }
+
+            SettingsDivider()
+
+            // A sibling of the card above rather than a switch indented under it: it does not depend
+            // on the card being on, and drawing it as though it did would be the pane telling a lie
+            // about what turning the card off does.
+            SettingsRow(caption: settingsText("general.lockScreen.unlockSound.caption", """
+                A short sound when you come back and the Mac unlocks. Nothing is played when it \
+                locks — the padlock going into the notch says that on its own, and to a room you \
+                have already left.
+                """)) {
+                Toggle(
+                    settingsText("general.lockScreen.unlockSound", "Play a sound when the Mac unlocks"),
+                    isOn: binding(\.playsUnlockSound)
                 )
             }
         }

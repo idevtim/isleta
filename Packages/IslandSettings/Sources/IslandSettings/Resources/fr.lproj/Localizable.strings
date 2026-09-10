@@ -35,6 +35,8 @@
 "general.lockScreen" = "Écran verrouillé";
 "general.lockScreen.caption" = "Ce qui est en cours de lecture, sur l’écran verrouillé, pendant que vous êtes loin du Mac. La pochette, le morceau et sa progression s’affichent — sans boutons, car macOS ne laisse rien d’autre que le champ du mot de passe y être touché. Quiconque passe devant le Mac peut voir ce que vous écoutez.";
 "general.lockScreen.show" = "Afficher sur l’écran verrouillé ce qui est en cours de lecture";
+"general.lockScreen.unlockSound" = "Émettre un son au déverrouillage du Mac";
+"general.lockScreen.unlockSound.caption" = "Un son bref quand vous revenez et que le Mac se déverrouille. Rien n’est joué au verrouillage — le cadenas qui rentre dans l’encoche le dit déjà tout seul, et à une pièce que vous avez déjà quittée.";
 
 "general.menuBar" = "Barre des menus";
 "general.menuBar.show" = "Afficher Isleta dans la barre des menus";

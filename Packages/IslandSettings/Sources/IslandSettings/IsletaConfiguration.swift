@@ -104,13 +104,14 @@ public struct IsletaConfiguration: Equatable, Sendable {
     /// to a room the owner has walked away from — which is a choice to make rather than to assume,
     /// even though iOS makes the same one the other way.
     ///
-    /// **One switch, where schema 17 had two.** The sounds were `playsLockScreenSounds`, on the
-    /// argument that "show me what is playing" and "make a noise" are different questions. They are,
-    /// and they are not different *decisions*: both are answered by whether the user wants Isleta on
-    /// their lock screen at all, and a second switch under the first bought a combination — the
-    /// sound without the card — that reads as a setting nobody set. Folding it costs the user who
-    /// wanted exactly that combination and nobody else; the two ordinary answers are unchanged, and
-    /// silence is still what an install that has never opened this pane does.
+    /// **The card only, since schema 26.** It governed the unlock sound too between schemas 18 and
+    /// 25 — the fold argued that "show me what is playing" and "make a noise" are the same
+    /// *decision*, both answered by whether somebody wants Isleta on their lock screen at all. They
+    /// are not, and the combination the fold called unsettable is the one the owner wanted: the
+    /// sound is heard by the person coming back to the Mac, and the card is shown to whoever walks
+    /// past it while they are away. So the two questions are asked separately again — see
+    /// `playsUnlockSound`, which schema 26 seeds from whatever this field was, so nobody's Mac
+    /// changes what it does on upgrade.
     ///
     /// There is no companion switch for controls, because there can never be controls: loginwindow
     /// captures every event on the locked screen. See `LockScreenPanel`.
@@ -177,6 +178,32 @@ public struct IsletaConfiguration: Equatable, Sendable {
     /// HUD back must be able to have it without giving up the volume one.
     public var suppressBrightnessHUD: Bool
 
+    /// Whether coming back to the Mac makes a sound.
+    ///
+    /// **Appended, never inserted**, like every field added to this struct: a stored property put in
+    /// the middle of a record five packages read is the memory-layout trap `docs/TRAPS.md` records,
+    /// and it does not announce itself. It reads next to `showsNowPlayingOnLockScreen` in the
+    /// settings pane and nowhere else needs them adjacent.
+    ///
+    /// **Its own switch again as of schema 26**, and the third time this question has been asked.
+    /// It was `playsLockScreenSounds` at schema 17 and governed two sounds; the lock's went on
+    /// 2026-08-26, because the lock already has an animation to say what happened and a sound on
+    /// top of it is heard by the room the user has just left. Schema 18 folded what was left into
+    /// the card. What that fold got wrong is that the two are about different people: the card is
+    /// shown to whoever walks past a Mac its owner has walked away from, and the sound is heard by
+    /// the owner coming back. Somebody can reasonably want the second without the first, and
+    /// somebody with the card on can reasonably want their Mac to be quiet.
+    ///
+    /// Defaults to `false`, so a fresh install is silent — the same answer the fold gave, since the
+    /// card it was folded into is off by default too. An *upgrade* is not defaulted: schema 26
+    /// seeds this from `showsNowPlayingOnLockScreen`, so a Mac that made the sound goes on making
+    /// it and a Mac that did not stays quiet.
+    ///
+    /// Independent of the card at runtime as well as in the record — `LockScreenController` plays it
+    /// before the guard that builds any of the surface, because it is about the unlock rather than
+    /// about the card. What it plays is in `LockScreenSound`.
+    public var playsUnlockSound: Bool
+
     public init(
         schemaVersion: Int = IsletaConfiguration.currentSchemaVersion,
         suppressSystemHUDs: Bool = true,
@@ -189,7 +216,8 @@ public struct IsletaConfiguration: Equatable, Sendable {
         glance: GlanceSettings = .defaults,
         showsNowPlayingOnLockScreen: Bool = false,
         hiddenApplications: [String] = [],
-        minimalOnSynthesizedDisplays: Bool = false
+        minimalOnSynthesizedDisplays: Bool = false,
+        playsUnlockSound: Bool = false
     ) {
         self.schemaVersion = schemaVersion
         self.suppressSystemHUDs = suppressSystemHUDs
@@ -206,6 +234,7 @@ public struct IsletaConfiguration: Equatable, Sendable {
         self.showsNowPlayingOnLockScreen = showsNowPlayingOnLockScreen
         self.hiddenApplications = hiddenApplications
         self.minimalOnSynthesizedDisplays = minimalOnSynthesizedDisplays
+        self.playsUnlockSound = playsUnlockSound
     }
 
     /// The schema version this build writes.
@@ -257,7 +286,13 @@ public struct IsletaConfiguration: Equatable, Sendable {
     /// **Version 22 removes `sources.transfers`.** Downloads are withdrawn — the folder watcher,
     /// the source, `ActivityKind.transfer` and the settings row — so the switch goes with the kind
     /// it gated rather than being left as a key nothing reads.
-    public static let currentSchemaVersion = 25
+    ///
+    /// **Version 26 adds `playsUnlockSound`**, which is schema 18's fold undone. Additive, and the
+    /// one addition in this list that is *not* left to the decoder's leniency: absent, the key would
+    /// read as `false` and go quiet on every Mac that has been making the sound since 2.0. The step
+    /// seeds it from `showsNowPlayingOnLockScreen` instead, which is exactly what the folded field
+    /// meant, so no Mac changes what it does on upgrade.
+    public static let currentSchemaVersion = 26
 
     /// What a machine that has never opened Settings runs with.
     public static let defaults = IsletaConfiguration()
@@ -286,6 +321,7 @@ public struct IsletaConfiguration: Equatable, Sendable {
         if old.minimalOnSynthesizedDisplays != new.minimalOnSynthesizedDisplays {
             keys.append("minimalOnSynthesizedDisplays")
         }
+        if old.playsUnlockSound != new.playsUnlockSound { keys.append("playsUnlockSound") }
         return keys
     }
 }
@@ -317,6 +353,7 @@ extension IsletaConfiguration: Codable {
         try container.encode(showsNowPlayingOnLockScreen, forKey: .showsNowPlayingOnLockScreen)
         try container.encode(hiddenApplications, forKey: .hiddenApplications)
         try container.encode(minimalOnSynthesizedDisplays, forKey: .minimalOnSynthesizedDisplays)
+        try container.encode(playsUnlockSound, forKey: .playsUnlockSound)
     }
 
     enum CodingKeys: String, CodingKey {
@@ -332,6 +369,7 @@ extension IsletaConfiguration: Codable {
         case showsNowPlayingOnLockScreen
         case hiddenApplications
         case minimalOnSynthesizedDisplays
+        case playsUnlockSound
     }
 
     /// Decoding is deliberately lenient: any key that is missing or malformed falls back to its
@@ -386,6 +424,11 @@ extension IsletaConfiguration: Codable {
         minimalOnSynthesizedDisplays = value(
             .minimalOnSynthesizedDisplays, defaults.minimalOnSynthesizedDisplays
         )
+        // Absent from every file written before schema 26, which the leniency above reads as the
+        // default — silence. `migrateV25ToV26` is what stops that being the answer for somebody who
+        // already had the sound: it writes this key from the card's own value before the decoder
+        // ever sees the blob, so "absent" here means a genuinely new install rather than an upgrade.
+        playsUnlockSound = value(.playsUnlockSound, defaults.playsUnlockSound)
 
         // Applied last, because `toggleHotKey` is a computed forwarder and writing through it
         // touches `self` — which is not allowed until every stored property exists.

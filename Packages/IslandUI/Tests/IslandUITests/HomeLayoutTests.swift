@@ -383,7 +383,7 @@ struct PageIndicatorDragTests {
 
         // Content pushed left is the *next* page arriving from the right.
         model.swipe.track(-184)
-        #expect(model.pageBeingDraggedTo == pages.current.next)
+        #expect(model.pageBeingDraggedTo == pages.page(steppedBy: 1))
         #expect(abs(model.pageDragProgress - 0.5) < 0.001)
 
         model.swipe.track(-368)
@@ -391,7 +391,7 @@ struct PageIndicatorDragTests {
 
         // And the other way.
         model.swipe.track(184)
-        #expect(model.pageBeingDraggedTo == pages.current.previous)
+        #expect(model.pageBeingDraggedTo == pages.page(steppedBy: -1))
 
         model.swipe.endPaging()
         #expect(model.pageBeingDraggedTo == nil)

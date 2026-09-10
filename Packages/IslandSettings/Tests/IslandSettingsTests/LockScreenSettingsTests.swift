@@ -126,4 +126,106 @@ struct LockScreenSettingsTests {
         let keys = IsletaConfiguration.changedKeys(from: .defaults, to: edited)
         #expect(keys.contains("showsNowPlayingOnLockScreen"))
     }
+
+    // MARK: - Schema 26: the unlock sound comes back out of the card
+
+    /// A new install is silent, which is the answer the fold gave too — the card it was folded into
+    /// is off by default, so nothing has changed for anybody installing Isleta for the first time.
+    @Test("a fresh install makes no sound at the unlock")
+    func unlockSoundDefaultsToOff() {
+        #expect(!IsletaConfiguration.defaults.playsUnlockSound)
+    }
+
+    /// **The half that cannot be left to the decoder.** Between schemas 18 and 25 the card *was*
+    /// the sound, so every Mac with the card on has been making it. Absent this seeding the new key
+    /// would decode to its default and those Macs would simply go quiet on upgrade, with nothing
+    /// anywhere saying why.
+    @Test("an upgrade from the fold keeps the sound the card was making", arguments: [18, 20, 25])
+    func upgradeSeedsTheSoundFromTheCard(version: Int) throws {
+        let blob = try JSONSerialization.data(withJSONObject: [
+            "schemaVersion": version,
+            "showsNowPlayingOnLockScreen": true,
+        ])
+        let decoded = try SettingsMigration.decode(blob)
+        #expect(decoded.playsUnlockSound, "the sound survives the upgrade from \(version)")
+        #expect(decoded.showsNowPlayingOnLockScreen)
+    }
+
+    /// The other direction, and the one that would be worse to get wrong: a Mac that has never made
+    /// a sound must not start because a key appeared.
+    @Test("an upgrade with the card off stays silent")
+    func upgradeWithoutTheCardStaysSilent() throws {
+        let blob = try JSONSerialization.data(withJSONObject: [
+            "schemaVersion": 25,
+            "showsNowPlayingOnLockScreen": false,
+        ])
+        let decoded = try SettingsMigration.decode(blob)
+        #expect(!decoded.playsUnlockSound)
+    }
+
+    /// A file that predates the card entirely has nothing to seed from, and silence is what those
+    /// installs have always had.
+    @Test("a file with no card key at all is left silent")
+    func upgradeWithNoCardKeyStaysSilent() throws {
+        let blob = try JSONSerialization.data(withJSONObject: ["schemaVersion": 15])
+        let decoded = try SettingsMigration.decode(blob)
+        #expect(!decoded.playsUnlockSound)
+    }
+
+    /// `defaults write` can put a string anywhere, and a string in the *source* of the seed would
+    /// put one in the key being seeded. Both are dropped rather than copied.
+    @Test("a hand-written non-boolean is dropped rather than seeded")
+    func migrationDropsNonBooleanUnlockSound() {
+        let migrated = SettingsMigration.migrate([
+            "schemaVersion": 25,
+            "showsNowPlayingOnLockScreen": true,
+            "playsUnlockSound": "false",
+        ])
+        // Dropped, and then seeded from the card — which is the honest answer for a value that
+        // could not be read: what this Mac was actually doing before the upgrade.
+        #expect(migrated["playsUnlockSound"] as? Bool == true)
+
+        let fromString = SettingsMigration.migrate([
+            "schemaVersion": 25,
+            "showsNowPlayingOnLockScreen": "true",
+        ])
+        #expect(fromString["playsUnlockSound"] == nil)
+    }
+
+    /// A value this build wrote is never re-seeded: the step only fills a key that is not there, so
+    /// somebody who turns the sound off keeps it off through every later launch.
+    @Test("an answer already given is not overwritten by the card")
+    func existingAnswerSurvives() {
+        let migrated = SettingsMigration.migrate([
+            "schemaVersion": 25,
+            "showsNowPlayingOnLockScreen": true,
+            "playsUnlockSound": false,
+        ])
+        #expect(migrated["playsUnlockSound"] as? Bool == false)
+    }
+
+    /// The combination the fold could not express, and the reason it was undone: the sound with no
+    /// card, and the card with no sound. Both have to survive a round trip.
+    @Test("the sound and the card are independent")
+    func soundAndCardAreIndependent() throws {
+        var soundOnly = IsletaConfiguration.defaults
+        soundOnly.playsUnlockSound = true
+        let decodedSoundOnly = try SettingsMigration.decode(SettingsMigration.encode(soundOnly))
+        #expect(decodedSoundOnly.playsUnlockSound)
+        #expect(!decodedSoundOnly.showsNowPlayingOnLockScreen)
+
+        var cardOnly = IsletaConfiguration.defaults
+        cardOnly.showsNowPlayingOnLockScreen = true
+        let decodedCardOnly = try SettingsMigration.decode(SettingsMigration.encode(cardOnly))
+        #expect(decodedCardOnly.showsNowPlayingOnLockScreen)
+        #expect(!decodedCardOnly.playsUnlockSound)
+    }
+
+    @Test("turning the sound on is a named change")
+    func soundChangeIsNamed() {
+        var edited = IsletaConfiguration.defaults
+        edited.playsUnlockSound = true
+        let keys = IsletaConfiguration.changedKeys(from: .defaults, to: edited)
+        #expect(keys.contains("playsUnlockSound"))
+    }
 }

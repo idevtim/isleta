@@ -599,6 +599,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // carrying the right shape table rather than acquiring it one activity later.
         restateExpandedContentHeight()
 
+        // And the carousel, for the same reason and against the same silence: the music page is on
+        // it only while something is playing, and a Mac that plays nothing never produces the
+        // activity change that would say so. Left unpushed, the first island of the session would
+        // open onto a three-page carousel with an empty player in it.
+        refreshMusicPage()
+
         // Record the launch figure once the island's first frame has been committed to the render
         // server, rather than at the end of this method — the panels are ordered in during
         // `start()` but nothing is on screen until the transaction commits.
@@ -654,7 +660,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                 model.setExpanded(true, reduceMotion: reduceMotion, completion: completion)
                             }
                         },
-                        currentPage: { [weak self] in self?.pages.current ?? .home }
+                        currentPage: { [weak self] in self?.pages.current ?? .home },
+                        roster: { [weak self] in self?.pages.roster ?? .all }
                     ) { result in
                         print("swipe self-test: \(result)")
                         if PerformanceProbe.reportModeDuration() == nil { NSApp.terminate(nil) }
@@ -1138,7 +1145,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// when nothing was on stage, and its own note said twice that it "has to agree with
     /// `IslandScreenModel.hasPageIndicator` exactly" — because a strip the island grew for but
     /// reserved no height for is drawn over the last thing in the body, and a reserve with no strip
-    /// in it is dead island. The pages are fixed, so both answers are unconditional and there is
+    /// in it is dead island. One row of dots is one row of dots whether there are two or three in it
+    /// — see `IslandPageIndicatorLayout.height` — so both answers are unconditional and there is
     /// nothing left to keep in step.
     ///
     /// Still a property rather than the constant inlined at each of its call sites, so a build that
@@ -2295,7 +2303,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // the destination. Asked against `.home` it skipped the reset for somebody closing on home
         // with music remembered, and the island reopened where it closed rather than where it was
         // told to.
-        guard pages.current != pages.rememberedPage else { return }
+        //
+        // `pageAfterReset` and not `rememberedPage`, because the two differ in exactly the case
+        // this has to catch: closing on the music page after the music stopped. The memory still
+        // says music — deliberately, so a player somebody lives on survives a quiet evening — and
+        // the destination is home, because the page is no longer on the carousel. Compared against
+        // the memory, the guard would return here and the island would reopen on a page that is
+        // not in its own row of dots.
+        guard pages.current != pages.pageAfterReset else { return }
         withTransaction(Transaction(animation: nil)) {
             pages.reset()
         }
@@ -2329,6 +2344,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // an empty title beside an empty artist is worse than the "Not playing" placeholder, which
         // at least says what it means. `IslandScreenModel.trackLipContent` refuses on the same test.
         return content.title == nil ? nil : content
+    }
+
+    /// Whether anything is playing, as the carousel needs to know it. The shell's copy of
+    /// `nowPlayingContent != nil`, kept because the answer has to be re-applied at a moment that is
+    /// not the moment it changed — see `refreshMusicPage()`.
+    private var musicPageHasTrack = false
+
+    /// Puts the music page on the carousel, or takes it off.
+    ///
+    /// **Never while a page is moving.** The roster decides what a swipe's neighbours are and what
+    /// its commit steps onto, so a page joining or leaving mid-gesture would land the carousel
+    /// somewhere nobody was heading for — and would rebuild the two neighbour views under a finger
+    /// that is dragging them. `isPaging` covers the tail as well as the drag: the swap happens at
+    /// the commit and the last third of a page travels afterwards, and that tail is still a page
+    /// moving. Re-asked from both gestures' completions, which is what makes the deferral a delay
+    /// rather than a dropped update.
+    ///
+    /// The page the user is *standing on* is never taken away — that rule lives in
+    /// `IslandPageModel.refreshRoster()`, not here, so it cannot be lost by a caller.
+    private func refreshMusicPage() {
+        guard !models.values.contains(where: { $0.swipe.isPaging }) else { return }
+        pages.setMusicAvailable(musicPageHasTrack)
     }
 
     // MARK: - Dragging a page
@@ -2369,7 +2406,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // are certainly being read — so the clock is stopped here and restarted where the gesture
         // ends, in `settlePageDrag` and in `commitPageDrag`'s landing.
         pages.holdIndicator()
-        let destination = pages.current.stepped(by: heading)
+        let destination = pages.page(steppedBy: heading)
         let stage = activities.stage
         let height = expandedContentHeightForStage(
             presentations: stage?.primary.presentations,
@@ -2411,6 +2448,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 // Nothing turned, so nothing called `showIndicator`: the dots have been held since
                 // `beginPageDrag` and this is what starts their dwell. Idempotent across screens.
                 self?.pages.releaseIndicator()
+                // Any change to what is playing that arrived during the gesture was held back until
+                // the pages stopped moving, which is now. Idempotent across screens, like the line
+                // above it.
+                self?.refreshMusicPage()
                 self?.controller?.setHitRegion(to: model.hitRegionMetrics, forScreen: screen.id)
             }
         }
@@ -2448,7 +2489,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         pageDragStep = 0
         let stage = activities.stage
         let departing = pages.current
-        let page = departing.stepped(by: step)
+        let page = pages.page(steppedBy: step)
         let height = expandedContentHeightForStage(
             presentations: stage?.primary.presentations,
             kind: stage?.primary.kind,
@@ -2508,6 +2549,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 // a second before the page finishes arriving. Restarted here so the two seconds are
                 // measured from the page landing, which is when there is something to read.
                 self.pages.releaseIndicator()
+                // And the carousel is free to change again: a track that started or ended during
+                // the swipe is applied now that nothing is travelling. See `refreshMusicPage`.
+                self.refreshMusicPage()
                 self.controller?.setHitRegion(to: model.hitRegionMetrics, forScreen: screen.id)
             }
         }
@@ -2518,7 +2562,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard pages.canTurn else { return }
         // A dot has no direction of its own, so it takes the shorter way round — sliding the way the
         // row of dots is laid out rather than always from the same side.
-        applyPageChange(direction: pages.current.steps(to: page) >= 0 ? 1 : -1) { [weak self] in
+        applyPageChange(direction: pages.steps(to: page) >= 0 ? 1 : -1) { [weak self] in
             self?.pages.go(to: page) ?? false
         }
     }
@@ -2626,8 +2670,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// used to bring a kind the stack was already holding to the front, which worked only while the
     /// calendar stood on the stack as an ambient activity. It does not any more (see
     /// `ActivityKind.glance`), and "Show Now Playing" landing on whichever page the island happened
-    /// to close on was never what the row said. The pages are a fixed enum, so this is total: there
-    /// is always a page to turn to.
+    /// to close on was never what the row said. Every page this is called with is one the menu has
+    /// already checked it can reach — the Now Playing row is disabled while nothing is playing, and
+    /// `IslandPageModel.go(to:)` refuses a page that is not on the carousel besides.
     ///
     /// - Parameter pinning: a kind to hold at the head of the stack first, or nil. Only the music
     ///   page has one, and it is not decoration: `IslandScreenModel.drawsPages` lets an activity
@@ -2697,6 +2742,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Read once for the loop below rather than per screen: it walks the stack, and every island
         // is showing the same track.
         let playingContent = nowPlayingContent
+        // What is playing decides whether the music page is on the carousel at all — see
+        // `IslandPageRoster`. Held here and applied through `refreshMusicPage`, which knows when it
+        // is safe to change what a swipe is walking.
+        musicPageHasTrack = playingContent != nil
+        refreshMusicPage()
         // An auto-stow is about **music the user has finished with**, and about nothing else.
         // Anything else reaching the stage — a HUD, a timer, a call — is a thing the island
         // exists to show, and delivering it into an island Isleta had quietly put away would make a
@@ -3753,9 +3803,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         lockScreen.attach(activities: activities)
         lockScreen.start()
         lockScreen.apply(isEnabled: settings.configuration.showsNowPlayingOnLockScreen)
-        // The sounds follow the card since schema 18 — see
-        // `IsletaConfiguration.showsNowPlayingOnLockScreen`, which is where the fold is argued.
-        lockScreen.apply(playsSounds: settings.configuration.showsNowPlayingOnLockScreen)
+        // The sound is its own switch again since schema 26 — see
+        // `IsletaConfiguration.playsUnlockSound`, which is where the unfold is argued. It is applied
+        // whether or not the card is on: the unlock plays before anything is built, because it is
+        // about the unlock rather than about the card.
+        lockScreen.apply(playsSounds: settings.configuration.playsUnlockSound)
         self.lockScreen = lockScreen
         // After `apply(isEnabled:)`, which the demo overrides: a run with the setting off would
         // otherwise turn the surfaces on and then immediately tear them down.
@@ -4922,9 +4974,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // on equality internally: this function runs on *every* settings change, including the ones
         // about something else entirely.
         lockScreen?.apply(isEnabled: configuration.showsNowPlayingOnLockScreen)
-        // The sounds follow the card since schema 18 — see
-        // `IsletaConfiguration.showsNowPlayingOnLockScreen`, which is where the fold is argued.
-        lockScreen?.apply(playsSounds: configuration.showsNowPlayingOnLockScreen)
+        // Its own switch since schema 26, and applied on its own terms — see
+        // `IsletaConfiguration.playsUnlockSound`.
+        lockScreen?.apply(playsSounds: configuration.playsUnlockSound)
 
         // The list is read at the moment the frontmost app changes rather than captured, so this
         // call is only for the case the notification cannot cover: adding, or removing, the app the

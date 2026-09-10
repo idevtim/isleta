@@ -35,6 +35,8 @@
 "general.lockScreen" = "Sperrbildschirm";
 "general.lockScreen.caption" = "Was gerade läuft, auf dem Sperrbildschirm, während du nicht am Mac bist. Es zeigt das Cover, den Titel und wie weit er fortgeschritten ist – es hat keine Tasten, denn macOS lässt dort nur das Passwortfeld antippen. Alle, die am Mac vorbeigehen, können sehen, was du hörst.";
 "general.lockScreen.show" = "Auf dem Sperrbildschirm anzeigen, was läuft";
+"general.lockScreen.unlockSound" = "Beim Entsperren des Mac einen Ton abspielen";
+"general.lockScreen.unlockSound.caption" = "Ein kurzer Ton, wenn du zurückkommst und der Mac entsperrt wird. Beim Sperren wird nichts abgespielt – das Schloss, das in die Aussparung fährt, sagt das schon von selbst, und zwar einem Raum, den du bereits verlassen hast.";
 
 "general.menuBar" = "Menüleiste";
 "general.menuBar.show" = "Isleta in der Menüleiste anzeigen";

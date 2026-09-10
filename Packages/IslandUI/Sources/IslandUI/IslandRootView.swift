@@ -155,10 +155,17 @@ public struct IslandRootView: View {
                     // a `CALayer` equaliser and the weather page a precipitation view, and keeping
                     // all three alive whenever the island is open would spend the idle budget on
                     // two surfaces nobody is looking at. See `IslandSwipeModel.isPaging`.
+                    //
+                    // The neighbours come from the **roster** rather than from the enum, so a
+                    // carousel with the music page off it drags between the two pages it actually
+                    // has. On a two-page roster both neighbours are the same page and both are
+                    // built — which is what a two-page carousel is, and costs nothing that the
+                    // three-page one did not already: only the one being dragged toward is ever on
+                    // screen. See `IslandPageRoster`.
                     if model.swipe.isPaging, !glance.isShowingSchedule, model.presentedKind != .meeting {
-                        page(model.currentPage.previous, glance: glance)
+                        page(model.pageRoster.previous(before: model.currentPage), glance: glance)
                             .offset(x: -model.swipe.pageSpan)
-                        page(model.currentPage.next, glance: glance)
+                        page(model.pageRoster.next(after: model.currentPage), glance: glance)
                             .offset(x: model.swipe.pageSpan)
                     }
 

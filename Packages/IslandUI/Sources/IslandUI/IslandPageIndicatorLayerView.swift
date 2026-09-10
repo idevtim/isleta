@@ -17,6 +17,7 @@ struct IslandPageIndicatorLayerView: View {
             let origin = IslandLayout.bodyOrigin(for: metrics, in: proxy.size)
 
             IslandPageIndicatorView(
+                pages: model.pageRoster.pages,
                 current: model.currentPage,
                 incoming: model.pageBeingDraggedTo,
                 progress: model.pageDragProgress,
