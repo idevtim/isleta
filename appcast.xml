@@ -20,10 +20,71 @@
 -->
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
-        <title>2.1.2</title>
+        <title>2.2.0</title>
         <link>https://tryisleta.com</link>
         <description>Updates for Isleta.</description>
         <language>en</language>
+        <item>
+            <title>2.2.0</title>
+            <pubDate>Thu, 10 Sep 2026 09:15:29 -0400</pubDate>
+            <link>https://github.com/idevtim/isleta</link>
+            <sparkle:fullReleaseNotesLink>https://github.com/idevtim/isleta/releases</sparkle:fullReleaseNotesLink>
+            <sparkle:version>2.2.0</sparkle:version>
+            <sparkle:shortVersionString>2.2.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Isleta 2.2.0
+
+The music page is there when there is music. On a quiet Mac the island turns between two pages
+instead of three, and the sound the Mac makes when you unlock it is now a switch of its own.
+
+## New
+
+- **A switch for the unlock sound.** Settings ▸ General ▸ Lock Screen has its own control for
+  the short sound Isleta plays when you come back and the Mac unlocks. It is set to whatever your
+  Mac was already doing, so nothing changes until you change it.
+
+## Improved
+
+- **The island stops showing a player with nothing in it.** With nothing playing, a two-finger swipe
+  goes from the day straight to the weather and the dots under the notch say two. Start something
+  and the page is back between them; the small player beside your day is unchanged.
+- **A track ending never turns the page under you.** If you are looking at the player when the music
+  stops, it stays put and says "Not playing" until you swipe away or close the island.
+- **"Welcome back" no longer arrives with page dots under it.** The greeting opens the island by
+  itself, so the row of dots is left off. It is back the next time you open the island yourself.
+- **The island still remembers the player.** If that is where you live, closing the island on a
+  quiet Mac brings you back to the day — and the next time something is playing, back to the
+  player.
+
+## Requirements
+
+macOS 26 or later, on Apple Silicon. Displays with a real notch get the island; a Mac without one
+gets a floating island on the main display.
+
+## Known limitations
+
+- **You cannot see who is calling.** macOS does not let apps outside Apple read that, or answer for
+  you. Isleta shows that a call is happening and nothing more.
+- **Weather needs your location, or a city you type.** Isleta asks for neither until you use it.
+- **A connected device's battery is read once, when it connects.** It does not tick down as you wear
+  them, and most non-Apple headphones report no level at all.
+- **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
+  started by hand in Clock is there immediately.
+- **Replacing the system HUDs is on by default, and it needs Accessibility.** Two switches in
+  Settings hand the keys back. Quitting Isleta hands them back too; if Isleta is force-quit, the
+  system HUD stays out of the way until Isleta next starts. Brightness covers the built-in display
+  only.
+- **Apple's own banner still appears when headphones connect.** It is drawn by the menu bar rather
+  than by the HUD helper Isleta can stand in for, so the island announces the connection alongside
+  it rather than instead of it.
+- **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
+  can sit over the middle of the space labels.
+- **Today and tomorrow show five entries and then a count.** A busy pair of days says how many it
+  could not fit rather than scrolling.
+]]></description>
+            <enclosure url="https://github.com/idevtim/isleta/releases/download/v2.2.0/Isleta-2.2.0.zip" length="6458126" type="application/octet-stream" sparkle:edSignature="71OmOFCpQF/5PiF3D0vZxXDYp2SX/ihqXmjY/nlO1ZbJk9qhblPAq4nqi0q0Ui/EA6y/WNmJb6Ductv/R9qrDA=="/>
+        </item>
         <item>
             <title>2.1.2</title>
             <pubDate>Tue, 08 Sep 2026 08:43:54 -0400</pubDate>
@@ -135,59 +196,6 @@ gets a floating island on the main display.
   could not fit rather than scrolling.
 ]]></description>
             <enclosure url="https://github.com/idevtim/isleta/releases/download/v2.1.1/Isleta-2.1.1.zip" length="6534024" type="application/octet-stream" sparkle:edSignature="GrFMX3NeyiQN1cSMYfau9OXtRUJbbsf6Q99uTS0qgeu4KEOpJ7vvFCfuN+vOLs/vk1gRmJ0PEuWBds7Qj4EXCA=="/>
-        </item>
-        <item>
-            <title>2.1.0</title>
-            <pubDate>Tue, 01 Sep 2026 12:17:06 -0400</pubDate>
-            <link>https://github.com/idevtim/isleta</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/idevtim/isleta/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>2.1.0</sparkle:version>
-            <sparkle:shortVersionString>2.1.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Isleta 2.1.0
-
-The island now says what your power just did — "Charging" or "On Battery" beside the battery, the
-same way it names the key you pressed for volume and brightness.
-
-## New
-
-- **Plugging in and unplugging say so in words.** The island widens beside the notch and shows
-  "Charging" or "On Battery" next to the battery glyph, with the level beside it, then goes away on
-  its own. A battery symbol with a small bolt in it and one without are hard to tell apart in a
-  notch; the word is not.
-- **The same for the other power moments.** "Charged", "Low Battery", and "Low Power On" or "Low
-  Power Off" when macOS switches the mode.
-
-## Improved
-
-- **Power keeps the readable half of the island when music is playing.** The word sits where the
-  album cover would go and the track's own sliver moves to the other side, rather than the charger
-  showing up as a bar with nothing to say what it measures.
-
-## Requirements
-
-macOS 26 or later, on Apple Silicon. Displays with a real notch get the island; a Mac without one
-gets a floating island on the main display.
-
-## Known limitations
-
-- **You cannot see who is calling.** macOS does not let apps outside Apple read that, or answer for
-  you. Isleta shows that a call is happening and nothing more.
-- **Weather needs your location, or a city you type.** Isleta asks for neither until you use it.
-- **A connected device's battery is read once, when it connects.** It does not tick down as you wear
-  them, and most non-Apple headphones report no level at all.
-- **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
-  started by hand in Clock is there immediately.
-- **Replacing the system HUDs is off until you turn it on, and it needs Accessibility.** Quitting
-  Isleta hands your keys straight back; if Isleta is force-quit, the system HUD stays out of the way
-  until Isleta next starts. Brightness covers the built-in display only.
-- **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
-  can sit over the middle of the space labels.
-- **Today and tomorrow show five entries and then a count.** A busy pair of days says how many it
-  could not fit rather than scrolling.
-]]></description>
-            <enclosure url="https://github.com/idevtim/isleta/releases/download/v2.1.0/Isleta-2.1.0.zip" length="6534640" type="application/octet-stream" sparkle:edSignature="MS4iW8cjlugUlVcss5PVwmavqNrpR3CXBxZkzeRF0X2CFXmAgg2Bggr47/031AOT/RDjnhSaeDebspqBLOv/Cw=="/>
         </item>
     </channel>
 </rss>
