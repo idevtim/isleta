@@ -153,7 +153,23 @@ public protocol IslandActivity: Sendable, Identifiable where ID == ActivityID {
     /// source that produced the value knows whether reaching zero was the user running a level down
     /// or something else entirely: `SystemHUDLevelState` publishes level zero for a *mute*, which is
     /// not the bottom of a range being reached and must not bounce the island.
+    ///
+    /// **It arms the rebound rather than firing it**, since 2.3.0 — see
+    /// `IslandScreenModel.restingAtLimit`. Reaching the end of a range is the level answering the
+    /// key; the rebound answers the key *after* that one, which asked for more of a level with none
+    /// left to give.
     var reachedLimit: ActivityLimit? { get }
+
+    /// The system level this activity's bar **is**, so a drag on that bar can write it back — or
+    /// nil, which is the ordinary answer and the one every kind but volume and display brightness
+    /// gives forever.
+    ///
+    /// On the protocol beside `reachedLimit` and for the same reason: only the source that produced
+    /// the value knows whether the number on screen is a level the user may set, and the bar drawn
+    /// for a **mute** is not one (see `BuiltInActivity.systemHUD(_:level:limit:)`). Everything a
+    /// drag on it then costs — where the bar is, how wide it is, what fraction a point along it
+    /// means — is IslandUI's, and what to do with the fraction is the app shell's.
+    var adjustableLevel: SystemHUD? { get }
 }
 
 extension IslandActivity {
@@ -161,6 +177,9 @@ extension IslandActivity {
     /// Nothing is at an end unless it says so. A default rather than a requirement every conformer
     /// has to restate, because this is a property of two levels out of fourteen kinds.
     public var reachedLimit: ActivityLimit? { nil }
+
+    /// Nothing is a level the user may set unless it says so — same default, same two levels.
+    public var adjustableLevel: SystemHUD? { nil }
 }
 
 extension Duration {

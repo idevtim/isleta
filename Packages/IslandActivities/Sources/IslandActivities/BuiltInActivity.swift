@@ -461,6 +461,12 @@ public struct BuiltInActivity: IslandActivity, Equatable {
     /// See `IslandActivity.reachedLimit`. Set by `systemHUD(_:level:limit:)` and by nothing else.
     public var reachedLimit: ActivityLimit?
 
+    /// See `IslandActivity.adjustableLevel`. Set by `systemHUD(_:level:limit:)` and by nothing else.
+    ///
+    /// **Appended, never inserted**, like every stored property added to a type this many packages
+    /// read — see `ActivityContent`.
+    public var adjustableLevel: SystemHUD?
+
     /// `priority` and `expiry` default to the kind's, and `id` to the kind's singleton where it has
     /// one. Written as optionals rather than as default arguments because a default argument cannot
     /// refer to another parameter, and deriving them from `kind` is the entire point.
@@ -470,7 +476,8 @@ public struct BuiltInActivity: IslandActivity, Equatable {
         priority: ActivityPriority? = nil,
         expiry: ActivityExpiry? = nil,
         presentations: ActivityPresentations = .empty,
-        reachedLimit: ActivityLimit? = nil
+        reachedLimit: ActivityLimit? = nil,
+        adjustableLevel: SystemHUD? = nil
     ) {
         self.id = id ?? kind.singletonID ?? ActivityID("builtin.\(kind.rawValue).\(UUID().uuidString)")
         self.kind = kind
@@ -478,6 +485,7 @@ public struct BuiltInActivity: IslandActivity, Equatable {
         self.expiry = expiry ?? kind.defaultExpiry
         self.presentations = presentations
         self.reachedLimit = reachedLimit
+        self.adjustableLevel = adjustableLevel
     }
 
     // MARK: - The built-in vocabulary
@@ -583,7 +591,13 @@ public struct BuiltInActivity: IslandActivity, Equatable {
                 compact: content,
                 expanded: content
             ),
-            reachedLimit: limit
+            reachedLimit: limit,
+            // **Mute is deliberately not adjustable.** The bar it publishes is drawn at zero
+            // whatever volume is held behind the mute — see the note on the reading above — so a
+            // drag on it would be a drag on a number that is not the level, and letting go would
+            // leave the user having set a volume they cannot hear. The other two are the levels the
+            // user is driving, and the ones a finger can drive directly.
+            adjustableLevel: hud == .mute ? nil : hud
         )
     }
 

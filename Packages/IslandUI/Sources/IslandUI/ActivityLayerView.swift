@@ -201,8 +201,30 @@ struct ActivityLayerView: View {
                 // stretches gets no offset, and vice versa. The travel springs and the anchor does
                 // not, which is what keeps the far end of the bar out of it.
                 levelStretch: model.bounceStretch(for: slot),
-                levelStretchAnchor: model.bounceStretchAnchor
+                levelStretchAnchor: model.bounceStretchAnchor,
+                // The bar in a HUD's sliver is a control as well as a picture — see
+                // `levelAdjuster(for:of:)`, and `IslandScreenModel.onAdjustLevel`.
+                onAdjustLevel: levelAdjuster(for: slot, of: stage)
             )
         }
+    }
+
+    /// What a drag on this slot's bar should do, or nil where the bar is only a picture.
+    ///
+    /// **Resolved per slot from the activity that owns that sliver**, for the reason `content(_:of:)`
+    /// above resolves the kind per slot: with a companion holding one flank, asking the primary
+    /// would hand the companion's bar the primary's level and a drag on a timer's ring would move
+    /// the volume. There is exactly one activity that answers this today (`SystemHUD`), and that is
+    /// a reason to be careful rather than a reason not to ask.
+    ///
+    /// Flanks only. The bar the open island draws in its body is the same level, but the island is
+    /// only open on a HUD for as long as the user has not clicked — and a click anywhere on a HUD
+    /// puts it away (`AppDelegate.onClick`), so a control there would be one the user cannot reach
+    /// without first asking for it to go.
+    private func levelAdjuster(for slot: ActivitySlot, of stage: ActivityStage) -> ((Double) -> Void)? {
+        guard let flank = slot.flank,
+              let level = stage.activity(on: flank).adjustableLevel,
+              let write = model.onAdjustLevel else { return nil }
+        return { write(level, $0) }
     }
 }

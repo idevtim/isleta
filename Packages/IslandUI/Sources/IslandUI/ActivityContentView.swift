@@ -57,6 +57,13 @@ public struct ActivityContentView: View {
     /// same thing that happens while the icon is still being decoded.
     private let icons: ApplicationIconStore?
 
+    /// Where to send a press or a drag on the level, as a fraction of the bar's own width — or nil,
+    /// which is every content in Isleta but a volume or brightness HUD's sliver.
+    ///
+    /// Nil is what keeps a bar a picture: no closure, no hit region, and a click on it opens the
+    /// island exactly as a click on any other part of the content does. See `levelGrab`.
+    private let onAdjustLevel: ((Double) -> Void)?
+
     /// - Parameters:
     ///   - namespace: the namespace the compact/expanded morph is matched in. `nil` renders the
     ///     content with no matched geometry, which is what a flank wants — a flank and the expanded
@@ -71,7 +78,8 @@ public struct ActivityContentView: View {
         namespace: Namespace.ID? = nil,
         icons: ApplicationIconStore? = nil,
         levelStretch: CGFloat = 0,
-        levelStretchAnchor: UnitPoint = .leading
+        levelStretchAnchor: UnitPoint = .leading,
+        onAdjustLevel: ((Double) -> Void)? = nil
     ) {
         self.content = content
         self.slot = slot
@@ -82,6 +90,7 @@ public struct ActivityContentView: View {
         self.icons = icons
         self.levelStretch = levelStretch
         self.levelStretchAnchor = levelStretchAnchor
+        self.onAdjustLevel = onAdjustLevel
     }
 
     public var body: some View {
@@ -144,7 +153,7 @@ public struct ActivityContentView: View {
     /// A ceiling, not a width: at the standard 40pt sliver there are only 32pt to be had and the bar
     /// takes all of them, exactly as it did before this existed. Nothing about the collapsed island
     /// most people see changes.
-    nonisolated static let flankLevelWidth: CGFloat = 76
+    public nonisolated static let flankLevelWidth: CGFloat = 76
 
     private func flank(alignment: HorizontalAlignment) -> some View {
         // A level is **centred in its sliver** rather than held against the outer edge, and capped
@@ -197,12 +206,115 @@ public struct ActivityContentView: View {
                         x: (Self.flankLevelWidth + max(0, levelStretch)) / Self.flankLevelWidth,
                         anchor: levelStretchAnchor
                     )
+                    // **Outside the scale**, so the region a finger aims at is where the bar rests
+                    // rather than where a rebound has stretched it to. The stretch is a flourish
+                    // that lasts 0.3s; a hit region that travelled with it would move the control
+                    // out from under a pointer that had not moved.
+                    .overlay { levelGrab(fills: levelFills) }
             }
             if alignment == .leading, !levelFills { Spacer(minLength: 0) }
             if levelFills { Spacer(minLength: 0) }
         }
         .padding(.horizontal, Self.flankPadding(for: content))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// Where the bar is drawn inside a sliver, in that sliver's own space.
+    ///
+    /// **The one caller is the self-test**, which has to aim a synthetic press at a control it
+    /// cannot see. It is the arithmetic the `HStack` above produces — a bar centred between two
+    /// spacers, capped at `flankLevelWidth`, inset by the flank's own padding, at
+    /// `ActivityValueView.flankHeight` — rather than a second layout pass, and that makes it a
+    /// *restatement*, which is the shape `TransportSelfTest` warns about: a test that restates the
+    /// view's arithmetic passes when both are wrong.
+    ///
+    /// What keeps it honest is that the self-test asserts the **fraction that came out**, not the
+    /// point it aimed at. A bar drawn anywhere but here produces a level the drag did not ask for,
+    /// or none at all, and the run fails.
+    public nonisolated static func levelBarFrame(for content: ActivityContent, in flank: CGRect) -> CGRect {
+        let available = max(0, flank.width - 2 * flankPadding(for: content))
+        let width = min(flankLevelWidth, available)
+        let height = ActivityValueView.flankHeight
+        return CGRect(
+            x: flank.midX - width / 2,
+            y: flank.midY - height / 2,
+            width: width,
+            height: height
+        )
+    }
+
+    /// The region around that bar a press is actually taken from — the bar, grown by
+    /// `levelGrabInset` at top and bottom. Same caller, same reason.
+    public nonisolated static func levelGrabFrame(for content: ActivityContent, in flank: CGRect) -> CGRect {
+        levelBarFrame(for: content, in: flank).insetBy(dx: 0, dy: -levelGrabInset)
+    }
+
+    /// How much taller than the bar the region that answers a press is, at each end.
+    ///
+    /// The bar is 4pt. A 4pt target is not a target — the scrub bar in the open island records the
+    /// same finding and answers it the same way — so the press is taken from 28pt of sliver with the
+    /// bar drawn through the middle of it. That is short of the 32pt cutout on a 14", and it does
+    /// not have to be: the grab draws nothing, so it adds no alpha for the window server to route
+    /// clicks by, and `IslandHitTestView.hitTest` refuses every point outside `islandPath` before
+    /// SwiftUI is asked. A region larger than the island is one nobody can reach.
+    nonisolated static let levelGrabInset: CGFloat = 12
+
+    /// Where along a bar a point is, 0 at its left end and 1 at its right.
+    ///
+    /// Clamped, because `minimumDistance: 0` means the drag keeps reporting after the pointer has
+    /// left the bar — which is what a person does at the end of a range: they keep going. Off the
+    /// left end is zero and off the right end is one, rather than a level that runs backwards past
+    /// the end it was pushed to.
+    ///
+    /// `nonisolated` because `View` conformance is `@MainActor` and this is arithmetic on two
+    /// numbers — a test of where a drag lands should not need the main actor.
+    nonisolated static func levelFraction(at x: CGFloat, width: CGFloat) -> Double {
+        guard width > 0 else { return 0 }
+        return min(max(0, Double(x / width)), 1)
+    }
+
+    /// The region a press or a drag on a level is taken from, for the one kind of level that is a
+    /// control rather than a picture.
+    ///
+    /// ## Why a gesture here and not a click in `IslandHitTestView`
+    ///
+    /// The panel never becomes key (§4.1), which rules out anything built on first responder
+    /// status — but a `DragGesture` needs none, and `NowPlayingScrubberView` already records why it
+    /// arrives at all: `IslandHitTestView.hitTest` returns `super.hitTest(point)`, the deepest
+    /// subview that wants the point, so AppKit delivers the whole down-drag-up sequence here. The
+    /// island's own `mouseDown` is then not called for these points, which is the other half of what
+    /// the owner asked for: a press on the bar moves the level, and a press anywhere else on the HUD
+    /// puts it away and opens the island (`AppDelegate.onClick`).
+    ///
+    /// `minimumDistance: 0` is not laziness about taps — it *is* the tap handling. A press anywhere
+    /// on the bar sets the level there, which is what a level does; expressing it as a zero-distance
+    /// drag makes a press that turns into a drag one continuous interaction rather than a tap that
+    /// fires and a drag that fires again from the same press.
+    ///
+    /// **Nothing is drawn and nothing is animated.** The bar moves because the level moved: the
+    /// write produces a reading, the reading produces an activity, and the island redraws it on
+    /// `Motion.contentSwap` like any other content change. A bar that followed the finger and was
+    /// then corrected by the reading would be two answers to one question, and the wrong one is the
+    /// one under the pointer.
+    @ViewBuilder
+    private func levelGrab(fills: Bool) -> some View {
+        if let onAdjustLevel, fills {
+            GeometryReader { proxy in
+                Color.clear
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                            .onChanged { drag in
+                                onAdjustLevel(
+                                    Self.levelFraction(at: drag.location.x, width: proxy.size.width)
+                                )
+                            }
+                    )
+            }
+            // Negative, so the region grows past the bar it is over without the bar's own frame —
+            // and therefore the spacers either side of it in the sliver — moving by a point.
+            .padding(.vertical, -Self.levelGrabInset)
+        }
     }
 
     /// The single badge, for an island with no flanks to fill — a synthesized one, or a hardware

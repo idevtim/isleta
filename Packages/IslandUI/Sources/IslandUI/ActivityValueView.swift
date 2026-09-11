@@ -175,6 +175,14 @@ struct ActivityValueView: View {
     /// `Capsule` and not `RoundedRectangle`: at 4pt tall the two are the same shape, and a capsule
     /// stays right if the bar ever gets taller. Whole-point dimensions throughout, so the bar lands
     /// on the pixel grid at 1x as well as 2x (§6.6).
+    /// How tall a level is drawn in a sliver, and in the open island's body.
+    ///
+    /// Named rather than written into the frame below, because the sliver's figure is also what
+    /// `ActivityContentView.levelBarFrame(for:in:)` hands the self-test to aim at — and a bar drawn
+    /// at one height and aimed at with another is a drag that lands on nothing.
+    nonisolated static let flankHeight: CGFloat = 4
+    nonisolated static let expandedHeight: CGFloat = 6
+
     private var level: some View {
         GeometryReader { proxy in
             let fraction = value.normalized ?? 0
@@ -189,7 +197,7 @@ struct ActivityValueView: View {
                     .frame(width: (proxy.size.width * fraction).rounded())
             }
         }
-        .frame(height: slot == .expanded ? 6 : 4)
+        .frame(height: slot == .expanded ? Self.expandedHeight : Self.flankHeight)
     }
 
     private var numerals: some View {

@@ -138,7 +138,13 @@ what Liquid Glass samples with loginwindow behind it — and it eats clicks over
 for the length of the run, `--settings [pane]` opens the settings
 window on a named pane, `--onboarding [page]` opens the first-run flow on a named page and
 `--onboarding-reset` puts `OnboardingLedger` back to never-onboarded (the flow is otherwise one look
-per machine), `--hud-consume-test` reports whether Isleta's event tap
+per machine), `--level-drag-test` presses and drags
+the bar in a volume HUD's sliver and reports the fraction the island asked for, then presses the
+notch beside it and reports whether the HUD was put away and the island opened — the two halves of
+2.3.0's level drag, and the only way to tell a `DragGesture` that arrives in a 76pt bar of a
+collapsed island from one that is never delivered (it replaces `IslandScreenModel.onAdjustLevel` for
+the length of the run, so it never moves the volume of the Mac it runs on),
+`--hud-consume-test` reports whether Isleta's event tap
 actually *consumed* the volume key rather than merely seeing it — the only way to tell suppression
 apart from a tap that returns the event, and it must be run `open -a Isleta.app --args
 --hud-consume-test --no-sources`, `--export-logs <path>` writes the "Export Logs…" bundle there

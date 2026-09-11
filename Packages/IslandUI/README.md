@@ -26,7 +26,13 @@ Every pixel Isleta draws, and every curve it moves along.
   current size and the physical cutout. The one place that knows the cutout is a hole rather than a
   dark rectangle.
 - **`ActivityContentView` / `ActivityPalette` / `ActivityValueFormatter`** — what an `ActivityContent`
-  looks like: type, color, and the numerals a `.countdown` or `.elapsed` resolves to.
+  looks like: type, color, and the numerals a `.countdown` or `.elapsed` resolves to. It also owns the
+  one bar in Isleta that is a **control**: a level whose activity publishes an `adjustableLevel` takes
+  a press or a drag anywhere along it and reports where, as a fraction of its own width
+  (`levelFraction(at:width:)`), through `IslandScreenModel.onAdjustLevel`. It writes nothing and
+  follows nothing — the bar moves when the *reading* moves. The grab region is 28pt around a 4pt bar,
+  draws nothing, and sits outside the rebound's scale so a lean cannot move the control out from
+  under a stationary pointer.
 - **`AlbumColor`** — the accent a cover gives, as arithmetic: an 8×8 resample averaged by alpha,
   then lifted in HSB until it reads against pure `#000000`. Computed **once per track change**, in
   `NowPlayingController.setArtwork`, never on a frame and never on a timer. What it tints is

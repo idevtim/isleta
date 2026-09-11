@@ -29,6 +29,13 @@ Apple-blessed way for a third party to receive another app's Live Activities (§
   this package cannot see that one. Held on `ActivityStack` for `dwellScale`'s reason and no other.
 - **`ActivityChip`** — one activity reduced to a glyph and a short value. No title: a chip says
   *which* activity, not what it says.
+- **`ActivityLimit` and `SystemHUD`, the two facts a bar cannot carry.** `reachedLimit` says the end
+  of a range a reading *landed on*, and `adjustableLevel` says which system level a bar **is**, so a
+  drag on it can write it back. Both are on the protocol with a `nil` default and both are set by
+  `BuiltInActivity.systemHUD(_:level:limit:)` alone, because only the source that produced the value
+  knows the answer: a mute publishes level zero, which is neither the bottom of a range being reached
+  nor a level anyone may set. Deriving either from the number would bounce the island every time
+  somebody muted, and let a drag set a volume nobody can hear.
 - **`ActivityCoordinator`** — the thin shell around one stack: supplies `now`, keeps the single
   scheduled sleep in step with the earliest deadline, and publishes `ActivityChange`.
 - **`ActivityKind` and `BuiltInActivity`** — the closed vocabulary, **fourteen kinds**:

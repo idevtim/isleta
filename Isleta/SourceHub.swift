@@ -186,7 +186,7 @@ final class SourceHub {
         // **The one signal that is not an activity**, and it goes straight past the coordinator
         // because there is nothing on the stack for it to change: the user pressed a key asking for
         // more of a level that has none left, which produces no reading at all. See
-        // `SystemHUDSource.onLimitPushed`, and `IslandScreenModel.bounce(toward:reduceMotion:)` for
+        // `SystemHUDSource.onLimitPushed`, and `IslandScreenModel.pushedAtLimit(_:reduceMotion:)` for
         // the one entry point both causes of a rebound share.
         //
         // Gated by the Focus rule like every activity, and read from the same table: a Focus that
@@ -196,6 +196,21 @@ final class SourceHub {
             guard let self, self.focus.allows(.systemHUD) else { return }
             self.onLimitPushed?(limit)
         }
+    }
+
+    /// Set a level to where the user dragged the island's own bar.
+    ///
+    /// A pass-through rather than a reach into the source from the shell, for the reason every other
+    /// line in this file is here: the hub knows sources and `AppDelegate` knows islands, and a shell
+    /// holding a `SystemHUDSource` directly would be the second place that knows how a level is
+    /// written.
+    ///
+    /// **Not gated on the Focus rule, and that is not an omission.** Focus decides whether the
+    /// island *speaks* — the gate is on publishing a HUD — and this is the user's own hand on a bar
+    /// that is already on screen. A Focus that suppressed the HUD left no bar to drag.
+    @discardableResult
+    func setLevel(_ hud: SystemHUD, to fraction: Double) -> Bool {
+        systemHUD.setLevel(hud, to: fraction)
     }
 
     /// A level the user is driving was pushed past its end. The app shell rebounds every island.

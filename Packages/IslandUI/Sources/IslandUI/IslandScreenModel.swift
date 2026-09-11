@@ -466,6 +466,19 @@ public final class IslandScreenModel {
     /// Open Isleta's settings. The only route to them on a machine whose menu bar icon is hidden.
     public var onOpenSettings: (() -> Void)?
 
+    /// Write a system level the user is dragging. Set by the app shell; the bar in a HUD's sliver
+    /// calls it, with a fraction of that bar's own width.
+    ///
+    /// **A fraction and not a number of points**, because where the bar is and how wide it is are
+    /// IslandUI's business and how loud 0.42 is belongs to the source that owns the device. The
+    /// island does not write the level and does not read it back either: the write produces a
+    /// reading, the reading produces an activity, and the bar moves because the level moved. One
+    /// publisher for a level, which is the same rule the key-replacement path is built on.
+    ///
+    /// Nil in every build with no app shell — a preview, a test — which is what keeps the bar a
+    /// picture there rather than a control that silently does nothing.
+    public var onAdjustLevel: ((SystemHUD, Double) -> Void)?
+
     /// Whether the open island wears the page indicator.
     ///
     /// **True for any open island that is not stowed and is not showing the schedule.** The switcher
@@ -1139,6 +1152,27 @@ public final class IslandScreenModel {
     @ObservationIgnored
     private var limitReturn: Task<Void, Never>?
 
+    /// The end of a range the level on stage is currently **parked on**, or nil.
+    ///
+    /// **The arming half of the rebound, and the whole of what changed in 2.3.0.** A level arriving
+    /// at its end used to spring the island there and then; now it only sets this, and the spring
+    /// waits for the *next* press — the one that asks for more of a level with none left to give.
+    /// The owner's verdict: reaching the end is the level answering the key, and a rebound on that
+    /// key is the island answering a question the bar already answered.
+    ///
+    /// Set from the activity rather than from the number, because that is the one distinction
+    /// `ActivityLimit` exists to carry: a mute publishes level zero and is not a level run to its
+    /// bottom (see `IslandActivity.reachedLimit`).
+    ///
+    /// **It also settles the race the source documents.** A keypress that arrives at an end can
+    /// produce both a reading and a key event, in either order. Whichever lands first arms; only the
+    /// second press can find it already armed, so the first press cannot bounce by winning a race.
+    ///
+    /// `@ObservationIgnored` because nothing draws it: it is a fact about the last reading, and the
+    /// movement it gates is published through `limitLean`.
+    @ObservationIgnored
+    private var restingAtLimit: ActivityLimit?
+
     public init(
         metricsByForm: [IslandForm: IslandShapeMetrics],
         notchKind: NotchGeometry.Kind,
@@ -1552,54 +1586,69 @@ public final class IslandScreenModel {
             completion()
         }
         followWithContent(to: form, reduceMotion: reduceMotion)
-        bounceIfAtALimit(stage, change: change, reduceMotion: reduceMotion)
+        armLimit(from: stage)
     }
 
-    /// Leans the island toward the end of a range a level has just reached, and lets it back.
+    /// Records which end of a range the level on stage is parked on, and forgets it when the level
+    /// leaves that end or the stage does.
     ///
-    /// Its own transaction rather than a value set inside the change's, and that is deliberate: the
-    /// change is a morph on `expand` or a crossfade on `contentSwap`, and the bounce is neither —
-    /// it is a *there and back* on `Motion.nudge`, which needs its own completion to come home from.
-    /// §6.1 asks that one movement travel on one spring; this is a second movement, on top of a
-    /// container that is arriving.
+    /// **This is where a level reaching its end stops being a movement.** It used to lean the island
+    /// then and there; since 2.3.0 it only arms `restingAtLimit`, and the lean waits for the press
+    /// after this one — see `pushedAtLimit(_:reduceMotion:)`, which is now the only thing that
+    /// moves the island sideways.
     ///
-    /// **Only on a change that carries new content for the primary.** A companion arriving or the
-    /// stage being re-adopted must not re-fire it: `reachedLimit` is a property of the activity, so
-    /// it stays set for as long as that HUD is on stage, and anything that re-runs this would bounce
-    /// the island a second and third time for one keypress.
+    /// **No longer filtered on the kind of change**, and that filter going away is the point rather
+    /// than a tidy-up. It was there because this fired a movement: `reachedLimit` stays set for as
+    /// long as a HUD is on stage, so a companion arriving or the stage being re-adopted would have
+    /// bounced the island a second and third time for one keypress. Assigning a fact twice is free,
+    /// so the rule is now simply "whatever is on stage says where it is parked".
     ///
-    /// **Reduce Motion skips it entirely**, and that is the correct substitution rather than a
-    /// crossfade (§6.3). Everything else in this file substitutes because the movement is *carrying*
-    /// something — a size change, a slot arriving — and the information has to land either way.
-    /// Nothing is carried here: the bar is already drawn full or empty, and the bounce is the
-    /// flourish on top of it. There is nothing to crossfade to.
-    private func bounceIfAtALimit(
-        _ stage: ActivityStage?,
-        change: ActivityChange,
-        reduceMotion: Bool
-    ) {
-        guard let limit = stage?.primary.reachedLimit else { return }
-        switch change {
-        case .presented, .swapped, .contentChanged: break
-        case .none, .dismissed, .companionChanged: return
+    /// The primary and not the pair: a HUD is `.interrupting` and takes the stage outright, and a
+    /// companion holding a flank has no level of its own to be at the end of.
+    private func armLimit(from stage: ActivityStage?) {
+        restingAtLimit = stage?.primary.reachedLimit
+    }
+
+    /// The user asked for more of a level that is **already** at the end they are pushing toward.
+    ///
+    /// **The one entry point, and since 2.3.0 the only cause of a rebound.** It arrives as an event
+    /// rather than as an activity because nothing changed — measured: CoreAudio fires no listener
+    /// for a set that changes nothing — so there is no reading, no new content, and nothing for
+    /// `ActivityStack` to report. See `SystemHUDSource.onLimitPushed`.
+    ///
+    /// **The first press at an end arms; the next one leans.** A level *arriving* at its end is the
+    /// level answering the key, and the bar is already drawn full or empty by the time the island
+    /// could move — so the rebound is held back for the press that asks for more of it. The owner's
+    /// verdict, 2026-09-10: "don't bounce the island until the user clicks the bottom or top one
+    /// more time". Arming here as well as in `armLimit(from:)` is what makes that exact rather than
+    /// a race: a press that lands on an end produces both a reading and a key event, in either
+    /// order, and whichever arrives first can only ever arm.
+    ///
+    /// Safe to call twice in quick succession, and that is load-bearing rather than defensive: a
+    /// held key repeats about ten times a second, and the strike-from-zero in `bounce(toward:)`
+    /// means the second replaces the first before it has travelled anywhere.
+    public func pushedAtLimit(_ limit: ActivityLimit, reduceMotion: Bool) {
+        guard restingAtLimit == limit else {
+            restingAtLimit = limit
+            return
         }
         bounce(toward: limit, reduceMotion: reduceMotion)
     }
 
-    /// Rebounds the island's edge toward one end of a range.
+    /// Leans one edge of the island toward an end of a range, and lets it back.
     ///
-    /// **The one entry point, with two callers**, which is the whole reason it is public. An
-    /// activity *arriving* at a limit carries `ActivityLimit` and comes in through
-    /// `bounceIfAtALimit` above; the user *pushing* against a limit already reached produces no
-    /// reading at all — measured: CoreAudio fires no listener for a set that changes nothing — so it
-    /// arrives as an event from `SystemHUDSource.onLimitPushed`. Two causes, one behaviour, one
-    /// spelling of it.
+    /// Its own transaction rather than a value set inside a change's, and that is deliberate: a
+    /// change is a morph on `expand` or a crossfade on `contentSwap`, and this is neither — it is a
+    /// *there and back* on `Motion.rebound`, which needs its own completion to come home from. §6.1
+    /// asks that one movement travel on one spring; this is a second movement, on top of whatever
+    /// the container is already doing.
     ///
-    /// Safe to call twice in quick succession, and that is load-bearing rather than defensive: the
-    /// keypress that arrives at a limit can produce both, racing, and the strike-from-zero below
-    /// means the second replaces the first before it has travelled anywhere. Two requests a few
-    /// milliseconds apart are one beat.
-    public func bounce(toward limit: ActivityLimit, reduceMotion: Bool) {
+    /// **Reduce Motion skips it entirely**, and that is the correct substitution rather than a
+    /// crossfade (§6.3). Everything else in this file substitutes because the movement is *carrying*
+    /// something — a size change, a slot arriving — and the information has to land either way.
+    /// Nothing is carried here: the bar is already drawn full or empty, and this is the flourish on
+    /// top of it. There is nothing to crossfade to.
+    private func bounce(toward limit: ActivityLimit, reduceMotion: Bool) {
         guard !reduceMotion else { return }
         // A level is drawn filling left to right, so its top is to the right. The one place that
         // fact is written down — see `limitLeansTrailing`.

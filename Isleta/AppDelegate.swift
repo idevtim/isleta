@@ -488,6 +488,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // closing the app when clicking between them.
             if self.isPageIndicatorStrip(point, on: screen) { return }
 
+            // **A click on a HUD anywhere but its bar puts the HUD away.** The bar is a control and
+            // never reaches here — `ActivityContentView.levelGrab` takes those points — so what is
+            // left is the cutout in the middle and the glyph and word beside it, which is the user
+            // aiming at the island rather than at the level. A HUD is an announcement with a second
+            // or two left on it, and opening onto it would hold that announcement open in a 368pt
+            // panel; dismissing first means the click lands on what the island is actually for —
+            // the pages, which on a Mac with music playing is what the user was last looking at.
+            //
+            // Before the expansion below rather than after, and synchronously: dismissing settles
+            // the stage, the height the island opens to, and whether the pages own the body, all of
+            // which `activityChanged` decides. Opened first, the island would grow to the HUD's
+            // body and then swap its content underneath, which is two movements for one click.
+            self.dismissPresentedHUD()
+
             // **Every click opens, including on an island with nothing on stage.**
             //
             // It used to refuse and pulse, on the reasoning that opening onto a 368x176 panel of
@@ -699,6 +713,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         }
                     ) { result in
                         print("transport self-test: \(result)")
+                        if PerformanceProbe.reportModeDuration() == nil { NSApp.terminate(nil) }
+                    }
+                }
+            }
+        }
+        if LevelDragSelfTest.isRequested() {
+            // The same 1.5s as the transport test and for a related reason: the bar does not exist
+            // until a HUD has taken the stage and the island has widened to hold it, and the first
+            // of those cannot happen before the first frame composites.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                MainActor.assumeIsolated {
+                    guard let self, let controller = self.controller,
+                          let screen = controller.screens.first,
+                          let model = self.models[screen.id]
+                    else {
+                        print("level-drag self-test: no island to drag")
+                        NSApp.terminate(nil)
+                        return
+                    }
+                    LevelDragSelfTest.run(
+                        controller: controller,
+                        coordinator: self.activities,
+                        model: model,
+                        collapse: { [weak self] in self?.collapseAll() },
+                        presentation: { [weak self] id in
+                            guard let model = self?.models[id] else { return "?" }
+                            return "\(model.presentation)"
+                        }
+                    ) { result in
+                        print("level-drag self-test: \(result)")
                         if PerformanceProbe.reportModeDuration() == nil { NSApp.terminate(nil) }
                     }
                 }
@@ -945,6 +989,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.page = pages
         model.nowPlayingContent = nowPlayingContent
         model.onSelectPage = { [weak self] page in self?.goToPage(page) }
+        // The bar in a HUD's sliver, dragged. The island asks for a level to be set; what that
+        // costs on this Mac is the source's business — see `SourceHub.setLevel(_:to:)`.
+        model.onAdjustLevel = { [weak self] hud, fraction in
+            guard let self else { return }
+            // The pointer is on the island for the length of the drag, so the HUD is already held
+            // past its dwell (`ActivityCoordinator.setPointerOverIsland`). This is the other half of
+            // that: a pin counts from the last *interaction*, and dragging a level is one.
+            self.activities.noteInteraction()
+            self.sources?.setLevel(hud, to: fraction)
+        }
         // The history rides on the screen model the way `nowPlaying` does — one app-wide model,
         // every island reading it.
         model.dropHistory = dropHistoryModel
@@ -1618,6 +1672,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// The island's own height rather than the body's: the row is drawn against the bottom edge of
     /// the shape (`ActivitySwitcherLayerView` anchors it there), and the point is in the shape's
     /// coordinates.
+    /// Takes a system HUD off the stage, if one is on it.
+    ///
+    /// **Only the HUDs**, and the restraint is the point. Every other kind the island can draw is
+    /// either a thing the user opened the island to read — a message, a timer, a call — or a
+    /// condition rather than an event, and a click that swept any of those away would make the
+    /// gesture "clear the island" instead of "open it". A level the user just changed is the one
+    /// activity whose whole content is already legible in the sliver, so opening onto its expanded
+    /// form shows the same glyph, word and bar again at four times the size.
+    ///
+    /// Nothing else has to be told. `dismiss` settles into `activityChanged` synchronously, which is
+    /// where the next stage, the open island's height and whether the pages own the body are all
+    /// decided.
+    private func dismissPresentedHUD() {
+        guard let primary = activities.stage?.primary, primary.kind == .systemHUD else { return }
+        _ = activities.dismiss(primary.id)
+    }
+
     private func isPageIndicatorStrip(_ point: CGPoint, on screen: IslandScreen) -> Bool {
         guard let model = models[screen.id], model.showsPageIndicator else { return false }
         // `bodySize` is the island's whole rectangle — "its bounding box and its body are the same
@@ -3654,7 +3725,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hub.onLimitPushed = { [weak self] limit in
             guard let self else { return }
             for model in self.models.values {
-                model.bounce(toward: limit, reduceMotion: self.accessibility.reduceMotion)
+                model.pushedAtLimit(limit, reduceMotion: self.accessibility.reduceMotion)
             }
         }
 
@@ -4192,7 +4263,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         limit: push.1
                     ))
                     for model in self.models.values {
-                        model.bounce(toward: push.1, reduceMotion: self.accessibility.reduceMotion)
+                        model.pushedAtLimit(push.1, reduceMotion: self.accessibility.reduceMotion)
                     }
                 }
             }

@@ -486,13 +486,67 @@ public final class SystemHUDSource: ActivitySource {
         return true
     }
 
-    /// **The race here is deliberately not guarded, because it is invisible.** The keypress that
-    /// *arrives* at a limit produces both a CoreAudio callback and a key event, and whichever lands
-    /// first, the other may find the level already at its end and ask for a second rebound. Two
-    /// requests a few milliseconds apart are one beat on screen: `IslandScreenModel.limitBounce`
-    /// strikes from zero, so the second replaces the first before it has travelled anywhere. A time
-    /// window to suppress it would be a constant nobody could measure, guarding nothing anyone can
-    /// see.
+    /// Set a level to where the user just dragged the island's own bar.
+    ///
+    /// The third way a level changes, after a key and anything else on the Mac, and it publishes on
+    /// exactly the same terms as the second: **volume says nothing here and brightness says it
+    /// itself**, for the reason `replaceVolumeKey` and `replaceBrightnessKey` are split. A volume
+    /// write fires a CoreAudio property listener, so the reading and the activity arrive by the one
+    /// route every other cause uses; a brightness write may or may not come back through the change
+    /// notification DisplayServices posts, which was only ever measured for changes Isleta did not
+    /// cause.
+    ///
+    /// **`.mute` is not adjustable and answers false**, which is the same answer
+    /// `BuiltInActivity.systemHUD` gives by publishing no `adjustableLevel` for it: the bar drawn
+    /// beside a crossed-out speaker is at zero whatever volume is held behind the mute, so a drag on
+    /// it would set a level the user cannot hear.
+    ///
+    /// No feedback click. Apple plays one for a key and not for a slider, and a click per frame of a
+    /// drag would be a rattle.
+    ///
+    /// - Parameter fraction: 0...1, clamped here rather than trusted — it arrives from a pointer
+    ///   that is allowed to leave the bar mid-drag.
+    /// - Returns: whether the level was written. False on a Mac whose device refuses the write, for
+    ///   the same reason the key paths return false there: an island that moved a bar nothing
+    ///   followed would be lying about what it had done.
+    @discardableResult
+    public func setLevel(_ hud: SystemHUD, to fraction: Double) -> Bool {
+        guard enabledHUDs.contains(hud) else { return false }
+        let level = min(max(0, fraction), 1)
+
+        // **Before the write**, exactly as the key paths do it and for the same reason: the write is
+        // what would wake Apple's OSD helper, and this is the last moment a respawned one can be
+        // frozen. A no-op while nothing is being suppressed.
+        SystemOSDSuppressor.ensureSuspended()
+
+        switch hud {
+        case .volume:
+            guard volumeControl.setVolume(level) != nil else {
+                IslandLog.sources.info("volume not set from the island: write refused")
+                return false
+            }
+            return true
+        case .brightness:
+            guard let landed = brightnessControl.setBrightness(level) else {
+                IslandLog.sources.info("brightness not set from the island: write refused")
+                return false
+            }
+            onActivity?(BuiltInActivity.systemHUD(.brightness, level: landed))
+            return true
+        case .mute:
+            return false
+        }
+    }
+
+    /// **The race here is not guarded on this side, and since 2.3.0 it is not a race at all.** The
+    /// keypress that *arrives* at a limit produces both a CoreAudio callback and a key event, and
+    /// whichever lands first, the other may find the level already at its end and announce a push.
+    /// It used to matter only that two requests a few milliseconds apart read as one beat on screen;
+    /// now the first press at an end must not move the island at all, which is a question of
+    /// *which* press rather than of how many. It is settled where the two causes meet, in
+    /// `IslandScreenModel.restingAtLimit`: reaching an end and pushing at one both arm it, and only
+    /// a request that finds it already armed leans the island. A time window here would be a
+    /// constant nobody could measure, guarding something the model already knows exactly.
 
     private func startAudio() {
         guard !observingAudio else { return }

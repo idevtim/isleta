@@ -9,6 +9,11 @@ import Testing
 
 /// The island leaning at the end of a range, and the hit region that has to follow it.
 ///
+/// **Two presses, not one, since 2.3.0.** A level *arriving* at its end arms the rebound and moves
+/// nothing; the press after it — the one asking for more of a level with none left to give — is what
+/// leans the island. Everything below that used to reach the lean through `setActivity` alone now
+/// goes through `reach(_:)` then `push(_:)`, which is the two presses spelled out.
+///
 /// The lean is decoration; the hit region is not. The window server derives the panel's event shape
 /// from the alpha of what Isleta draws, so a translated island is opaque several points beyond the
 /// shape `islandPath` accepts — drawn pixels we refuse, which is the one direction
@@ -48,16 +53,46 @@ struct LimitBounceTests {
         )
     }
 
+    /// The press that runs a level to its end: a reading that lands on `limit`, which arms and
+    /// moves nothing.
+    private func reach(
+        _ limit: ActivityLimit,
+        on model: IslandScreenModel,
+        change: ActivityChange = .presented("hud"),
+        reduceMotion: Bool = false
+    ) {
+        model.setActivity(
+            stage(limit, level: limit == .maximum ? 1 : 0),
+            change: change,
+            reduceMotion: reduceMotion
+        )
+    }
+
+    /// The press after it: no reading at all, because nothing changed. This is the one that leans.
+    private func push(_ limit: ActivityLimit, on model: IslandScreenModel, reduceMotion: Bool = false) {
+        model.pushedAtLimit(limit, reduceMotion: reduceMotion)
+    }
+
+    /// Both, which is what a user does: run the volume to the bottom, then press again.
+    private func reachAndPush(
+        _ limit: ActivityLimit,
+        on model: IslandScreenModel,
+        reduceMotion: Bool = false
+    ) {
+        reach(limit, on: model, reduceMotion: reduceMotion)
+        push(limit, on: model, reduceMotion: reduceMotion)
+    }
+
     /// Which way is which. `ActivityLimit` says which end of the range; a level is drawn filling
     /// left to right, so the top of it is to the right — and that mapping lives in exactly one place.
     @Test("the top of a range leans right and the bottom leans left")
     func directionFollowsTheLimit() {
         let toTheTop = model()
-        toTheTop.setActivity(stage(.maximum, level: 1), change: .presented("hud"), reduceMotion: false)
+        reachAndPush(.maximum, on: toTheTop)
         #expect(toTheTop.limitBounce == IslandLayout.limitBounceDistance)
 
         let toTheBottom = model()
-        toTheBottom.setActivity(stage(.minimum, level: 0), change: .presented("hud"), reduceMotion: false)
+        reachAndPush(.minimum, on: toTheBottom)
         #expect(toTheBottom.limitBounce == -IslandLayout.limitBounceDistance)
     }
 
@@ -68,6 +103,88 @@ struct LimitBounceTests {
         #expect(model.limitBounce == 0)
     }
 
+    // MARK: - The two presses
+
+    /// **The whole of what 2.3.0 changed.** A level running out is the level answering the key —
+    /// the bar is already drawn full or empty by the time the island could move — so the press that
+    /// lands on an end moves nothing at all, however it reached the stage.
+    @Test("reaching the end of a range does not lean the island", arguments: [
+        ActivityChange.presented("hud"), .swapped(from: "music", to: "hud"), .contentChanged("hud"),
+        .companionChanged("other"), .none, .dismissed("hud"),
+    ])
+    func arrivingAtALimitDoesNotLean(change: ActivityChange) {
+        let model = model()
+        reach(.maximum, on: model, change: change)
+        #expect(model.limitBounce == 0)
+    }
+
+    /// The press after it, which is the one the user means: there is no more.
+    @Test("the press after it leans", arguments: [ActivityLimit.maximum, .minimum])
+    func theSecondPressLeans(limit: ActivityLimit) {
+        let model = model()
+        reach(limit, on: model)
+        #expect(model.limitBounce == 0)
+        push(limit, on: model)
+        #expect(model.limitBounce != 0)
+    }
+
+    /// **And it keeps leaning.** Holding the key repeats about ten times a second, and every repeat
+    /// after the first is a push at an end already reached — see `bounce(toward:)`, which strikes
+    /// from zero so each one is its own beat.
+    @Test("every press after that leans again")
+    func furtherPressesKeepLeaning() {
+        let model = model()
+        reachAndPush(.maximum, on: model)
+        #expect(model.limitBounce != 0)
+        push(.maximum, on: model)
+        #expect(model.limitBounce != 0)
+    }
+
+    /// **The race the source used to document, settled.** A press that lands on an end produces a
+    /// reading *and* a key event, in either order; whichever arrives first can only arm, so the
+    /// press cannot lean the island by winning.
+    @Test("a push that arrives before the reading arms rather than leans")
+    func aPushBeforeTheReadingArms() {
+        let model = model()
+        push(.minimum, on: model)
+        #expect(model.limitBounce == 0)
+        reach(.minimum, on: model)
+        #expect(model.limitBounce == 0)
+        push(.minimum, on: model)
+        #expect(model.limitBounce != 0)
+    }
+
+    /// The two ends are armed separately: running a level to the top and immediately pushing at the
+    /// bottom is a level being turned around, not a level with nothing left.
+    @Test("being at one end does not arm the other")
+    func endsArmSeparately() {
+        let model = model()
+        reach(.maximum, on: model)
+        push(.minimum, on: model)
+        #expect(model.limitBounce == 0)
+    }
+
+    /// A level that leaves its end disarms, so the next arrival there is a first press again.
+    @Test("a level moving off its end disarms")
+    func leavingAnEndDisarms() {
+        let model = model()
+        reach(.minimum, on: model)
+        model.setActivity(stage(nil, level: 0.5), change: .contentChanged("hud"), reduceMotion: false)
+        push(.minimum, on: model)
+        #expect(model.limitBounce == 0)
+    }
+
+    /// So does the HUD leaving the stage. The island is not showing a level any more, so there is
+    /// nothing it can be at the end of.
+    @Test("the stage emptying disarms")
+    func theStageEmptyingDisarms() {
+        let model = model()
+        reach(.maximum, on: model)
+        model.setActivity(nil, change: .dismissed("hud"), reduceMotion: false)
+        push(.maximum, on: model)
+        #expect(model.limitBounce == 0)
+    }
+
     /// **Reduce Motion drops it outright rather than substituting a crossfade** (§6.3). Everything
     /// else in this codebase substitutes because the movement is *carrying* something and the
     /// information has to land either way; nothing is carried here. The bar is already drawn full or
@@ -75,36 +192,15 @@ struct LimitBounceTests {
     @Test("Reduce Motion leaves the island where it is")
     func reduceMotionSkipsIt() {
         let model = model()
-        model.setActivity(stage(.maximum, level: 1), change: .presented("hud"), reduceMotion: true)
+        reachAndPush(.maximum, on: model, reduceMotion: true)
         #expect(model.limitBounce == 0)
-    }
-
-    /// `reachedLimit` is a property of the activity, so it stays set for as long as that HUD is on
-    /// stage. Anything that re-adopts the stage without new content for the primary must not fire a
-    /// second and third lean for one keypress.
-    @Test("only a change that carries new content leans the island", arguments: [
-        ActivityChange.companionChanged("other"), .none, .dismissed("hud"),
-    ])
-    func onlyContentChangesBounce(change: ActivityChange) {
-        let model = model()
-        model.setActivity(stage(.maximum, level: 1), change: change, reduceMotion: false)
-        #expect(model.limitBounce == 0)
-    }
-
-    @Test("a keypress that lands on the limit leans it, however it reached the stage", arguments: [
-        ActivityChange.presented("hud"), .swapped(from: "music", to: "hud"), .contentChanged("hud"),
-    ])
-    func everyContentChangeBounces(change: ActivityChange) {
-        let model = model()
-        model.setActivity(stage(.maximum, level: 1), change: change, reduceMotion: false)
-        #expect(model.limitBounce != 0)
     }
 
     /// It comes home on its own, on the same token that took it out.
     @Test("the lean returns to zero without anything else happening")
     func leanComesHome() async throws {
         let model = model()
-        model.setActivity(stage(.maximum, level: 1), change: .presented("hud"), reduceMotion: false)
+        reachAndPush(.maximum, on: model)
         #expect(model.limitBounce != 0)
         try await Task.sleep(for: Motion.nudgeDuration + .milliseconds(150))
         #expect(model.limitBounce == 0)
@@ -116,10 +212,11 @@ struct LimitBounceTests {
     @Test("a second limit reached replaces the first, return and all")
     func secondLeanReplacesTheFirst() async throws {
         let model = model()
-        model.setActivity(stage(.minimum, level: 0), change: .presented("hud"), reduceMotion: false)
+        reachAndPush(.minimum, on: model)
         #expect(model.limitBounce < 0)
 
-        model.setActivity(stage(.maximum, level: 1), change: .contentChanged("hud"), reduceMotion: false)
+        reach(.maximum, on: model, change: .contentChanged("hud"))
+        push(.maximum, on: model)
         #expect(model.limitBounce > 0)
 
         // Past when the *first* return would have fired, and well short of the second's.
@@ -135,7 +232,7 @@ struct LimitBounceTests {
     func theBarAnswersBothEnds() {
         let model = model()
 
-        model.setActivity(stage(.maximum, level: 1), change: .presented("hud"), reduceMotion: false)
+        reachAndPush(.maximum, on: model)
         // It grows to the right, from a fixed left end — and the travel is the magnitude, with the
         // end that stays put said separately so no spring can interpolate its way across the bar.
         #expect(model.bounceStretch(for: .trailing) == model.limitLean)
@@ -146,7 +243,8 @@ struct LimitBounceTests {
         #expect(model.bounceOffset(for: .leading) == 0)
         #expect(model.bounceOffset(for: .trailing) == 0)
 
-        model.setActivity(stage(.minimum, level: 0), change: .contentChanged("hud"), reduceMotion: false)
+        reach(.minimum, on: model, change: .contentChanged("hud"))
+        push(.minimum, on: model)
         // The same bar and the same travel, growing the other way from a fixed right end. The
         // *anchor* is what changed, and only the anchor.
         #expect(model.bounceStretch(for: .trailing) == model.limitLean)
@@ -161,11 +259,7 @@ struct LimitBounceTests {
     @Test("nothing both stretches and moves", arguments: [ActivityLimit.maximum, .minimum])
     func stretchAndOffsetAreExclusive(limit: ActivityLimit) {
         let model = model()
-        model.setActivity(
-            stage(limit, level: limit == .maximum ? 1 : 0),
-            change: .presented("hud"),
-            reduceMotion: false
-        )
+        reachAndPush(limit, on: model)
         for slot in ActivitySlot.allCases {
             #expect(model.bounceOffset(for: slot) == 0 || model.bounceStretch(for: slot) == 0)
         }
@@ -195,7 +289,7 @@ struct LimitBounceTests {
     @Test("the lean is a magnitude and its side never changes while it settles")
     func returnKeepsItsSide() async throws {
         let model = model()
-        model.setActivity(stage(.maximum, level: 1), change: .presented("hud"), reduceMotion: false)
+        reachAndPush(.maximum, on: model)
         #expect(model.limitLean > 0)
         #expect(model.limitLeansTrailing)
         for _ in 0..<24 {

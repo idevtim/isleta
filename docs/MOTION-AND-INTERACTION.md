@@ -228,6 +228,29 @@ springs **one edge** of the island `IslandLayout.limitBounceDistance` (16pt) out
 `Motion.rebound`. The right edge for the maximum, the left for the minimum. It is the rubber-band at
 the end of a scroll, and it says the one thing a full bar cannot: that there is no more.
 
+- **It takes two presses, since 2.3.0.** The press that *runs a level out* moves nothing: the bar is
+  already drawn full or empty by the time the island could travel, so a rebound on that press is the
+  island answering a question the bar has answered. The press after it — the one asking for more of a
+  level with none left to give — is the rebound. The owner's verdict, 2026-09-10: "don't bounce the
+  island until the user clicks the bottom or top one more time".
+
+  The two halves live in `IslandScreenModel`. A reading carrying `ActivityLimit` **arms**
+  `restingAtLimit` and returns; `pushedAtLimit(_:reduceMotion:)` leans only when it finds it already
+  armed, and otherwise arms it too. Leaving the end, and the HUD leaving the stage, both disarm.
+
+  **That also settles a race the source used to document as harmless.** A press landing on an end
+  produces a CoreAudio callback *and* a key event, in either order, and either could find the level
+  already at its end. When both could bounce, "two requests a few milliseconds apart" was one beat on
+  screen and the ordering did not matter. Now it does, and arming from both sides is what makes it
+  exact: whichever arrives first can only arm, so no press can lean the island by winning a race.
+
+  **The cost is that the rebound now needs Accessibility**, which it did not before. Pushing at an
+  end produces no reading at all — measured; CoreAudio fires no listener for a set that changes
+  nothing — so the only evidence is the key, and `MediaKeyMonitor`'s tap receives nothing without the
+  grant (a non-nil mach port and an empty stream, measured twice). Isleta already asks for it in
+  onboarding and HUD replacement already requires it; on a Mac where it is refused the HUD still
+  appears, the bar still fills and empties, and the island simply never leans.
+
 - **One edge, not the island.** It started as a translation of the whole shape and that was wrong on
   a notched Mac in a way a synthesized island hides: the physical hole does not move, so a slid
   island reads as sitting crooked on its notch. The owner's verdict, 2026-08-29: "we don't move the
@@ -261,7 +284,7 @@ the end of a scroll, and it says the one thing a full bar cannot: that there is 
   easing toward a target it may already be at — setting the same target again is a no-op to a
   spring, which is what made a held key produce one beat. It is not a variant of `nudge`: `nudge` is
   an *attention* nudge, something the island does to be noticed, and this is an *answer* — the user
-  pushed and there is nothing left to give. It fires only from `IslandScreenModel.limitBounce`.
+  pushed and there is nothing left to give. It fires only from `IslandScreenModel.pushedAtLimit`.
 - **`Motion.reboundReturn` is the ninth, and it is the half that must not overshoot.** The way out
   is a real overshoot because 16pt is invisible without one; played backwards that same overshoot
   crosses zero, and crossing zero puts the travel on the **other** edge — the right edge stretches
@@ -285,7 +308,7 @@ the end of a scroll, and it says the one thing a full bar cannot: that there is 
   maximum is to the right. That is a fact about drawing, so IslandActivities does not carry it.
 - **The source decides *whether*, and that is not fussiness.** `SystemHUDLevelState` publishes level
   zero for a **mute**, which is not a range being run to its bottom — an island reading the number
-  back would bounce every time anybody muted.
+  back would arm every time anybody muted, and the next press on a silent Mac would lean.
 - **Reduce Motion drops it entirely** rather than substituting a crossfade. Every other substitution
   in this codebase exists because the movement is *carrying* something; nothing is carried here.
 - **Pushing against a limit already reached is invisible to the levels, so the keys are watched for
@@ -296,9 +319,9 @@ the end of a scroll, and it says the one thing a full bar cannot: that there is 
   which see it properly. **Its `MediaKeyMode` is `.observe` here and that is the whole of it** — the
   same tap gained a `.replace` mode on 2026-08-30 for HUD suppression, where it consumes the key
   instead, and nothing about the rebound depends on that mode being on. It needs Accessibility,
-  which Isleta already asks for in onboarding, and without it
-  nothing prompts and nothing breaks — the island still rebounds when a level *reaches* an end,
-  because that is a change. A tap rather than `NSEvent.addGlobalMonitorForEvents` because the tap
+  which Isleta already asks for in onboarding. Without it nothing prompts and nothing breaks, but
+  since 2.3.0 nothing leans either: reaching an end only arms, so the key is the whole of the
+  evidence rather than half of it. A tap rather than `NSEvent.addGlobalMonitorForEvents` because the tap
   reports its own refusal; `--media-key-test` is what answers whether real keys arrive, and it waits
   for a human press because synthesised media keys are the invalid stimulus
   `DisplayServicesBrightnessMonitor` already records.
@@ -311,6 +334,51 @@ three states, no waves through both. Measured 2026-08-29 by rendering each candi
 and 1 and comparing bitmaps: the two `speaker.wave.*` symbols respond, `speaker.slash.fill`,
 `sun.max.fill` and `sun.min.fill` do not, and there is no brightness glyph in SF Symbols that would.
 Setting it on a symbol that ignores it costs nothing, so all three HUDs carry it.
+
+### Dragging the level, and what a click on a HUD means
+
+Added 2.3.0. The bar in a volume or brightness HUD's sliver is a **control**: press it anywhere and
+the level goes there, drag it and the level follows. A press on the same HUD *anywhere else* — the
+cutout in the middle, the glyph and word beside it — puts the HUD away and opens the island onto the
+pages. The owner's ask, 2026-09-10, and the two halves are one gesture: the bar is the level, and
+everything around it is the island.
+
+- **A SwiftUI `DragGesture`, not a click routed through `IslandHitTestView`.** The panel never
+  becomes key (§4.1), which rules out anything needing first responder status — and a gesture needs
+  none: `hitTest` returns `super.hitTest(point)`, the deepest subview that wants the point, so AppKit
+  delivers the whole down-drag-up sequence to the overlay. `NowPlayingScrubberView` established that
+  in the open island's body; this is the same finding in a 76×4pt bar in a 108pt sliver of a
+  **collapsed** island, which is why it has a self-test of its own rather than an assumption.
+- **`minimumDistance: 0` is the tap handling, not laziness about it.** A press anywhere on the bar
+  sets the level there, which is what a level does, and expressing it as a zero-distance drag makes a
+  press that becomes a drag one interaction rather than a tap that fires and a drag that fires again
+  from the same press.
+- **The grab region is 28pt tall and the bar is 4.** A 4pt target is not a target. It draws nothing,
+  so it adds no alpha for the window server to route clicks by, and `islandPath` refuses everything
+  outside the island before SwiftUI is asked — so a region larger than the island is one nobody can
+  reach. It sits **outside** the rebound's `scaleEffect`, so a lean does not move the control out
+  from under a pointer that has not moved.
+- **Nothing follows the finger.** The bar moves because the *level* moved: the island asks for a
+  fraction, the shell writes it, the write produces a reading, and the reading redraws the bar on
+  `Motion.contentSwap` like any other content change. A bar that tracked the pointer and was then
+  corrected by the reading would be two answers to one question, and the wrong one would be the one
+  under the pointer.
+- **Mute is not draggable**, and that is the same distinction `ActivityLimit` exists for: the bar
+  drawn beside a crossed-out speaker is at zero whatever volume is held behind the mute, so dragging
+  it would set a level nobody can hear. `IslandActivity.adjustableLevel` is nil for it, which means
+  no closure, no grab region, and a press there opens the island like any other press.
+- **A click puts only a HUD away.** Every other kind the island draws is either something the user
+  opened it to read or a condition rather than an event; a click that swept any of those aside would
+  make the gesture "clear the island" instead of "open it". A HUD is the one activity whose whole
+  content is already legible in the sliver, so opening onto its expanded form shows the same glyph,
+  word and bar again at four times the size. The dismissal is synchronous and comes *first*, so the
+  stage, the open island's height and whether the pages own the body are all settled before the
+  island starts to grow — opened first, it would grow to the HUD's body and then swap its content
+  underneath, which is two movements for one click.
+- **`--level-drag-test` is what settles both halves on hardware**: it drags 20% → 80% of the bar off
+  its centre line and asserts the fraction that came out, then presses the notch and asserts the HUD
+  is gone and the island open. The first run reported `["volume 0.20", "volume 0.50", "volume 0.80"]`
+  and `stage empty, island expanded`.
 
 ### The pointer on the album cover, which is a second hover inside the first
 

@@ -200,6 +200,16 @@ prompt in one and an explanation in the other.
   next HUD they asked for. The set is filtered at publish time as well, because one CoreAudio
   observer answers for both `.volume` and `.mute`.
 
+  **The island can write a level as well as read one, since 2.3.0.** `setLevel(_:to:)` is the drag on
+  the bar in a HUD's sliver, and it publishes on exactly the terms the key-replacement paths do:
+  volume says nothing, because the write fires the CoreAudio listener and the reading arrives by the
+  one route every other cause uses, and brightness publishes its own reading, because the change
+  notification DisplayServices posts was only ever measured for changes Isleta did not cause. It
+  refuses `.mute` — the bar beside a crossed-out speaker is at zero whatever volume is held behind
+  it — and it refuses a level the user has switched off. It freezes Apple's OSD helper before the
+  write for the same reason the key paths do, and plays no feedback click: Apple clicks for a key and
+  not for a slider, and one per frame of a drag would be a rattle.
+
   Volume and mute are observed through CoreAudio property listeners on the default output device
   (`kAudioHardwareServiceDeviceProperty_VirtualMainVolume` and `kAudioDevicePropertyMute`, rebound
   when the default device changes). No permission, no helper process, no timer — the callback is the
