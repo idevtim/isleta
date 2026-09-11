@@ -65,7 +65,9 @@ Play, pause, skip, shuffle, favorite, and see what's coming **Up Next** — doub
 the queue to jump to it. Works with Apple Music, Spotify, and anything else that reports to macOS.
 
 Long titles scroll once and settle instead of sliding forever. The artwork lends the island its
-color. Track changes crossfade in place, so the island never flickers open and shut.
+color. Track changes crossfade in place, so the island never flickers open and shut. When there is
+no cover art at all — a video in a browser tab — the island shows that app's icon rather than a
+generic music note, so you can see where the sound is coming from.
 
 ### 🌤 Weather — and it rains inside the island
 
@@ -102,11 +104,17 @@ and Beats get their own picture; everything else gets a generic pair.
 
 ### 🔊 Volume, mute and brightness
 
-The level you just set, shown where your eyes already are. Press past the end of the range and the
-bar leans off its own edge, so a key that does nothing still tells you so.
+The level you just set, shown where your eyes already are — and the bar is a **control**, not just a
+picture: press anywhere along it to send the level there, or drag it. Press the middle of the notch
+instead and the reading goes away and the island opens on whatever you were last looking at.
 
-Isleta can also **answer the keys itself** and replace Apple's own HUD entirely — volume and
-brightness are separate switches, both off until you turn them on.
+Run a level all the way to its end and the island holds still; press the key **again** — asking for
+more of something that has none left — and the bar leans off its own edge. So a key that does
+nothing still tells you so, without announcing it the moment you arrive.
+
+Isleta **answers the keys itself** by default and replaces Apple's own HUD entirely. Volume and
+brightness are separate switches, and both need Accessibility — decline it and you get Isleta's HUD
+*and* Apple's, which is why the first run asks.
 
 ### ⏱ And the small stuff that just shows up
 
@@ -133,7 +141,8 @@ taps once under your finger.
 |---|---|
 | Move the pointer onto the notch | It peeks — an invitation to click |
 | Click | It opens |
-| **Swipe two fingers sideways** | Turn the page: Today → Music → Weather, and around again |
+| **Swipe two fingers sideways** | Turn the page: Today → Music → Weather, and around again. Music is on the carousel only while something is playing |
+| Press or drag the volume or brightness bar | Sets that level there and then |
 | Drag a file onto it | The shelf opens and takes it |
 | Flick a closed island sideways | Whatever's on stage stows out of the way. Click to bring it back |
 | Swipe up with two fingers | It closes |
@@ -200,7 +209,7 @@ press — never at launch.
 | Permission | Needed for | If you decline |
 |---|---|---|
 | **None at all** | Volume, mute and brightness, timers, the shelf, file conversion, transcription, the wake greeting, power, hover, haptics, the shortcut | — |
-| **Accessibility** | Answering the media keys, and replacing Apple's HUD if you ask it to | The island still shows the level; it just can't take the key |
+| **Accessibility** | Answering the media keys, and replacing Apple's HUD | Apple's HUD comes back alongside Isleta's, and the island stops leaning at the end of a range. The level itself still shows, and the bar still works |
 | **Automation** (Music / Spotify) | A one-shot "what's playing right now?" read at launch | You lose the first track of a session, nothing else |
 | **Calendar** | Today's events, meeting links, calendar alerts | Today shows the weather half only |
 | **Location** | Weather where you are | Type a city instead — same weather, no location |
@@ -217,8 +226,8 @@ Each one is explained in Settings, right beside the switch it belongs to.
 
 | Pane | What's on it |
 |---|---|
-| **General** | Launch at login, shortcuts, whether Isleta shows in the menu bar, the lock screen card, the apps it stays out of, updates |
-| **Sources** | Turn each thing on or off independently — Now Playing, the HUDs, Today, calendar alerts, meetings, timers, Bluetooth, power, calls, the shelf, the wake greeting, screen sharing |
+| **General** | Launch at login, shortcuts, whether Isleta shows in the menu bar, the lock screen card and its unlock sound, updates |
+| **Sources** | Turn each thing on or off independently — Now Playing, the HUDs, Today, calendar alerts, meetings, timers, Bluetooth, power, calls, the shelf, the wake greeting, screen sharing — plus Focus, and the apps Isleta stays out of |
 | **Glance** | Which calendars count, and whether weather uses your location or a city you type |
 | **About** | Acknowledgements, Export Logs…, Setup Guide, Quit, reset to defaults |
 
@@ -244,8 +253,10 @@ actually pressed.
   headphones report no level at all.
 - **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
   started by hand in Clock is instant. macOS gives no signal for the others.
-- **Replacing the system HUDs needs Accessibility, and is off until you turn it on.** Quitting
-  Isleta hands your keys straight back. Brightness covers the built-in display only.
+- **Replacing the system HUDs is on by default and needs Accessibility.** Two switches in Settings
+  hand the keys back, and so does quitting Isleta. Brightness covers the built-in display only.
+- **A muted Mac's bar can't be dragged.** It's drawn at nothing whatever the volume behind it is, so
+  pressing it opens the island instead. Unmute first.
 - **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
   can sit over the middle of the space labels.
 - **The hover target is the notch itself** — about 185 points wide, and easy to overshoot.
