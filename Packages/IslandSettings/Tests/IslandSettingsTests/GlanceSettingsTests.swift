@@ -8,14 +8,12 @@ import Testing
 @MainActor
 struct GlanceSettingsTests {
 
-    /// Its own suite domain, never `UserDefaults.standard`: writing there from a test bundle lands
-    /// in the *test runner's* preference domain, where it survives the process and leaks into the
-    /// next run. `SettingsStorage` exists for the same reason.
-    private func defaults(_ name: String = UUID().uuidString) -> UserDefaults {
-        let defaults = UserDefaults(suiteName: name)!
-        defaults.removePersistentDomain(forName: name)
-        return defaults
-    }
+    // Its own suite domain, never `UserDefaults.standard`: writing there from a test bundle lands
+    // in the *test runner's* preference domain, where it survives the process and leaks into the
+    // next run. `SettingsStorage` exists for the same reason.
+    //
+    // It used to be a `defaults(_:)` helper over `UserDefaults(suiteName:)`, which emptied the
+    // domain on the way *in* and never on the way out — see `InMemoryDefaults` for what that cost.
 
     @Test("nothing picked means every calendar, which is what a first launch has")
     func emptyMeansAll() {
@@ -59,14 +57,16 @@ struct GlanceSettingsTests {
 
     @Test("an edit round-trips through the configuration record")
     func persistence() {
-        let name = UUID().uuidString
-        let store = SettingsStore(storage: UserDefaultsSettingsStorage(defaults: defaults(name)))
+        let defaults = InMemoryDefaults()
+        let store = SettingsStore(storage: UserDefaultsSettingsStorage(defaults: defaults))
         store.update {
             $0.glance.city = "Lisbon"
             $0.glance.usesCurrentLocation = false
             $0.glance.includedCalendarIDs = ["work"]
         }
-        let reopened = SettingsStore(storage: UserDefaultsSettingsStorage(defaults: UserDefaults(suiteName: name)!))
+        /* Reopened over the same store, which is what "reopening the domain" was standing in for:
+           the assertion is that the edit survived being encoded, not that a file exists. */
+        let reopened = SettingsStore(storage: UserDefaultsSettingsStorage(defaults: defaults))
         #expect(reopened.configuration.glance.city == "Lisbon")
         #expect(reopened.configuration.glance.usesCurrentLocation == false)
         #expect(reopened.configuration.glance.includedCalendarIDs == ["work"])
@@ -76,7 +76,8 @@ struct GlanceSettingsTests {
     /// a record "Reset to Defaults" does not contain is a record it does not reset.
     @Test("Reset to Defaults reaches the glance")
     func resetReachesTheGlance() {
-        let store = SettingsStore(storage: UserDefaultsSettingsStorage(defaults: defaults()))
+        let defaults = InMemoryDefaults()
+        let store = SettingsStore(storage: UserDefaultsSettingsStorage(defaults: defaults))
         store.update {
             $0.glance.city = "Lisbon"
             $0.glance.usesCurrentLocation = false
@@ -118,10 +119,9 @@ struct GlanceSettingsTests {
 
     @Test("a corrupt blob falls back to defaults rather than refusing to launch")
     func corruptBlob() {
-        let name = UUID().uuidString
-        let raw = defaults(name)
-        raw.set(Data("not json".utf8), forKey: SettingsMigration.legacyGlanceKey)
-        let store = SettingsStore(storage: UserDefaultsSettingsStorage(defaults: raw))
+        let defaults = InMemoryDefaults()
+        defaults.set(Data("not json".utf8), forKey: SettingsMigration.legacyGlanceKey)
+        let store = SettingsStore(storage: UserDefaultsSettingsStorage(defaults: defaults))
         #expect(store.configuration.glance == .defaults)
     }
 }

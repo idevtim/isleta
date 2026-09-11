@@ -93,25 +93,23 @@ struct OnboardingStepTests {
 @Suite("Onboarding ledger")
 struct OnboardingLedgerTests {
 
-    /// Its own suite every time, never `.standard`. A test that marks onboarding complete in the
-    /// real defaults passes on a clean machine and then permanently suppresses the flow on the
-    /// machine it ran on — which is a bug you cannot reproduce, because you caused it.
-    private func makeLedger() throws -> OnboardingLedger {
-        let name = "com.tryisleta.tests.onboarding.\(UUID().uuidString)"
-        let defaults = try #require(UserDefaults(suiteName: name))
-        return OnboardingLedger(defaults: defaults)
-    }
+    // Its own suite every time, never `.standard`. A test that marks onboarding complete in the
+    // real defaults passes on a clean machine and then permanently suppresses the flow on the
+    // machine it ran on — which is a bug you cannot reproduce, because you caused it.
+    //
+    // It used to reach for `UserDefaults(suiteName:)` with a fresh UUID, which is isolated and also
+    // a file — see `InMemoryDefaults`, which is isolated and is not.
 
     @Test("a Mac that has never been onboarded is offered the flow")
-    func freshInstallPresents() throws {
-        let ledger = try makeLedger()
+    func freshInstallPresents() {
+        let ledger = OnboardingLedger(defaults: InMemoryDefaults())
         #expect(ledger.completedVersion == 0)
         #expect(ledger.shouldPresent)
     }
 
     @Test("finishing stops it coming back")
-    func completionSuppresses() throws {
-        let ledger = try makeLedger()
+    func completionSuppresses() {
+        let ledger = OnboardingLedger(defaults: InMemoryDefaults())
         ledger.markComplete()
         #expect(ledger.completedVersion == OnboardingLedger.currentVersion)
         #expect(!ledger.shouldPresent)
@@ -121,8 +119,8 @@ struct OnboardingLedgerTests {
     /// people who were onboarded before it existed, and "onboarded" alone cannot say which questions
     /// they were asked.
     @Test("a Mac onboarded on an older flow is offered the newer one")
-    func olderFlowIsRepresented() throws {
-        let ledger = try makeLedger()
+    func olderFlowIsRepresented() {
+        let ledger = OnboardingLedger(defaults: InMemoryDefaults())
         ledger.completedVersion = OnboardingLedger.currentVersion - 1
         #expect(ledger.shouldPresent)
     }
@@ -131,8 +129,8 @@ struct OnboardingLedgerTests {
     /// answered a superset of what this build would ask, and making them sit through the older flow
     /// would be the downgrade's most visible symptom.
     @Test("a Mac onboarded on a newer flow is not sent back through an older one")
-    func newerFlowIsNotRepeated() throws {
-        let ledger = try makeLedger()
+    func newerFlowIsNotRepeated() {
+        let ledger = OnboardingLedger(defaults: InMemoryDefaults())
         ledger.completedVersion = OnboardingLedger.currentVersion + 5
         #expect(!ledger.shouldPresent)
     }
@@ -140,8 +138,8 @@ struct OnboardingLedgerTests {
     /// What `--onboarding-reset` is for: the flow is otherwise a thing you get one look at per
     /// machine, which makes the real first-launch path the hardest one to check.
     @Test("resetting puts the Mac back to never-onboarded")
-    func resetRestoresFirstRun() throws {
-        let ledger = try makeLedger()
+    func resetRestoresFirstRun() {
+        let ledger = OnboardingLedger(defaults: InMemoryDefaults())
         ledger.markComplete()
         ledger.reset()
         #expect(ledger.completedVersion == 0)
