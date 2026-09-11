@@ -384,6 +384,7 @@ public struct LockScreenCardView: View {
             side: LockScreenCardLayout.artworkSide,
             tint: .white,
             increaseContrast: model.increaseContrast,
+            applicationIcon: model.applicationIcon,
             isPaused: NowPlayingSlotView.coverIsPaused(
                 isTransportAvailable: model.hasTransport,
                 isPlaying: model.nowPlaying?.isPlaying ?? false

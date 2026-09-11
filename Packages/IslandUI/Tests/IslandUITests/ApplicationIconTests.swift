@@ -225,6 +225,79 @@ struct ApplicationIconTests {
         #expect(attempts.count == 0)
     }
 
+    // MARK: - The player's icon, where a track has no cover
+
+    /// A store that answers for one identifier and nothing else.
+    @MainActor
+    private func store(knowing identifier: String) -> ApplicationIconStore {
+        let image = Self.swatch()
+        return ApplicationIconStore { key in
+            guard ApplicationIconStore.bundleIdentifier(inKey: key) == identifier else {
+                return ResolvedApplication(url: nil, icon: nil)
+            }
+            return ResolvedApplication(url: nil, icon: image)
+        }
+    }
+
+    @MainActor
+    private func player(_ identifier: String?) -> NowPlayingController {
+        let controller = NowPlayingController()
+        controller.apply(
+            isPlaying: true,
+            canSkip: true,
+            isTransportAvailable: true,
+            playerBundleIdentifier: identifier,
+            reduceMotion: true
+        )
+        return controller
+    }
+
+    /// **The case this fallback exists for**: a browser tab playing a video reports a title, a
+    /// player and no artwork at all, and a music note in that square says only that this is sound —
+    /// which the island has already said by being the island.
+    @Test("a track with no cover falls back to the player's own icon")
+    @MainActor
+    func noCoverAsksForThePlayersIcon() async throws {
+        let controller = player("com.apple.Safari")
+        let icons = store(knowing: "com.apple.Safari")
+
+        // Nil on the first ask is the store's contract rather than a failure — it is the frame
+        // before the resolve returns, and the glyph well is what is drawn for it.
+        #expect(controller.applicationIcon(from: icons) == nil)
+        try await waitUntil { controller.applicationIcon(from: icons) != nil }
+    }
+
+    /// **Never asked for while there is a cover**, which is why this is a method rather than a
+    /// property a view filters afterwards: resolving an icon about to be covered by a sleeve is a
+    /// disk read for something nobody sees, and it would hold a slot in a cache of eight for an app
+    /// this island is never going to draw.
+    @Test("a track with a cover never asks for one")
+    @MainActor
+    func aCoverWinsOutright() async throws {
+        let attempts = Attempts()
+        let controller = player("com.apple.Safari")
+        controller.setArtwork(Self.swatch(), reduceMotion: true)
+        let icons = ApplicationIconStore { key in
+            attempts.record(key)
+            return ResolvedApplication(url: nil, icon: nil)
+        }
+
+        #expect(controller.applicationIcon(from: icons) == nil)
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(attempts.count == 0)
+    }
+
+    /// A route that cannot name the player has nothing to draw, and the well is the honest answer.
+    @Test("a track with no player to name draws the well")
+    @MainActor
+    func noPlayerNoIcon() async throws {
+        let controller = player(nil)
+        let icons = store(knowing: "com.apple.Safari")
+        #expect(controller.applicationIcon(from: icons) == nil)
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(controller.applicationIcon(from: icons) == nil)
+    }
+
     // MARK: - Support
 
     /// Counts resolver calls from whatever queue they land on.

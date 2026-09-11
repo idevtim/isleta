@@ -46,6 +46,19 @@ public final class LockScreenCardModel {
     /// The cover, or nil while the loader is still working.
     public var artwork: CGImage? { nowPlaying?.artwork }
 
+    /// Where an application icon comes from, for a track with no cover at all.
+    ///
+    /// The app-wide store by default, like `IslandScreenModel.applicationIcons` — there is one set
+    /// of icons on this Mac, and a second cache of eight for the one surface that is only ever up
+    /// while the screen is locked would resolve the same icon twice. Assignable so this package
+    /// still builds and previews with nothing injected (§3).
+    public var applicationIcons: ApplicationIconStore = .shared
+
+    /// The player's own icon, for a track with no cover — see
+    /// `NowPlayingController.applicationIcon(from:)`, which is where the rule lives for every
+    /// surface that draws one.
+    public var applicationIcon: CGImage? { nowPlaying?.applicationIcon(from: applicationIcons) }
+
     /// Whether the screen is locked. The card draws only while this is true; the panel is ordered
     /// out as well, and this exists so the *content* can cross-fade rather than appearing fully
     /// formed at whatever the window server's first composited frame happens to be.

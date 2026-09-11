@@ -166,6 +166,35 @@ public final class NowPlayingController {
     /// open.
     public var canOpenPlayer: Bool { playerBundleIdentifier != nil }
 
+    /// What stands in for the cover when there is none: the player's own icon.
+    ///
+    /// **Not every route to a player has artwork behind it.** A browser tab playing a video that is
+    /// not on a site with media metadata reports a title and nothing else, and a music note in that
+    /// square says only that this is sound — which the island's whole shape has already said.
+    /// Safari's icon says *this is coming out of Safari*, which is the fact the user is missing and
+    /// the one nothing else on the surface carries.
+    ///
+    /// **Asked only when there is no artwork**, and that guard is the reason this is a method rather
+    /// than a property the caller filters afterwards: resolving an icon that is about to be covered
+    /// by a sleeve is a disk read for something nobody will see, and the store would keep it in a
+    /// cache of eight for an app whose icon this island is never going to draw.
+    ///
+    /// **One rule, asked by every surface that draws a cover**, which is why it lives on the
+    /// controller and not in a view. It was a private computed property of `NowPlayingSlotView`
+    /// until 2.3.0, so the collapsed sliver and the open player showed the icon while the home
+    /// page's music column and the lock-screen card went on drawing the note — the same square,
+    /// answering the same question two ways, which is precisely the inconsistency
+    /// `LockScreenCardView.artwork` already warns about for the pause state.
+    ///
+    /// Nil is also the ordinary answer for the frame before a resolve returns — see
+    /// `ApplicationIconStore.icon(named:)`, whose first call always answers nil — and the permanent
+    /// answer for a player that has been uninstalled since it last spoke. The glyph well is what is
+    /// drawn for both.
+    public func applicationIcon(from icons: ApplicationIconStore) -> CGImage? {
+        guard artwork == nil, let playerBundleIdentifier else { return nil }
+        return icons.icon(forBundleIdentifier: playerBundleIdentifier)
+    }
+
     /// Whether the user has asked for shuffle, and for which repeat mode.
     ///
     /// See `NowPlayingRepeatMode`: nothing reports these back, so these two are the record of what

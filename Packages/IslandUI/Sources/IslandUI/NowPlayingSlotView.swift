@@ -94,14 +94,12 @@ struct NowPlayingSlotView: View {
 
     /// The player's icon, for a track that has no cover.
     ///
-    /// Asked only when there is no artwork: resolving an icon that is about to be covered by a
-    /// sleeve is a disk read for something nobody will see, and the store would keep it in a cache
-    /// of eight for an app whose icon this island is never going to draw.
+    /// The rule itself is `NowPlayingController.applicationIcon(from:)`, where every surface that
+    /// draws a cover can reach it. It was written out here, and only here, which is how the home
+    /// page's music column and the lock-screen card came to draw the note for a browser tab while
+    /// these two slivers drew Safari.
     private var applicationIcon: CGImage? {
-        guard controller.artwork == nil, let identifier = controller.playerBundleIdentifier else {
-            return nil
-        }
-        return icons.icon(forBundleIdentifier: identifier)
+        controller.applicationIcon(from: icons)
     }
 
     /// White at an opacity, in sRGB.

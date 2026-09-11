@@ -148,6 +148,12 @@ struct IslandHomeLayerView: View {
                 side: IslandHomeLayout.artworkSide,
                 tint: accent,
                 increaseContrast: model.increaseContrast,
+                // The player's own icon where there is no cover — a browser tab playing a video
+                // reports a title and nothing else, and a note in this square says only that this
+                // is sound. See `NowPlayingController.applicationIcon(from:)`, which is the one
+                // place the rule lives now: this column drew the note while the sliver two points
+                // above it drew Safari.
+                applicationIcon: nowPlaying?.applicationIcon(from: model.applicationIcons),
                 // Only ever *known* paused, never `!isPlaying` — the scripting route cannot report
                 // transport state, and a cover permanently dimmed on it would be the island claiming
                 // something it does not know. `NowPlayingArtworkView.isPaused` says the same.
