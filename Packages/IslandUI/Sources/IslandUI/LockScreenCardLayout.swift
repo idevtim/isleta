@@ -140,9 +140,17 @@ public enum LockScreenCardLayout {
     public static let progressHoverHeight: CGFloat = 6
 
     /// Elapsed and remaining, either end of the line. Fixed width so the line does not change length
-    /// as a track crosses from "9:59" to "10:00" — `NowPlayingExpandedLayout.timeLabelWidth`'s
-    /// reasoning at this card's size.
-    public static let timeLabelWidth: CGFloat = 42
+    /// as a track crosses from "9:59" to "10:00" —
+    /// `NowPlayingExpandedLayout.timeLabelWidth(forDuration:)`'s reasoning at this card's size.
+    ///
+    /// **50, and unconditionally, where the player picks its width per track.** 42 held `-59:59`
+    /// (37.48pt in SF Pro Medium 11) and truncated a film's `-1:01:14`, which is 48.18. The player
+    /// widens only for hour-long content because the 24pt it costs comes out of a 240pt scrub bar;
+    /// this line is 346pt wide, so reserving the room always costs 16 of it and buys a layout with
+    /// one number in it instead of two. A lock screen is also the one surface nobody is standing in
+    /// front of while it is drawn, which is the wrong place for a width that depends on what is
+    /// playing.
+    public static let timeLabelWidth: CGFloat = 50
 
     public static let timeLabelSpacing: CGFloat = 10
 

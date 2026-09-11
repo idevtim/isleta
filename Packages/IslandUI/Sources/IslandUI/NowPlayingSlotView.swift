@@ -514,9 +514,9 @@ struct NowPlayingSlotView: View {
     /// Elapsed, the bar, and the remaining time as a negative.
     private func scrubberRow(_ timeline: ActivityTimeline) -> some View {
         HStack(spacing: NowPlayingExpandedLayout.timeLabelSpacing) {
-            timeLabel(elapsedText(timeline), alignment: .leading)
+            timeLabel(elapsedText(timeline), alignment: .leading, duration: timeline.duration)
             scrubber(timeline)
-            timeLabel(remainingText(timeline), alignment: .trailing)
+            timeLabel(remainingText(timeline), alignment: .trailing, duration: timeline.duration)
         }
         .frame(height: NowPlayingExpandedLayout.scrubberRowHeight)
     }
@@ -588,7 +588,11 @@ struct NowPlayingSlotView: View {
     @ViewBuilder
     private func transportRow(_ timeline: ActivityTimeline?) -> some View {
         HStack(spacing: 0) {
-            timeLabel(elapsedText(timeline), alignment: .leading)
+            timeLabel(
+                elapsedText(timeline),
+                alignment: .leading,
+                duration: timeline?.duration ?? 0
+            )
             Spacer(minLength: 0)
             if controller.isTransportAvailable {
                 NowPlayingTransportView(
@@ -609,14 +613,28 @@ struct NowPlayingSlotView: View {
                 )
             }
             Spacer(minLength: 0)
-            timeLabel(remainingText(timeline), alignment: .trailing)
+            timeLabel(
+                remainingText(timeline),
+                alignment: .trailing,
+                duration: timeline?.duration ?? 0
+            )
         }
         .frame(height: NowPlayingExpandedLayout.transportRowHeight)
     }
 
-    /// A fixed-width slot for a time, so the transport buttons stay centerd on the island rather
-    /// than sliding sideways as a track crosses from "9:59" to "10:00".
-    private func timeLabel(_ text: String?, alignment: Alignment) -> some View {
+    /// A fixed-width slot for a time, so the row does not shuffle sideways as a track crosses from
+    /// "9:59" to "10:00".
+    ///
+    /// **Fixed for the length of the track rather than for all tracks**, since 2.3.0: a film needs
+    /// room for `-1:01:14` and a song does not, and one width wide enough for both would spend 24pt
+    /// of every song's scrub bar on hours it will never draw. See
+    /// `NowPlayingExpandedLayout.timeLabelWidth(forDuration:)`, which is also what the bar itself is
+    /// laid out against, so the two cannot disagree about where the row begins.
+    private func timeLabel(
+        _ text: String?,
+        alignment: Alignment,
+        duration: TimeInterval
+    ) -> some View {
         Text(text ?? "")
             // `.rounded` and monospaced digits for numerals being read as a quantity (§6.5) — the
             // even-width digits are what stop a counting number from looking like it is flickering.
@@ -625,7 +643,10 @@ struct NowPlayingSlotView: View {
             // Gray, not the activity tint — the reference's times and bar are neutral, and a tinted
             // numeral reads as a value that means something by its color, which a clock does not.
             .foregroundStyle(.white.opacity(increaseContrast ? 0.9 : 0.55))
-            .frame(width: NowPlayingExpandedLayout.timeLabelWidth, alignment: alignment)
+            .frame(
+                width: NowPlayingExpandedLayout.timeLabelWidth(forDuration: duration),
+                alignment: alignment
+            )
             .accessibilityHidden(true)
     }
 

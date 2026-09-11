@@ -3921,7 +3921,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hub.apply(configuration)
         applyGlanceSettings(settings.configuration.glance)
         if isDemo {
-            activities.present(TransportSelfTest.demoActivity(durationSeconds: 3600))
+            // **An hour and a quarter, not an hour**, so `--nowplaying-demo` also puts the *widened*
+            // time labels on screen: at 3600 exactly the remaining time reads `-1:00:00` for one
+            // frame and `-59:59` for the rest of the run, which is the narrow case the demo is not
+            // the place to look at. See `NowPlayingExpandedLayout.timeLabelWidth(forDuration:)`.
+            activities.present(TransportSelfTest.demoActivity(durationSeconds: 4500))
             // The transport row is part of what the demo exists to put on screen: it animates with
             // everything else, and with no live source nothing would otherwise tell the controller
             // there is a player to talk to, so the row would be absent from both the measurement and

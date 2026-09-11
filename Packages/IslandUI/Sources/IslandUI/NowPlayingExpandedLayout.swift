@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 
 /// Where the scrub bar and the three transport buttons sit inside the open island's body.
 ///
@@ -115,9 +116,31 @@ public enum NowPlayingExpandedLayout {
     /// grabbable thing are deliberately different sizes.
     public static let scrubberRowHeight: CGFloat = 22
 
-    /// Fixed, so the buttons stay centerd on the island rather than sliding sideways as a track
-    /// crosses from "9:59" to "10:00".
-    public static let timeLabelWidth: CGFloat = 38
+    /// Fixed **for the length of a track**, so the buttons stay centerd on the island rather than
+    /// sliding sideways as it crosses from "9:59" to "10:00".
+    ///
+    /// Fixed at 38 for everything until 2.3.0, which is the width of `-59:59` and not of
+    /// `-1:01:14` — so a film reported a remaining time truncated to `-1:0…`, drawn beside a bar
+    /// that had plenty of room either side of it. Reported from a browser playing a 77-minute
+    /// video.
+    ///
+    /// A **function of the duration** rather than one number wide enough for both, because the
+    /// second costs every song 24pt of scrub bar to hold hours nothing under an hour will ever
+    /// draw. The duration does not change while a track plays, so the labels are still fixed for as
+    /// long as anyone is looking at them — which is the whole of what the constant was for.
+    public static func timeLabelWidth(forDuration duration: TimeInterval) -> CGFloat {
+        duration >= 3600 ? timeLabelWidthWithHours : timeLabelWidthWithinAnHour
+    }
+
+    /// **40, measured rather than chosen**: `-59:59` in SF Rounded Medium 11 with monospaced digits
+    /// is 38.28pt, which the old 38 was a quarter of a point short of. Every remaining time on a
+    /// track over ten minutes is that width — monospaced digits make `-44:12` and `-59:59` the same
+    /// picture — so the margin was thin on ordinary music rather than only on films.
+    public static let timeLabelWidthWithinAnHour: CGFloat = 40
+
+    /// **50**, which is `-9:59:59` at 49.10pt. Nine hours is past anything anybody will watch in a
+    /// notch and the string cannot grow again before it.
+    public static let timeLabelWidthWithHours: CGFloat = 50
 
     /// 42x30 — 34, then 38, then here, each time paid for out of `transportButtonSpacing`.
     ///
@@ -200,7 +223,10 @@ public enum NowPlayingExpandedLayout {
     /// This rect is what a drag is measured against, so the view lays the row out the same way — two
     /// equal spacers — rather than by its own arithmetic. A bar drawn anywhere other than here is a
     /// bar that seeks from somewhere the pointer is not.
-    public static func scrubberRect(in body: CGRect) -> CGRect {
+    /// - Parameter duration: how long the track is, which is what decides how much room its two
+    ///   time labels need — see `timeLabelWidth(forDuration:)`. Zero for a player with no duration
+    ///   to report, which draws no labels and is the narrow case anyway.
+    public static func scrubberRect(in body: CGRect, duration: TimeInterval) -> CGRect {
         let content = contentRect(in: body)
         let header = headerRect(in: body)
         let transport = transportRect(in: body)
@@ -209,7 +235,7 @@ public enum NowPlayingExpandedLayout {
         // either side of the bar. Measured, not assumed: the bar reports 240pt inside a 332pt
         // content column, which is exactly two labels and their gaps. This rect is what a drag is
         // measured against, so claiming the full column made a drag to 75% seek to 84%.
-        let inset = timeLabelWidth + timeLabelSpacing
+        let inset = timeLabelWidth(forDuration: duration) + timeLabelSpacing
         return CGRect(
             x: content.minX + inset,
             y: header.maxY + slack / 2,
@@ -220,9 +246,9 @@ public enum NowPlayingExpandedLayout {
 
     /// The full row the scrub bar and its two time labels share.
     /// The full row the bar and its two time labels share.
-    public static func scrubberRowRect(in body: CGRect) -> CGRect {
+    public static func scrubberRowRect(in body: CGRect, duration: TimeInterval) -> CGRect {
         let content = contentRect(in: body)
-        let bar = scrubberRect(in: body)
+        let bar = scrubberRect(in: body, duration: duration)
         return CGRect(x: content.minX, y: bar.minY, width: content.width, height: bar.height)
     }
 
@@ -254,8 +280,16 @@ public enum NowPlayingExpandedLayout {
     }
 
     /// The point on the scrub bar corresponding to a fraction through the track.
-    public static func scrubberPoint(in body: CGRect, atFraction fraction: Double) -> CGPoint {
-        let rect = scrubberRect(in: body)
+    ///
+    /// - Parameter duration: the track's length, which decides where the bar starts and ends — see
+    ///   `scrubberRect(in:duration:)`. A caller that passes the wrong one aims at a bar that is not
+    ///   there.
+    public static func scrubberPoint(
+        in body: CGRect,
+        atFraction fraction: Double,
+        duration: TimeInterval
+    ) -> CGPoint {
+        let rect = scrubberRect(in: body, duration: duration)
         let clamped = min(max(0, fraction), 1)
         return CGPoint(x: rect.minX + rect.width * clamped, y: rect.midY)
     }
@@ -269,8 +303,11 @@ public enum NowPlayingExpandedLayout {
     /// reasonably change.
     public static func fits(in body: CGRect) -> Bool {
         let needed = topPadding + bottomPadding + headerRowHeight + scrubberRowHeight + transportRowHeight
-        let widthNeeded = horizontalPadding * 2 + artworkSide + headerSpacing
-            + (timeLabelWidth + timeLabelSpacing) * 2
+        // The **widest** the labels ever get, so this answers for a film as well as for a song —
+        // see `timeLabelWidth(forDuration:)`. A fit that only held for the narrow case would be a
+        // check that passes on the content it was never in doubt for.
+        let labels = (timeLabelWidthWithHours + timeLabelSpacing) * 2
+        let widthNeeded = horizontalPadding * 2 + artworkSide + headerSpacing + labels
         return body.height >= needed && body.width > widthNeeded
             && transportRowWidth <= body.width - horizontalPadding * 2
     }

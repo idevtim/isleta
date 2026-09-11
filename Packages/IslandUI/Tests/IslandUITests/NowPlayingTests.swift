@@ -172,6 +172,15 @@ struct NowPlayingControllerTests {
 @Suite("Now Playing expanded layout")
 struct NowPlayingLayoutTests {
 
+    /// An ordinary song. The time labels — and therefore where the bar begins and ends — depend on
+    /// whether a track reaches an hour, so every geometry assertion here says which case it is
+    /// about. `filmDuration` is the other one.
+    private let songDuration: TimeInterval = 180
+
+    /// Long enough to draw `-1:01:14`, which is what widens the labels. The case that was truncated
+    /// on hardware before 2.3.0.
+    private let filmDuration: TimeInterval = 4637
+
     /// The 14" MacBook Pro's expanded island: 380x140 body with a 185x32 cutout out of the top,
     /// leaving 108pt to draw controls in.
     private var body: CGRect {
@@ -193,7 +202,7 @@ struct NowPlayingLayoutTests {
 
     @Test("both rows sit inside the body, in order, with no overlap")
     func rowsAreOrdered() {
-        let scrubber = NowPlayingExpandedLayout.scrubberRect(in: body)
+        let scrubber = NowPlayingExpandedLayout.scrubberRect(in: body, duration: songDuration)
         let transport = NowPlayingExpandedLayout.transportRect(in: body)
         #expect(body.contains(scrubber))
         #expect(body.contains(transport))
@@ -238,11 +247,11 @@ struct NowPlayingLayoutTests {
 
     @Test("the scrubber maps a fraction across its own width, clamped")
     func scrubberPoints() {
-        let rect = NowPlayingExpandedLayout.scrubberRect(in: body)
-        #expect(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 0).x == rect.minX)
-        #expect(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 1).x == rect.maxX)
-        #expect(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 2).x == rect.maxX)
-        #expect(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: -1).x == rect.minX)
+        let rect = NowPlayingExpandedLayout.scrubberRect(in: body, duration: songDuration)
+        #expect(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 0, duration: songDuration).x == rect.minX)
+        #expect(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 1, duration: songDuration).x == rect.maxX)
+        #expect(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 2, duration: songDuration).x == rect.maxX)
+        #expect(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: -1, duration: songDuration).x == rect.minX)
     }
 }
 
@@ -340,6 +349,15 @@ struct TitleBlockTests {
 @Suite("Now Playing expanded rows")
 struct NowPlayingExpandedRowsTests {
 
+    /// An ordinary song. The time labels — and therefore where the bar begins and ends — depend on
+    /// whether a track reaches an hour, so every geometry assertion here says which case it is
+    /// about. `filmDuration` is the other one.
+    private let songDuration: TimeInterval = 180
+
+    /// Long enough to draw `-1:01:14`, which is what widens the labels. The case that was truncated
+    /// on hardware before 2.3.0.
+    private let filmDuration: TimeInterval = 4637
+
     typealias Layout = NowPlayingExpandedLayout
 
     /// The real thing, derived rather than pinned: the open island's own size, less the strip behind
@@ -365,7 +383,7 @@ struct NowPlayingExpandedRowsTests {
     @Test("the rows stack without overlapping, in the reference's order")
     func rowsDoNotOverlap() {
         let header = Layout.headerRect(in: body)
-        let scrubber = Layout.scrubberRowRect(in: body)
+        let scrubber = Layout.scrubberRowRect(in: body, duration: songDuration)
         let transport = Layout.transportRect(in: body)
 
         // Header above the bar above the buttons — the order the reference shows.
@@ -396,9 +414,9 @@ struct NowPlayingExpandedRowsTests {
         // sits in. This rect is what a drag is measured against, and it has been wrong in both
         // directions during development — claiming the full column made a drag to 75% seek to 84%,
         // and claiming an inset the view did not draw made it seek to 67%.
-        let row = Layout.scrubberRowRect(in: body)
-        let bar = Layout.scrubberRect(in: body)
-        let inset = Layout.timeLabelWidth + Layout.timeLabelSpacing
+        let row = Layout.scrubberRowRect(in: body, duration: songDuration)
+        let bar = Layout.scrubberRect(in: body, duration: songDuration)
+        let inset = Layout.timeLabelWidth(forDuration: songDuration) + Layout.timeLabelSpacing
         #expect(bar.minX == row.minX + inset)
         #expect(bar.maxX == row.maxX - inset)
         #expect(bar.width > 0)
@@ -409,7 +427,7 @@ struct NowPlayingExpandedRowsTests {
         // The reported fault: the bar crowded the controls with a gulf above it, because the rows
         // are bottom-anchored and all the slack collected in one place.
         let header = Layout.headerRect(in: body)
-        let bar = Layout.scrubberRect(in: body)
+        let bar = Layout.scrubberRect(in: body, duration: songDuration)
         let transport = Layout.transportRect(in: body)
         let above = bar.minY - header.maxY
         let below = transport.minY - bar.maxY
@@ -419,13 +437,13 @@ struct NowPlayingExpandedRowsTests {
 
     @Test("a fraction maps onto the bar, not onto the row the labels share")
     func scrubberPointTracksTheBar() {
-        let bar = Layout.scrubberRect(in: body)
-        #expect(Layout.scrubberPoint(in: body, atFraction: 0).x == bar.minX)
-        #expect(Layout.scrubberPoint(in: body, atFraction: 1).x == bar.maxX)
-        #expect(Layout.scrubberPoint(in: body, atFraction: 0.5).x == bar.midX)
+        let bar = Layout.scrubberRect(in: body, duration: songDuration)
+        #expect(Layout.scrubberPoint(in: body, atFraction: 0, duration: songDuration).x == bar.minX)
+        #expect(Layout.scrubberPoint(in: body, atFraction: 1, duration: songDuration).x == bar.maxX)
+        #expect(Layout.scrubberPoint(in: body, atFraction: 0.5, duration: songDuration).x == bar.midX)
         // Out-of-range fractions clamp rather than pointing off the island.
-        #expect(Layout.scrubberPoint(in: body, atFraction: -3).x == bar.minX)
-        #expect(Layout.scrubberPoint(in: body, atFraction: 9).x == bar.maxX)
+        #expect(Layout.scrubberPoint(in: body, atFraction: -3, duration: songDuration).x == bar.minX)
+        #expect(Layout.scrubberPoint(in: body, atFraction: 9, duration: songDuration).x == bar.maxX)
     }
 
     @Test("the three transport buttons are centerd on the island and stay inside it")

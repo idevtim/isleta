@@ -196,9 +196,20 @@ enum TransportSelfTest {
                 // A drag: down at 20%, two moves, up at 75%. Two moves rather than one because the
                 // scrubber distinguishes the first event of a gesture (translation zero) from the
                 // rest, and a single move would only exercise the first branch.
-                let down = inWindow(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 0.2))
-                let mid = inWindow(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 0.5))
-                let up = inWindow(NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 0.75))
+                // The demo track's own length, because that is what decides how wide the time
+                // labels are and therefore where the bar starts — see
+                // `NowPlayingExpandedLayout.timeLabelWidth(forDuration:)`. Passing anything else
+                // aims at a bar that is not there.
+                let length: TimeInterval = 180
+                let down = inWindow(
+                    NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 0.2, duration: length)
+                )
+                let mid = inWindow(
+                    NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 0.5, duration: length)
+                )
+                let up = inWindow(
+                    NowPlayingExpandedLayout.scrubberPoint(in: body, atFraction: 0.75, duration: length)
+                )
                 lines.append("scrub bar at \(down) → hitTest \(window.contentView?.hitTest(down).map { String(describing: type(of: $0)) } ?? "nil")")
 
                 post(.leftMouseDown, at: down)
