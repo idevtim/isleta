@@ -123,6 +123,21 @@ what makes `reveal` the honest token rather than a bounce borrowed for its shape
 they unlock, and a surface still settling over their own desktop is the two-animations-at-once
 complaint `AppDelegate.returnDelay` already records for the island.
 
+**Nothing arrives during the unlock, since 2.3.0.** `com.apple.screenIsUnlocked` marks the
+*beginning* of loginwindow's dissolve, and `AppDelegate.returnDelay` (1.75s) waits out the rest of
+it plus the padlock's own collapse — so for the length of that dissolve the island is on stage,
+correctly sized, and drawn at a third of its width with no opacity. An activity arriving in that
+window used to restore its own visibility, on a rule written for a different problem entirely (an
+island left hidden by a space transition that nobody was coming back for), and the result was a
+401pt island drawn across a screen the user was still being let into — reported as the charger going
+in mid-unlock. `IslandScreenModel.isHeldOffScreen` is the missing distinction: `reentry == 0` says
+the island is not on screen and says nothing about whether anybody is coming back for it.
+`collapseIntoNotch` sets the hold and `playReentry` clears it, so an activity that arrives while the
+screen is away is presented, runs its dwell, and comes out of the cutout *with* the island when the
+unlock is over — one arrival on one spring rather than a HUD and then an unlock. An activity whose
+dwell runs out in between is simply gone by then, which is right: a charger announced thirty seconds
+ago is not news.
+
 A bounce needs somewhere to go, and a window clips its contents to its bounds whatever SwiftUI drew
 — so `LockScreenCardLayout.overshootMargin` (8pt) is real room in the *panel*, the same thing the
 notch surface gets by sizing its panel for the peeked island rather than the resting one. Two

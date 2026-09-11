@@ -1173,6 +1173,35 @@ public final class IslandScreenModel {
     @ObservationIgnored
     private var restingAtLimit: ActivityLimit?
 
+    /// Whether the island is off screen because the **screen** is — a lock, a sleep, the displays
+    /// going dark — with a return already scheduled to put it back.
+    ///
+    /// **`reentry` alone cannot answer this, and that is the whole reason this exists.** Zero means
+    /// "not on screen" and says nothing about who took it away or whether anybody is coming back for
+    /// it. Two situations reach it and they want opposite things from an activity that arrives while
+    /// it holds:
+    ///
+    /// - A space transition handed the panel back mid-flight, or a return was skipped because there
+    ///   was nothing to bring back. Nothing else is going to restore the island, so an arriving
+    ///   activity has to — otherwise the content is laid out, sized and masked correctly and drawn
+    ///   at a third of its size with no opacity, which reads exactly like the island ignoring it
+    ///   until a click or a hover happens along.
+    /// - **The screen is away.** `AppDelegate.bringIslandsBack` is going to spring the island out of
+    ///   the notch `returnDelay` after the unlock, and an activity that restored itself first
+    ///   arrives *during loginwindow's dissolve* — the charger going in mid-unlock, reported
+    ///   2026-09-10, drawing a 401pt island across a screen the user is still being let into.
+    ///
+    /// So the arrival waits. It is still presented, its dwell still runs, and the island brings it
+    /// out of the cutout when the unlock is over — one arrival on one spring, rather than a HUD and
+    /// then an unlock. An activity whose dwell runs out in between is gone by the time the island
+    /// returns, which is correct: a charger announced thirty seconds ago is not news.
+    ///
+    /// Set by `collapseIntoNotch` — whose one caller is `takeIslandsAway` — and cleared by
+    /// `playReentry`, which is the return itself. Deliberately **not** set by `hideForReentry`: a
+    /// space switch is a frame or two rather than `returnDelay`, and the behaviour there is the one
+    /// the first case above describes.
+    public private(set) var isHeldOffScreen = false
+
     public init(
         metricsByForm: [IslandForm: IslandShapeMetrics],
         notchKind: NotchGeometry.Kind,
@@ -1332,6 +1361,9 @@ public final class IslandScreenModel {
     /// a **lock** passes `Motion.lockHandover` instead, the slower curve the lock's collapse and the
     /// padlock both use, so that whole sequence is one curve. Never `expand`.
     public func playReentry(reduceMotion: Bool, animation: Animation? = nil) {
+        // The return is here, whichever shape it takes below — so anything that arrived while the
+        // screen was away stops waiting and comes out of the notch with the island.
+        isHeldOffScreen = false
         guard hasVisibleContent, !reduceMotion else {
             reentry = 1
             return
@@ -1448,6 +1480,11 @@ public final class IslandScreenModel {
         contentFollow?.cancel()
         contentFollow = nil
 
+        // **The island is away because the screen is, and something is coming back for it.** Until
+        // it does, an activity that arrives must not put the island on screen by itself — see
+        // `isHeldOffScreen`, and the charger going in mid-unlock that it is written for.
+        isHeldOffScreen = true
+
         if animated, !reduceMotion, hasVisibleContent {
             // One spring for everything that moves — an open island closing, a hovered one
             // settling, and the content shrinking into the cutout — so it reads as one object
@@ -1539,7 +1576,12 @@ public final class IslandScreenModel {
         //
         // Not animated: this is not a bounce, it is the island being *ready*. The arrival's own
         // animation is `change`'s, a few lines below.
-        if stage != nil, reentry == 0 {
+        //
+        // **Not while the screen is away**, since 2.3.0. There the zero is a hold with a return
+        // already scheduled against it, and restoring here puts the island on screen in the middle
+        // of loginwindow's dissolve — see `isHeldOffScreen`. The activity is on stage either way;
+        // only its appearance waits.
+        if stage != nil, reentry == 0, !isHeldOffScreen {
             reentry = 1
         }
 
@@ -1580,8 +1622,9 @@ public final class IslandScreenModel {
             if let metricsByForm { self.metricsByForm = metricsByForm }
             self.stage = stage
             // Only the sideways arrival travels `reentry` here. A dismissal into a hidden island
-            // must leave it at zero — the hide is still meant to be in effect.
-            if springsSideways { reentry = 1 }
+            // must leave it at zero — the hide is still meant to be in effect, and so is a hold
+            // taken because the screen is away.
+            if springsSideways, !isHeldOffScreen { reentry = 1 }
         } completion: {
             completion()
         }

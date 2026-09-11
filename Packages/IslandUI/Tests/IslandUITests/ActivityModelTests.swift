@@ -619,20 +619,75 @@ struct ArrivalVisibilityTests {
     @Test("an activity arriving into a hidden island makes it visible again")
     func arrivalRestoresVisibility() {
         // The reported bug: quit the music app and the widgets go, reopen it and press play and
-        // nothing appears until the notch is clicked. `reentry` had been left at zero by whatever
-        // took the island off screen — the lock, or a space change whose return was skipped because
-        // there was nothing to bring back — and the new content was drawn at a third of its size
-        // with no opacity.
+        // nothing appears until the notch is clicked. `reentry` had been left at zero by a space
+        // change whose return was skipped because there was nothing to bring back, and the new
+        // content was drawn at a third of its size with no opacity.
         let m = model()
         m.hideForReentry(reduceMotion: false)
         // Empty, so hiding is a no-op and the island is already visible.
         #expect(m.reentry == 1)
 
-        // Force the state the lock leaves behind, then let an activity arrive into it.
-        m.collapseIntoNotch()
-        #expect(m.reentry == 0)
+        // Force the state a space transition leaves behind — content on stage, the island off
+        // screen — and then let an activity arrive into it.
         m.setActivity(playing, kind: .nowPlaying, change: .presented("probe"), reduceMotion: true)
+        m.hideForReentry(reduceMotion: false)
+        #expect(m.reentry == 0)
+        #expect(!m.isHeldOffScreen, "a space hide is not a hold: nothing is scheduled to come back")
+
+        m.setActivity(playing, kind: .nowPlaying, change: .contentChanged("probe"), reduceMotion: true)
         #expect(m.reentry == 1, "the arriving activity was drawn into a hidden island")
+    }
+
+    // MARK: - Unless the screen is away
+
+    /// **The charger going in mid-unlock**, reported 2026-09-10. `com.apple.screenIsUnlocked` marks
+    /// the *beginning* of loginwindow's dissolve, and `AppDelegate.bringIslandsBack` waits it out —
+    /// so an activity that restored the island itself in between drew a 401pt island across a screen
+    /// the user was still being let into.
+    @Test("an activity arriving while the screen is away waits in the notch")
+    func arrivalWaitsOutTheUnlock() {
+        let m = model()
+        m.collapseIntoNotch()
+        #expect(m.isHeldOffScreen)
+
+        m.setActivity(playing, kind: .nowPlaying, change: .presented("probe"), reduceMotion: true)
+        #expect(m.reentry == 0, "the island came out of the notch during the unlock")
+        // On stage throughout — only its appearance is waiting.
+        #expect(m.stage != nil)
+    }
+
+    /// And the return is what brings it out, with the activity already in it: one arrival on one
+    /// spring rather than a HUD and then an unlock.
+    @Test("the return brings out whatever arrived while it was held")
+    func theReturnBringsItOut() {
+        let m = model()
+        m.collapseIntoNotch()
+        m.setActivity(playing, kind: .nowPlaying, change: .presented("probe"), reduceMotion: true)
+        #expect(m.reentry == 0)
+
+        m.playReentry(reduceMotion: true)
+        #expect(!m.isHeldOffScreen)
+        #expect(m.reentry == 1)
+        #expect(m.stage != nil)
+    }
+
+    /// The hold is released by the return and by nothing else, so a second arrival after the unlock
+    /// behaves like any other.
+    @Test("an arrival after the return restores the island as it always did")
+    func arrivalAfterTheReturnIsOrdinary() {
+        let m = model()
+        m.collapseIntoNotch()
+        m.playReentry(reduceMotion: true)
+        m.setActivity(nil, kind: nil, change: .dismissed("probe"), reduceMotion: true)
+        m.collapseIntoNotch()
+        m.playReentry(reduceMotion: true)
+        #expect(!m.isHeldOffScreen)
+
+        // Now the space path, which is not a hold.
+        m.setActivity(playing, kind: .nowPlaying, change: .presented("probe"), reduceMotion: true)
+        m.hideForReentry(reduceMotion: false)
+        m.setActivity(playing, kind: .nowPlaying, change: .contentChanged("probe"), reduceMotion: true)
+        #expect(m.reentry == 1)
     }
 
     @Test("an activity going away does not force the island visible")

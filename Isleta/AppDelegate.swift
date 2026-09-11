@@ -1004,6 +1004,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.dropHistory = dropHistoryModel
         applyAccessibility(to: model)
         applyAppearance(settings.configuration, to: model)
+        // **A panel built while the screen is away starts away.** A display reconfiguration during
+        // a lock or a sleep rebuilds every model, and a fresh one has never been collapsed — so the
+        // next activity to arrive would put a brand-new island on screen behind the shield, with
+        // `bringIslandsBack` later springing out an island that was already out. Rare, and free to
+        // close: the return that is already scheduled clears it. See
+        // `IslandScreenModel.isHeldOffScreen`.
+        if isScreenAway { model.collapseIntoNotch() }
         models[screen.id] = model
 
         // The shelf is app-wide, so it goes in the environment rather than through the per-screen
