@@ -229,6 +229,25 @@ public struct LockScreenCardView: View {
     /// And the lighter one the transport glyphs carry. See `card`.
     static let controlShadowOpacity: Double = 0.28
 
+    /// The wash under the pointer, and the one thing on this card that says a button was found.
+    ///
+    /// **0.28, up from 0.14, because the surface it sits on stopped being opaque.** The old pair
+    /// was picked when the card was a frosted plate: a flat, near-uniform mid-grey, against which
+    /// 14% white was a clear step. The material now refracts the wallpaper, so the wash competes
+    /// with whatever is behind it, and at 14% it read as a smudge — on a surface where it is the
+    /// *only* feedback there is, because the cursor belongs to loginwindow and cannot change.
+    ///
+    /// It is deliberately past the point of subtlety. A hover affordance nobody notices is the same
+    /// as none, and this one is aimed at blind, often from across a room.
+    static let controlHoverOpacity: Double = 0.28
+
+    /// And under Increase Contrast, where the wash is the affordance rather than a hint of one.
+    static let controlHoverContrastOpacity: Double = 0.45
+
+    /// The rim around the wash. See the `.overlay` on the button's background for why a fill alone
+    /// cannot carry this on a material that shows the wallpaper through.
+    static let controlHoverRimOpacity: Double = 0.5
+
     static let controlShadowRadius: CGFloat = 3
 
 
@@ -432,33 +451,46 @@ public struct LockScreenCardView: View {
         if let format = model.nowPlaying?.audioFormat {
             Group {
                 if let badge = AudioFormatBadge.image(for: format.kind) {
-                    // Drawn at its own size, never `.resizable()`: the badges are not one height —
-                    // 18pt for Lossless, 14 for Atmos — and that difference is Apple's, made so
-                    // they sit on a baseline together. Scaling a wordmark is how a trademark ends
-                    // up soft or subtly the wrong proportions.
+                    // **Scaled by one factor, never squared to one height.** The badges are not one
+                    // height — 18pt for Lossless, 14 for Atmos — and that difference is Apple's,
+                    // made so they sit on a baseline together, so `formatBadgeScale` multiplies
+                    // both rather than forcing a common frame. Both axes take the same factor, so
+                    // the proportions are the ones Apple drew.
+                    //
+                    // The old rule here was "never `.resizable()`", on the grounds that scaling a
+                    // wordmark ends up soft. Measured 2026-09-12: every one of these is vector —
+                    // Atmos is an `NSSymbolImageRep`, the Lossless marks carry `_NSSVGImageRep` —
+                    // so there is nothing to soften. See `LockScreenCardLayout.formatBadgeScale`.
                     Image(nsImage: badge)
                         .renderingMode(.template)
+                        .resizable()
+                        .frame(
+                            width: badge.size.width * LockScreenCardLayout.formatBadgeScale,
+                            height: badge.size.height * LockScreenCardLayout.formatBadgeScale
+                        )
                 } else {
                     // Isleta's own, for the kinds Apple has no badge for and for a Mac with Music
                     // removed. §8: a fallback that is a real feature rather than an apology.
                     HStack(spacing: 4) {
                         Image(systemName: format.symbol)
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
                         Text(format.name)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                             .lineLimit(1)
                     }
                 }
             }
             // The least of the three lines: a fact about the file rather than about the music.
-            .foregroundStyle(.white.opacity(model.increaseContrast ? 0.8 : 0.5))
-            // The words' shadow, not the controls': this is a wordmark at 11pt over a wallpaper,
-            // which is the case that needs it most.
+            // 0.7 rather than 0.5 for the same reason the clocks went to 0.75 — a wordmark at half
+            // opacity over a wallpaper that reads through the glass is a smudge.
+            .foregroundStyle(.white.opacity(model.increaseContrast ? 0.9 : 0.7))
+            // The words' shadow, not the controls': this is a wordmark over a wallpaper, which is
+            // the case that needs it most.
             .shadow(
                 color: .black.opacity(Double(Self.textShadowOpacity)),
                 radius: Self.textShadowRadius
             )
-            .frame(height: NowPlayingExpandedLayout.formatLineHeight, alignment: .leading)
+            .frame(height: LockScreenCardLayout.formatLineHeight, alignment: .leading)
             .animation(
                 Motion.respectingReduceMotion(Motion.contentSwap, reduceMotion: model.reduceMotion),
                 value: format
@@ -563,11 +595,29 @@ public struct LockScreenCardView: View {
                 // A capsule rather than a circle: two of the five are narrower than they are tall,
                 // and a circle inside those would be a wash smaller than the target it is drawn to
                 // describe. At the three square ones a capsule *is* the circle.
-                Capsule(style: .continuous).fill(
-                    .white.opacity(
-                        isEnabled && isHovered ? (model.increaseContrast ? 0.26 : 0.14) : 0
+                Capsule(style: .continuous)
+                    .fill(
+                        .white.opacity(
+                            isEnabled && isHovered
+                                ? (model.increaseContrast
+                                    ? Self.controlHoverContrastOpacity
+                                    : Self.controlHoverOpacity)
+                                : 0
+                        )
                     )
-                )
+                    // **A rim as well as a fill**, because a white wash over a white-ish wallpaper
+                    // is invisible however far the fill is pushed — and the fill alone was the
+                    // whole affordance. The edge is what survives a bright backdrop: it is a
+                    // boundary rather than a brightness, so it reads against anything the glass
+                    // happens to be refracting underneath it.
+                    .overlay(
+                        Capsule(style: .continuous).strokeBorder(
+                            .white.opacity(
+                                isEnabled && isHovered ? Self.controlHoverRimOpacity : 0
+                            ),
+                            lineWidth: 0.5
+                        )
+                    )
             )
             // One view whose opacity animates rather than a view that comes and goes: a wash
             // inserted and removed at pointer speed is a transition per crossing.
@@ -618,9 +668,20 @@ public struct LockScreenCardView: View {
         Text(text)
             // Monospaced digits so the row does not shuffle sideways once a second, which would be
             // the only thing moving on the whole lock screen.
-            .font(.system(size: 11, weight: .medium).monospacedDigit())
-            .foregroundStyle(.white.opacity(0.6))
+            .font(
+                .system(size: LockScreenCardLayout.timeLabelFontSize, weight: .medium)
+                    .monospacedDigit()
+            )
+            // 0.75, up from 0.6. The old value was picked against a frosted plate that supplied
+            // its own contrast; the material now shows the wallpaper through, so the numerals
+            // carry more of their own. They stay under the title's full white — they are the least
+            // of what is on the card, and the size increase is doing most of the work.
+            .foregroundStyle(.white.opacity(0.75))
             .lineLimit(1)
+            // The hours clock is the only string that overruns the slot, and it shrinks rather
+            // than truncating — see `LockScreenCardLayout.timeLabelMinimumScale`. Every song's
+            // clock fits at full size and this never engages.
+            .minimumScaleFactor(LockScreenCardLayout.timeLabelMinimumScale)
             .frame(width: LockScreenCardLayout.timeLabelWidth, alignment: alignment)
     }
 

@@ -90,7 +90,7 @@ struct LockScreenSurfaceTests {
             + LockScreenCardLayout.titleSpacing
             + LockScreenCardLayout.subtitleLineHeight
             + LockScreenCardLayout.titleSpacing
-            + NowPlayingExpandedLayout.formatLineHeight
+            + LockScreenCardLayout.formatLineHeight
         #expect(block <= LockScreenCardLayout.headerRowHeight)
     }
 

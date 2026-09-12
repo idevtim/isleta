@@ -181,13 +181,18 @@ struct NowPlayingArtworkView: View {
 ///
 /// ## The bars wear the album's accent, leaning
 ///
-/// White is the fallback, not the design. The row is drawn in the **same color the played portion
-/// of the scrub bar is** — `NowPlayingController.accent(_:increaseContrast:)` — fading slightly
-/// toward the leading end, which is `AlbumColor.row(_:count:)`. One color rather than six read off
-/// the sleeve: a row of unrelated hues beside a scrub bar drawn in one is two answers to the same
-/// question, and the lean is what keeps a single tint from reading as a flat block. `colors` is nil
-/// whenever the cover gave no accent, the user has switched album color off, or Increase Contrast
-/// is on, and nil is the white row this shipped with.
+/// White is the fallback, not the design. The row is drawn in
+/// `NowPlayingController.accent(_:increaseContrast:)`, fading slightly toward the leading end,
+/// which is `AlbumColor.row(_:count:)`. One color rather than six read off the sleeve: a row of
+/// unrelated hues is a rainbow rather than a record, and the lean is what keeps a single tint from
+/// reading as a flat block. `colors` is nil whenever the cover gave no accent, the user has
+/// switched album color off, or Increase Contrast is on, and nil is the white row this shipped
+/// with.
+///
+/// **This is the last of the header wearing the cover's color.** The scrub bar was drawn in the
+/// same accent and is plain white again — a bar that reports a position is a value, and a colored
+/// value reads as meaning something by its color. The bars report nothing, which is precisely why
+/// they get to keep it.
 struct NowPlayingEqualiserView: View {
 
     /// Paused sinks the bars to a line, as the reference shows — not bars frozen mid-pattern.

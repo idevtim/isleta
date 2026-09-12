@@ -522,6 +522,7 @@ final class LockScreenController {
         space?.host(panel)
         panel.orderFrontRegardless()
 
+
         // Anything left from a previous arrangement: the primary display changed, or one was
         // unplugged.
         for (otherID, window) in store where otherID != id {
@@ -570,6 +571,12 @@ final class LockScreenController {
             "lock screen panels: \(aboveShield) above the shield, \(belowShield) below, "
                 + "\(windows.count) cards + \(notchWindows.count) notch, playing=\(model.isPlaying), "
                 + "card=\(windows.values.first.map { NSStringFromRect($0.frame) } ?? "none"), "
+                // Key *appearance*, which is what decides whether Liquid Glass lenses or falls
+                // back to flat grey — see `LockScreenPanel.hasKeyAppearance`. Not `isKeyWindow`,
+                // which is false here and always will be: loginwindow is the active application at
+                // a lock. If this ever logs false, the material is grey and the override has
+                // stopped being consulted.
+                + "cardGlassActive=\(windows.values.first?.hasKeyAppearance() ?? false), "
                 + "notchPanel=\(notchWindows.values.first.map { NSStringFromRect($0.frame) } ?? "none"), "
                 + "notch=\(model.screen.map { NSStringFromRect($0.notch.rect) } ?? "none"), "
                 + "notchKind=\(model.screen.map { String(describing: $0.notch.kind) } ?? "none"), "

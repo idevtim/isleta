@@ -554,11 +554,18 @@ struct NowPlayingSlotView: View {
     private func scrubber(_ timeline: ActivityTimeline) -> some View {
         NowPlayingScrubberView(
             fraction: timeline.fraction(at: now) ?? 0,
-            // White for the played portion, matching the reference; the unplayed track behind it is
-            // drawn from the same color at low opacity inside the view. With album color on it is
-            // the cover's accent instead — the played portion is the one piece of Now Playing chrome
-            // where every other player on the platform expects the record's own color.
-            color: controller.accent(.white, increaseContrast: increaseContrast),
+            // **White, always, and never the cover's accent.** The unplayed track behind it is
+            // drawn from the same color at low opacity inside the view.
+            //
+            // This took the album accent for three releases, on the argument that the played
+            // portion is where every other player expects the record's color. What that missed is
+            // the rule the numerals next to it already follow, written on
+            // `NowPlayingController.accent(_:increaseContrast:)`: a colored *value* reads as
+            // meaning something by its color. The scrub bar is a quantity — how far through — and
+            // tinting it says the position is the thing that changed when what changed is the
+            // track. The equaliser keeps the accent, because it is the one piece of this chrome
+            // that reports nothing and is only identity.
+            color: .white,
             increaseContrast: increaseContrast,
             isScrubbing: controller.isScrubbing,
             onBegin: { fraction in

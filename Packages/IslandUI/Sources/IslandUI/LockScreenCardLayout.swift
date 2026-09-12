@@ -81,7 +81,7 @@ public enum LockScreenCardLayout {
     /// hardware as simply too tall. What came off: 12pt of cover, 4 of padding at each end, 6 of
     /// the gap above the progress line, 6 of the gap below it, and 4 off each button. Nothing is
     /// cramped by it because nothing was at its floor.
-    public static let size = CGSize(width: 390, height: 180)
+    public static let size = CGSize(width: 390, height: 182)
 
     /// Continuous, never circular — §6.4's rule, the same as the island's outline and the player
     /// bar's. Large, because at this size a small radius reads as a dialog rather than as a card.
@@ -124,37 +124,93 @@ public enum LockScreenCardLayout {
     /// The artist's, for a 14pt face.
     public static let subtitleLineHeight: CGFloat = 17
 
+    /// **The card's own format line, where it used to borrow the island's 18.**
+    ///
+    /// Apple's badges are 18pt for Lossless and Hi-Res Lossless and 14 for Dolby Atmos, and that
+    /// difference is theirs — made so the wordmarks sit on a baseline together. So this scales them
+    /// by a single factor rather than squaring them to one height, which would flatten a
+    /// distinction Apple drew on purpose.
+    ///
+    /// **20, back down from 22.** 22 was as much as the header could hold and it read as the
+    /// loudest thing on a card where it is the quietest fact — the format outranked the artist,
+    /// which is the wrong way round. 20 is still up on Apple's native 18, which is the point: it
+    /// has to survive a wallpaper read through glass.
+    ///
+    /// The ceiling is unchanged and still worth stating: the title block is `titleLineHeight` +
+    /// `titleSpacing` + `subtitleLineHeight` + `titleSpacing` + this, and it has to clear
+    /// `headerRowHeight`, which the cover fixes at 64. That leaves 23.
+    /// `LockScreenCardTests.titleBlockFitsTheHeader` is the assertion.
+    public static let formatLineHeight: CGFloat = 20
+
+    /// What the badges are drawn at, as a multiple of their own size.
+    ///
+    /// Expressed against Apple's tallest badge (18pt) so the number says where it comes from: the
+    /// factor that brings a Lossless mark up to `formatLineHeight` and carries Atmos with it, in
+    /// proportion. **Scaling is safe here and was checked rather than assumed** — measured
+    /// 2026-09-12, Atmos is an `NSSymbolImageRep` and both Lossless marks carry `_NSSVGImageRep`
+    /// reps, so every one of them is vector and none softens. The rule this relaxes was about
+    /// proportion, and a single factor on both axes keeps it.
+    public static let formatBadgeScale: CGFloat = formatLineHeight / 18
+
     /// The header row to the progress row.
     public static let progressSpacing: CGFloat = 16
 
     /// The progress line. A **readout**, drawn as a rule rather than as a track with a handle —
     /// nothing on this surface can be dragged, so nothing on it may look draggable.
-    public static let progressHeight: CGFloat = 4
+    ///
+    /// **6 since the card became glass.** At 4 it was a hairline over a wallpaper that now reads
+    /// through the material, and a hairline is the first thing a refracting backdrop eats. The rule
+    /// still reads as a rule rather than a track: what would make it a track is a handle, which it
+    /// does not have.
+    public static let progressHeight: CGFloat = 6
 
     /// What the line grows to while the pointer is on it or a scrub is in progress.
     ///
-    /// 6 against 4. Bounded rather than chosen: the row is `timeLabelHeight` (14) tall and the line
-    /// is centred in it, so anything up to 14 changes no layout — and past about 6 a "rule" starts
-    /// reading as a "bar", which is a different object arriving under the pointer rather than the
-    /// same one responding.
-    public static let progressHoverHeight: CGFloat = 6
+    /// 8 against 6, keeping the 2pt of answer the hover has always given. Bounded rather than
+    /// chosen: the row is `timeLabelHeight` (16) tall and the line is centred in it, so anything up
+    /// to 16 changes no layout — and the gap between the two is what has to stay legible, not the
+    /// absolute size, because what the hover says is "this one, and it moved".
+    public static let progressHoverHeight: CGFloat = 8
 
     /// Elapsed and remaining, either end of the line. Fixed width so the line does not change length
     /// as a track crosses from "9:59" to "10:00" —
     /// `NowPlayingExpandedLayout.timeLabelWidth(forDuration:)`'s reasoning at this card's size.
     ///
-    /// **50, and unconditionally, where the player picks its width per track.** 42 held `-59:59`
-    /// (37.48pt in SF Pro Medium 11) and truncated a film's `-1:01:14`, which is 48.18. The player
-    /// widens only for hour-long content because the 24pt it costs comes out of a 240pt scrub bar;
-    /// this line is 346pt wide, so reserving the room always costs 16 of it and buys a layout with
-    /// one number in it instead of two. A lock screen is also the one surface nobody is standing in
-    /// front of while it is drawn, which is the wrong place for a width that depends on what is
-    /// playing.
-    public static let timeLabelWidth: CGFloat = 50
+    /// **46: the minutes clock at full size, and the hours clock shrunk to fit.**
+    ///
+    /// This reserved 58 for one release, which is what `-9:59:59` measures at
+    /// `timeLabelFontSize` — and it bought that with 24pt of progress line, on a card where a
+    /// three-minute song shows `-1:54` and leaves most of the slot empty either side of the rule.
+    /// 46 holds `-59:59` (43.39pt) at full size with the same headroom the old number had, and the
+    /// hours clock takes `timeLabelMinimumScale` instead of a truncation.
+    ///
+    /// **Fixed, still.** The player picks its width per track; this does not, and the reason has
+    /// not changed — the geometry here is also the hit region (`progressLineFrame`), so a width
+    /// that moved with the content would move the scrub target under a pointer nobody can see a
+    /// cursor for. Shrinking the glyphs inside a fixed box keeps every frame in this file static.
+    public static let timeLabelWidth: CGFloat = 46
 
-    public static let timeLabelSpacing: CGFloat = 10
+    /// What the clock shrinks to when a film pushes it past `timeLabelWidth`.
+    ///
+    /// 0.8 — `-9:59:59` needs 46/55.72 = 0.825 of its drawn size, so this clears it. It engages
+    /// only for hour-long content and costs nothing on every song, which is the trade the old fixed
+    /// 58 had backwards: it charged every track for a case almost none of them are.
+    public static let timeLabelMinimumScale: CGFloat = 0.8
 
-    public static let timeLabelHeight: CGFloat = 14
+    /// 6, down from 10. With the slot no longer holding a film's clock on every song, this is the
+    /// whole of the gap between a numeral and the rule, and 6 is where the two stop reading as one
+    /// run-on object.
+    public static let timeLabelSpacing: CGFloat = 6
+
+    /// **13, up from 11, because the backdrop now reads through the card.** The elapsed and
+    /// remaining clocks are the smallest thing anyone actually reads here — the transport glyphs
+    /// are shapes and the title is 17pt — and 11pt white at 0.6 opacity over a refracting wallpaper
+    /// was the first thing to go. Everything that depends on it is derived: `timeLabelWidth` from
+    /// the measured string, `timeLabelHeight` from the font's line height.
+    public static let timeLabelFontSize: CGFloat = 13
+
+    /// The line height of `timeLabelFontSize` SF Pro Medium, rounded up: 16.
+    public static let timeLabelHeight: CGFloat = 16
 
     /// The progress row to the transport row.
     public static let transportSpacing: CGFloat = 10
@@ -180,11 +236,18 @@ public enum LockScreenCardLayout {
 
     /// Between them, edge to edge.
     ///
-    /// 8, down from 18. The row is one control cluster and should read as one — at 18 against 40pt
-    /// buttons they were separate objects sharing a row, which is the arrangement a settings pane
-    /// uses rather than a player. The gap still cannot be crossed by the hit regions, which is the
-    /// only hard constraint on it.
-    public static let transportButtonSpacing: CGFloat = 8
+    /// **28, and the argument that put it at 8 was measured on a different card.**
+    ///
+    /// That reasoning — one cluster, not a settings pane — was made when the row sat under a
+    /// frosted plate that ended well outside it, so a tight group read as deliberate. On a card
+    /// that is now glass with the wallpaper coming through, a 220pt huddle inside 346pt of width
+    /// reads as a row that failed to lay out rather than one that chose to be close.
+    ///
+    /// 28 puts the five buttons and four gaps at 300 of the 346 available, so the row is spread
+    /// across the card the way the header above it already is. The gap still cannot be crossed by
+    /// the hit regions, which remains the only hard constraint: the targets are 40 and 34 wide and
+    /// touch nothing at this spacing.
+    public static let transportButtonSpacing: CGFloat = 28
 
     /// Play/pause. The middle control is the one a hand goes to without looking, and it is drawn
     /// larger for that rather than for emphasis.

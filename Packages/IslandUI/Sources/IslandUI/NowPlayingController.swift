@@ -550,15 +550,20 @@ public final class NowPlayingController {
 
     /// The accent the Now Playing chrome should use — the cover's, or the one it is handed.
     ///
-    /// **What this tints, and what it deliberately does not.** It tints the transport glyphs, the
-    /// cover's fallback well and the played portion of the scrub bar — the chrome that belongs to
-    /// *this track* — the equaliser included, through `barColors(increaseContrast:)`, which leans
-    /// this same color across the six bars rather than answering with a second one. It does not
-    /// tint the numerals, which are gray because a colored number reads as a value that means something by its color; it does
-    /// not tint the titles, which have to stay legible; it does not touch the island's own material,
-    /// which is `IslandStyle`'s; and it reaches no other activity — a timer keeps Clock's orange and
-    /// a battery ring keeps its green and amber, because those two colors *mean* something and an
-    /// album cannot be allowed to restate them.
+    /// **What this tints, and what it deliberately does not.** It tints the transport glyphs and
+    /// the cover's fallback well — the chrome that belongs to *this track* — the equaliser
+    /// included, through `barColors(increaseContrast:)`, which leans this same color across the six
+    /// bars rather than answering with a second one.
+    ///
+    /// It does not tint the numerals, which are gray because a colored number reads as a value that
+    /// means something by its color — and **it no longer tints the scrub bar either, for exactly
+    /// that reason**. The played portion took this accent until the rule was followed to its end:
+    /// a scrub bar is a numeral drawn as a length, and a colored quantity says the quantity is what
+    /// changed. What is left wearing the accent is the equaliser and the glyphs, none of which
+    /// report a value. It does not tint the titles, which have to stay legible; it does not touch
+    /// the island's own material, which is `IslandStyle`'s; and it reaches no other activity — a
+    /// timer keeps Clock's orange and a battery ring keeps its green and amber, because those two
+    /// colors *mean* something and an album cannot be allowed to restate them.
     ///
     /// Increase Contrast returns the fallback. A color derived from an arbitrary image cannot be
     /// promised any particular contrast, and a user who has asked the system for more of it has
@@ -571,11 +576,15 @@ public final class NowPlayingController {
     /// The color each equaliser bar should be drawn in, or nil for the white row.
     ///
     /// **The accent, not a second reading of the cover.** An earlier version took a color per
-    /// vertical band of the sleeve, which put a row of up to six unrelated hues 40pt from a scrub
-    /// bar drawn in one — two answers to "what color is this record" on the same island, and on a
-    /// busy sleeve the row read as a rainbow rather than as the record. This is the color
-    /// `accent(_:increaseContrast:)` already hands the scrub bar, leaned across the row by
-    /// `AlbumColor.row(_:count:)` so the bars have a direction without having a second color.
+    /// vertical band of the sleeve, which put a row of up to six unrelated hues on one island, and
+    /// on a busy sleeve the row read as a rainbow rather than as the record. This is
+    /// `accent(_:increaseContrast:)`, leaned across the row by `AlbumColor.row(_:count:)` so the
+    /// bars have a direction without having a second color.
+    ///
+    /// **It is now the only place the accent lands in this header.** The scrub bar used to be drawn
+    /// in the same color and is white again, so the row is no longer half of a pair — which makes
+    /// the one-color rule matter more rather than less: the bars are the whole of what says which
+    /// record this is.
     ///
     /// Derived on demand rather than stored beside `albumColor`: it is arithmetic on three doubles
     /// with no image in it, and a stored copy would be one more thing `reset()` has to remember to

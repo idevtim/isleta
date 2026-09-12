@@ -33,9 +33,16 @@ struct TimeLabelWidthTests {
         width(of: text, size: 11, weight: .medium, rounded: true)
     }
 
-    /// The lock-screen card's: the same size and weight in SF Pro, which is a shade narrower.
+    /// The lock-screen card's: SF Pro at the card's own size, which it sets rather than shares —
+    /// read from `timeLabelFontSize` and never written as a literal, so raising the font without
+    /// raising `timeLabelWidth` fails here instead of truncating a film on a locked screen.
     private static func cardWidth(of text: String) -> CGFloat {
-        width(of: text, size: 11, weight: .medium, rounded: false)
+        width(
+            of: text,
+            size: LockScreenCardLayout.timeLabelFontSize,
+            weight: .medium,
+            rounded: false
+        )
     }
 
     private static func width(
@@ -109,13 +116,25 @@ struct TimeLabelWidthTests {
 
     // MARK: - The lock-screen card
 
-    /// The card reserves the room **always**, where the player picks per track — see
-    /// `LockScreenCardLayout.timeLabelWidth`. So one assertion covers both cases here.
-    @Test("the card's slot holds an hours clock")
-    func cardHoldsHours() {
+    /// The card's slot holds every song at full size — see `LockScreenCardLayout.timeLabelWidth`,
+    /// which reserves the minutes clock rather than the hours one.
+    @Test("the card's slot holds a minutes clock at full size")
+    func cardHoldsMinutes() {
         let slot = LockScreenCardLayout.timeLabelWidth
-        let needed = Self.cardWidth(of: Self.withHours)
-        #expect(needed <= slot, "\(Self.withHours) needs \(needed)pt of \(slot)")
+        let needed = Self.cardWidth(of: Self.withinAnHour)
+        #expect(needed <= slot, "\(Self.withinAnHour) needs \(needed)pt of \(slot)")
+    }
+
+    /// And a film's fits once it shrinks, which is the whole reason the slot could come down.
+    ///
+    /// Asserted rather than eyeballed because the two numbers move independently: raising
+    /// `timeLabelFontSize` or lowering `timeLabelWidth` without touching the scale factor is how a
+    /// film's clock gets truncated on a surface nobody is at the Mac to see.
+    @Test("the card's slot holds an hours clock once it shrinks")
+    func cardHoldsHoursWhenScaled() {
+        let slot = LockScreenCardLayout.timeLabelWidth
+        let needed = Self.cardWidth(of: Self.withHours) * LockScreenCardLayout.timeLabelMinimumScale
+        #expect(needed <= slot, "\(Self.withHours) needs \(needed)pt of \(slot) when scaled")
     }
 
     /// And the line between them is still the longest thing on the card.
