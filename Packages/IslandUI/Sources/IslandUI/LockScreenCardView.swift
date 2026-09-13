@@ -62,10 +62,15 @@ import SwiftUI
 /// **This is not the same as a material, and the distinction is the whole point of the change.** An
 /// earlier build used `.ultraThinMaterial` here and it came out a flat white rectangle on hardware:
 /// an `NSVisualEffectView` samples the window behind it, and on a locked screen that is
-/// loginwindow's shield rather than a desktop. Liquid Glass is a different renderer, and the two
-/// surfaces in this app that already use it are drawn over arbitrary content without sampling a
-/// sibling window. **Not yet re-measured against the shield** — `--lockscreen-demo` draws the card
-/// on an unlocked desktop, which is a different backdrop, so the shield remains a lock away.
+/// loginwindow's shield rather than a desktop. Liquid Glass is a different renderer.
+///
+/// **Measured against the shield 2026-09-12, and the material needed one more thing than this.**
+/// `.clear` on its own rendered a flat grey with no lens — on the shield *and* on an unlocked
+/// desktop, so the backdrop was never what was wrong. Liquid Glass lenses only in a window with key
+/// *appearance*, which this panel now claims: `LockScreenPanel.hasKeyAppearance` carries the
+/// measurement and the four explanations that were ruled out, and
+/// `docs/PLATFORM-CONSTRAINTS.md` has the same finding as a fact about the API. Everything above
+/// about `.clear` and the four rejected veils still holds; it was necessary and not sufficient.
 ///
 /// Labels stay explicit white rather than `.primary` — the first build let them follow the user's
 /// appearance and drew dark text in light mode, which nobody could have caught by looking, because

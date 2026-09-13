@@ -5,7 +5,7 @@ Verified on macOS 27.0 — what each system API actually does, and which ones re
 Extracted from `CLAUDE.md`, which now carries the map rather than the record.
 
 <details>
-<summary>Topics in this file (57)</summary>
+<summary>Topics in this file (58)</summary>
 
 - No public notch API
 - No ActivityKit on macOS — and the framework is in the macOS SDK, which is what makes this worth a line
@@ -64,6 +64,7 @@ Extracted from `CLAUDE.md`, which now carries the map rather than the record.
 - Inline quick reply IS reachable, with Accessibility alone — measured 2026-08-23
 - The banner's accessibility tree has no icon and no bundle identifier in it
 - On the lock screen there is nothing to read, and the logs say the opposite
+- Liquid Glass only lenses in a window with key *appearance*, and every other explanation was measured and ruled out. Measured 2026-09-12
 
 </details>
 
@@ -1134,3 +1135,27 @@ in the tree.
   for a bug that is the system behaving correctly. (Also measured there: an idle NotificationCenter
   answered `AXWindows` with success and an empty array rather than the -25204 this file documents
   elsewhere, so that refusal is a state it can be in, not one it is always in.)
+
+- **Liquid Glass only lenses in a window with key *appearance*, and every other explanation was
+  measured and ruled out.** Measured 2026-09-12 on macOS 27.0 (26A428), Mac15,9, in a standalone
+  harness holding one variable at a time. `NSGlassEffectView` — and SwiftUI's `glassEffect(_:in:)`,
+  which lands on it — renders the material with refraction, corner lensing and a specular rim
+  **only while its window reports an active appearance**. Without it there is no lens at all: it is
+  a plain heavy blur that destroys backdrop detail outright, and a 10pt checkerboard behind it
+  averaged to a single flat grey with no rim and no bending. It is not subtle and it is not a tuning
+  problem.
+  **What was ruled out, each against a control:** the window level (shielding and ordinary both
+  grey when non-key); the style mask (borderless and titled both refract when key); the activation
+  policy (`.accessory` refracts); `.regular` against `.clear`; and the backdrop — content placed
+  *behind* the glass in our own view tree, opaque gradient or sharp checkerboard, changes nothing,
+  so "give it something to sample" is not the fix. The private ivars are a dead end too:
+  `_contentLensing` reads 0 **in the refracting case**, so it is not the switch, and `_subduedState`
+  is already 0 when non-key. Setting either changes nothing.
+  **The distinction that matters is appearance against status.** `isKeyWindow` is not required and
+  is not reachable anyway on a locked screen — loginwindow is the active application and macOS
+  will not hand key to a third-party window in front of a password prompt, measured at a real lock.
+  `hasKeyAppearance` returning true is sufficient on a window whose `canBecomeKey` is false, and
+  AppKit derives `_hasActiveAppearance` from it, so one non-underscored override covers both.
+  Neither is in the public `NSWindow` interface, so it is declared rather than overridden and the
+  runtime binds it; if a future macOS stops consulting it nothing is called and the material falls
+  back to the frost it had before. `LockScreenPanel.hasKeyAppearance` is the shipping use.
