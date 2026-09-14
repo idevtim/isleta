@@ -123,7 +123,8 @@ brightness are separate switches, and both need Accessibility — decline it and
 - **A call in progress**, and how long it's been going
 - **Welcome back** — a greeting on wake, in the right language for the hour
 - **Screen sharing**, so you know when you're being watched
-- **A lock screen card** showing what's playing (off until you turn it on)
+- **A lock screen card** showing what's playing — glass, so your wallpaper reads through it,
+  with previous, play-pause and next that work over the lock (off until you turn it on)
 
 ### 🌍 Four languages
 
@@ -253,12 +254,17 @@ actually pressed.
   headphones report no level at all.
 - **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
   started by hand in Clock is instant. macOS gives no signal for the others.
+- **Apple's own banner still appears when headphones connect.** It's drawn by the menu bar rather
+  than by the HUD helper Isleta can stand in for, so the island announces the connection alongside
+  it rather than instead of it.
 - **Replacing the system HUDs is on by default and needs Accessibility.** Two switches in Settings
   hand the keys back, and so does quitting Isleta. Brightness covers the built-in display only.
 - **A muted Mac's bar can't be dragged.** It's drawn at nothing whatever the volume behind it is, so
   pressing it opens the island instead. Unmute first.
 - **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
   can sit over the middle of the space labels.
+- **Today and tomorrow show five entries and then a count.** A busy pair of days says how many it
+  couldn't fit rather than scrolling.
 - **The hover target is the notch itself** — about 185 points wide, and easy to overshoot.
 
 </details>
