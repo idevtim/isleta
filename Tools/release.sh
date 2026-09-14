@@ -2,12 +2,18 @@
 # Build, sign, notarize and publish a release, and regenerate the Sparkle appcast.
 #
 # ─── STATUS ─────────────────────────────────────────────────────────────────
-# This script has NEVER been run end to end. Isleta has no released version yet, so the
-# notarization and publication steps below are untested here. The build-and-sign half
-# *has* been verified: the inside-out signing order was run against a Release build in
-# this checkout because without it the app will not even launch (see "Why signing is not
-# optional" below). Treat everything after `notarytool` as adapted from a working script
-# for another app by the same author, not as proven — the first real run is the test.
+# Proven. This script has cut every release from 1.0.0 (2026-08-20) to 2.4.0 (2026-09-12)
+# — sixteen of them — each one built, signed inside-out, notarized, stapled, tagged and
+# published to github.com/idevtim/isleta by the path below. Notarization has been Accepted
+# on every run.
+#
+# It said the opposite until 2026-09-13, long after it stopped being true: "NEVER been run
+# end to end … Isleta has no released version yet … treat everything after notarytool as
+# adapted from a working script for another app". That was written before 1.0.0 and never
+# revisited, so the first thing anyone read before shipping was an instruction to distrust
+# a pipeline that had by then worked fifteen times. **A status block is a claim with a date
+# on it, and this one is the header of the riskiest script in the repository — if you change
+# what this does, change this too, in the same commit.**
 #
 # The EdDSA key pair was generated on 2026-08-19 and SUPublicEDKey holds the real public
 # half, so prerequisite 1 below is history rather than a to-do.
