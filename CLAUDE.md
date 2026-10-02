@@ -206,6 +206,10 @@ docs above. Do not undo one without reading its entry first.
 - Dependencies are allowed and are a cost worth naming in the commit that adds one: a bundled dylib
   lands on the *launch* budget before the size one (250–400 ms of first-launch signature validation).
 - Small commits, conventional commit messages, one milestone per branch.
+- **Never push.** No `git push` of any branch, tag or commit — the owner pushes, every time, even
+  when asked to "release" or "publish". This includes the regenerated `appcast.xml` after a
+  release: commit it if asked, then stop and say it is ready to push. Pushing the appcast is what
+  offers an update to every installed copy, and that step belongs to a person.
 - **A withdrawn feature is a subtraction, not a deprecation.** The code, the vocabulary case, the
   settings control, the shortcut, the strings and the tests all go, so nothing is left whose status a
   later reader has to work out — and the *measurements* outlive the code, in the module README's
