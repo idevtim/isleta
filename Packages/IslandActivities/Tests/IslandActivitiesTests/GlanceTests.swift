@@ -237,6 +237,19 @@ struct GlanceFormatTests {
         #expect(us.contains("AM") || us.contains("PM"))
     }
 
+    /// The sliver beside the notch has 32pt, and "12:30 PM" drew as "12:3…" there. The day period
+    /// goes; the user's 12- or 24-hour setting stays.
+    @Test("a time in a sliver drops the AM/PM and keeps the hour cycle")
+    func flankClockOmitsTheDayPeriod() {
+        let afternoon = Date(timeIntervalSinceReferenceDate: 800_000_000)
+        let us = GlanceFormat.flankClock(afternoon, locale: Locale(identifier: "en_US"))
+        let uk = GlanceFormat.flankClock(afternoon, locale: Locale(identifier: "en_GB"))
+        #expect(!us.contains("AM") && !us.contains("PM"))
+        #expect(us.contains(":"))
+        #expect(us.count <= 5)
+        #expect(uk == GlanceFormat.clock(afternoon, locale: Locale(identifier: "en_GB")))
+    }
+
     @Test("how long until it starts")
     func startsIn() {
         #expect(GlanceFormat.startsIn(noon.addingTimeInterval(10), from: noon) == "Starting now")

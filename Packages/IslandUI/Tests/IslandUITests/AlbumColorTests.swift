@@ -47,8 +47,10 @@ struct AlbumColorTests {
                     #expect(brightness >= AlbumColor.minimumBrightness - 1e-9)
                     // A gray cover has no hue to saturate, so the floor cannot apply to it — and it
                     // must not, or every monochrome sleeve would be assigned an arbitrary color.
-                    let isGray = red == green && green == blue
-                    if !isGray {
+                    let original = AlbumColor.hsb(AlbumColor(red: red, green: green, blue: blue))
+                    if original.saturation < AlbumColor.neutralSaturation {
+                        #expect(saturation < 1e-9)
+                    } else {
                         #expect(saturation >= AlbumColor.minimumSaturation - 1e-9)
                     }
                     #expect(saturation <= AlbumColor.maximumSaturation + 1e-9)
@@ -84,10 +86,21 @@ struct AlbumColorTests {
     @Test("the lift never changes the hue")
     func hueIsPreserved() {
         for hue in stride(from: 0.0, to: 1.0, by: 0.05) {
-            let dull = AlbumColor.rgb(hue: hue, saturation: 0.1, brightness: 0.08)
+            let dull = AlbumColor.rgb(hue: hue, saturation: 0.2, brightness: 0.08)
             let (liftedHue, _, _) = AlbumColor.hsb(AlbumColor.legible(dull))
             #expect(abs(liftedHue - hue) < 1e-6)
         }
+    }
+
+    /// The regression this rule is for: a white Apple logo on a black icon averaged a percent or two
+    /// toward blue, the lift saturated that to 0.42, and a monochrome cover put a violet row on the
+    /// island.
+    @Test("a near-gray cover stays gray rather than being given a hue")
+    func nearGrayStaysNeutral() {
+        let almostGray = AlbumColor(red: 0.30, green: 0.30, blue: 0.32)
+        let (_, saturation, brightness) = AlbumColor.hsb(AlbumColor.legible(almostGray))
+        #expect(saturation < 1e-9)
+        #expect(brightness >= AlbumColor.minimumBrightness - 1e-9)
     }
 
     @Test("a color already inside the bounds is left alone")
@@ -141,55 +154,47 @@ struct AlbumColorTests {
 
     // MARK: - The row the equaliser wears
 
-    /// The direction is the design: full strength at the trailing end, fading toward the leading
-    /// one. Reversed, the row would lean into the cutout instead of away from it — which looks
-    /// deliberate either way and is only wrong if you know which way it was meant to go.
-    @Test("the row is brightest at the trailing end and fades toward the leading one")
-    func theRowLeans() throws {
-        let accent = AlbumColor.legible(AlbumColor(red: 0.9, green: 0.3, blue: 0.2))
-        let row = try #require(AlbumColor.row(accent))
+    /// The direction is the design: the leading bar is the cover's left and the trailing bar its
+    /// right, so the row runs the way the sleeve beside it does.
+    @Test("the row reads the cover from left to right")
+    func theRowRunsLeftToRight() throws {
+        let image = try #require(Self.leftRightImage())
+        let row = try #require(AlbumColor.row(from: image))
         #expect(row.count == AlbumColor.defaultBandCount)
-        #expect(row.last == accent)
-        for (dimmer, brighter) in zip(row, row.dropFirst()) {
-            #expect(AlbumColor.hsb(dimmer).brightness < AlbumColor.hsb(brighter).brightness)
+        let first = try #require(row.first)
+        let last = try #require(row.last)
+        #expect(first.red > first.blue, "the left of the cover is red")
+        #expect(last.blue > last.red, "the right of the cover is blue")
+    }
+
+    /// The middle of the cover, not its edges. A sleeve with a white border read edge to edge put
+    /// that border on both outer bars; the region inside it is the record.
+    @Test("the row ignores a border round the cover")
+    func theRowReadsTheMiddle() throws {
+        let image = try #require(Self.borderedImage())
+        let row = try #require(AlbumColor.row(from: image))
+        for bar in row {
+            let (hue, saturation, _) = AlbumColor.hsb(bar)
+            #expect(saturation >= AlbumColor.minimumSaturation - 1e-9)
+            #expect(abs(hue - 1.0 / 3) < 0.02, "every bar is the green inside the border")
         }
     }
 
-    /// One color, not a gradient between two. The fade multiplies brightness and leaves hue and
-    /// saturation alone, which is what makes the leading bars read as the same color further away
-    /// rather than as a second color.
-    @Test("the fade changes brightness and nothing else")
-    func theFadeKeepsTheColor() throws {
-        let accent = AlbumColor.legible(AlbumColor(red: 0.2, green: 0.5, blue: 0.9))
-        let row = try #require(AlbumColor.row(accent))
-        let reference = AlbumColor.hsb(accent)
-        for band in row {
-            let (hue, saturation, _) = AlbumColor.hsb(band)
-            #expect(abs(hue - reference.hue) < 1e-9)
-            #expect(abs(saturation - reference.saturation) < 1e-9)
+    @Test("every bar is lifted clear of the black it is drawn on")
+    func everyBarIsLegible() throws {
+        let image = try #require(Self.flatImage(red: 0.02, green: 0.02, blue: 0.03))
+        let row = try #require(AlbumColor.row(from: image))
+        for bar in row {
+            #expect(AlbumColor.hsb(bar).brightness >= AlbumColor.minimumBrightness - 1e-9)
         }
     }
 
-    /// "Slightly." Past about a third the leading bars stop reading as the same color further away,
-    /// and the accent's guaranteed floor stops being any guarantee about what is on screen.
-    @Test("the dimmest bar is still plainly the accent")
-    func theFadeIsSlight() throws {
-        let accent = AlbumColor.legible(AlbumColor(red: 0, green: 0, blue: 0))
-        let row = try #require(AlbumColor.row(accent))
-        let dimmest = AlbumColor.hsb(try #require(row.first)).brightness
-        #expect(dimmest >= AlbumColor.minimumBrightness * AlbumColor.rowFadeFloor - 1e-9)
-        #expect(dimmest > 0.4)
-    }
-
-    @Test("a row of one bar is the accent itself, with nowhere to lean")
-    func aSingleBarIsTheAccent() throws {
-        let accent = AlbumColor(red: 0.4, green: 0.8, blue: 0.6)
-        #expect(AlbumColor.row(accent, count: 1) == [accent])
-    }
-
-    @Test("a row of no bars is no row")
-    func zeroBandsIsNil() {
-        #expect(AlbumColor.row(AlbumColor(red: 0.5, green: 0.5, blue: 0.5), count: 0) == nil)
+    @Test("a transparent cover gives no row, and a row of no bars is no row")
+    func noRow() throws {
+        let clear = try #require(Self.flatImage(red: 0, green: 0, blue: 0, alpha: 0))
+        #expect(AlbumColor.row(from: clear) == nil)
+        let solid = try #require(Self.flatImage(red: 0.5, green: 0.2, blue: 0.2))
+        #expect(AlbumColor.row(from: solid, count: 0) == nil)
     }
 
     // MARK: - Fixtures
@@ -205,6 +210,36 @@ struct AlbumColorTests {
         ) else { return nil }
         context.setFillColor(red: red, green: green, blue: blue, alpha: alpha)
         context.fill(CGRect(x: 0, y: 0, width: side, height: side))
+        return context.makeImage()
+    }
+
+    /// Red on the left half, blue on the right.
+    private static func leftRightImage() -> CGImage? {
+        let side = 32
+        guard let context = CGContext(
+            data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+        context.setFillColor(red: 0.9, green: 0.1, blue: 0.1, alpha: 1)
+        context.fill(CGRect(x: 0, y: 0, width: side / 2, height: side))
+        context.setFillColor(red: 0.1, green: 0.1, blue: 0.9, alpha: 1)
+        context.fill(CGRect(x: side / 2, y: 0, width: side / 2, height: side))
+        return context.makeImage()
+    }
+
+    /// Green, inside a white border a tenth of the side wide.
+    private static func borderedImage() -> CGImage? {
+        let side = 40
+        guard let context = CGContext(
+            data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+        context.setFillColor(red: 1, green: 1, blue: 1, alpha: 1)
+        context.fill(CGRect(x: 0, y: 0, width: side, height: side))
+        context.setFillColor(red: 0.1, green: 0.8, blue: 0.1, alpha: 1)
+        context.fill(CGRect(x: 4, y: 4, width: side - 8, height: side - 8))
         return context.makeImage()
     }
 

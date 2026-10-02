@@ -402,6 +402,19 @@ public enum GlanceFormat {
         return date.formatted(style)
     }
 
+    /// "12:30" — `clock` without the day period, for a sliver beside the notch.
+    ///
+    /// A flank is 40pt with 32pt of room, and "12:30 PM" at the flank's size is about 50: it drew
+    /// as "12:3…" on a meeting, reported from hardware. The AM/PM is the part a person does not need
+    /// there — a meeting surfaces minutes before it starts, so which half of the day it is in is
+    /// never in question — and the day view's rows still carry the full `clock`. Still the user's
+    /// own 12- or 24-hour setting, so 14:30 stays 14:30 for someone whose Mac says so.
+    public static func flankClock(_ date: Date, locale: Locale = .current) -> String {
+        var style = Date.FormatStyle.dateTime.hour(.defaultDigits(amPM: .omitted)).minute()
+        style.locale = locale
+        return date.formatted(style)
+    }
+
     /// "in 4 min", "now", "in 2 hr".
     public static func startsIn(_ start: Date, from now: Date) -> String {
         let seconds = start.timeIntervalSince(now)

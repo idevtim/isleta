@@ -179,15 +179,12 @@ struct NowPlayingArtworkView: View {
 /// meter, and it is what makes the paused state a row of dots on one line instead of six stubs
 /// standing on a floor.
 ///
-/// ## The bars wear the album's accent, leaning
+/// ## The bars wear the cover, left to right
 ///
-/// White is the fallback, not the design. The row is drawn in
-/// `NowPlayingController.accent(_:increaseContrast:)`, fading slightly toward the leading end,
-/// which is `AlbumColor.row(_:count:)`. One color rather than six read off the sleeve: a row of
-/// unrelated hues is a rainbow rather than a record, and the lean is what keeps a single tint from
-/// reading as a flat block. `colors` is nil whenever the cover gave no accent, the user has
-/// switched album color off, or Increase Contrast is on, and nil is the white row this shipped
-/// with.
+/// White is the fallback, not the design. Each bar is drawn in the color of its strip of the
+/// cover's middle band, leading bar on the sleeve's left, which is `AlbumColor.row(from:count:)` —
+/// so the row runs the way the cover beside it does. `colors` is nil whenever the cover gave no
+/// color or Increase Contrast is on, and nil is the white row this shipped with.
 ///
 /// **This is the last of the header wearing the cover's color.** The scrub bar was drawn in the
 /// same accent and is plain white again — a bar that reports a position is a value, and a colored
@@ -819,7 +816,7 @@ final class PointerPresenceView: NSView {
 ///
 /// A glyph drawn *beside* the bars would need width the flank does not have — the sliver is ~40pt
 /// and the bars are 21 of it — and a glyph drawn *over* them at full strength is illegible against
-/// six moving capsules in the cover's own colors. Fading the bars back to a trace and bringing the
+/// six moving capsules in the cover's own colors. Dimming the bars behind it and bringing the
 /// glyph up in their place is the one version that reads at 14pt, and it doubles as the affordance:
 /// the thing under the pointer visibly became a control.
 ///
@@ -833,15 +830,20 @@ struct NowPlayingEqualiserControl: View {
     let increaseContrast: Bool
     let colors: [AlbumColor]?
 
-    /// How far the bars fall back under the glyph. Not to zero: the row disappearing entirely reads
-    /// as the indicator being replaced by a button, and it is the same object either way.
+    /// How far the bars fall back under the glyph — dimmed, still plainly moving, never hidden.
     ///
-    /// Increase Contrast takes them all the way out. A white glyph read against a trace of six
-    /// colored capsules is exactly the compromise a user who asked the system for more contrast has
-    /// already declined, and the affordance survives it — the bars going *away* under the pointer
-    /// says "this became a control" at least as plainly as their fading does.
-    private static func barsUnderGlyph(increaseContrast: Bool) -> Double {
-        increaseContrast ? 0 : 0.16
+    /// 0.16 was the first value and it read as the bars disappearing, reported from use: at that
+    /// strength a row in the cover's darker colors is indistinguishable from the black around it,
+    /// so the indicator looked replaced by a button rather than turned into one. At 0.4 the row is
+    /// unmistakably still there and still running, and the white glyph — full strength, semibold —
+    /// sits clearly in front of it, because the brightest a bar can be is 40% of a color that is
+    /// itself a tint rather than white.
+    ///
+    /// Increase Contrast dims further rather than removing them. The bars are white there (no color
+    /// off a cover survives that setting), so a white glyph over white bars needs the larger gap —
+    /// but the bars going out entirely was the same "hidden" the user objected to.
+    nonisolated static func barsUnderGlyph(increaseContrast: Bool) -> Double {
+        increaseContrast ? 0.22 : 0.4
     }
 
     /// The glyph, against a 14pt track. Larger fills the sliver and touches the island's edge, which

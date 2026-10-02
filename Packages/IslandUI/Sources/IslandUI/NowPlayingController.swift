@@ -528,9 +528,11 @@ public final class NowPlayingController {
         // `AlbumColor.average(of:)`), and it happens on the same transaction as the crossfade so
         // the accent and the cover it came from arrive together rather than a frame apart.
         let accent = image.flatMap(AlbumColor.accent(from:))
+        let row = image.flatMap { AlbumColor.row(from: $0, count: NowPlayingEqualiserView.count) }
         withAnimation(Motion.respectingReduceMotion(Motion.contentSwap, reduceMotion: reduceMotion)) {
             artwork = image
             albumColor = accent
+            barPalette = row
         }
     }
 
@@ -548,12 +550,16 @@ public final class NowPlayingController {
     /// case where a color off an arbitrary image is the wrong answer.
     public private(set) var albumColor: AlbumColor?
 
+    /// The cover read left to right, one color per equaliser bar — see `barColors(increaseContrast:)`.
+    /// Set and cleared with `albumColor`, on the same transaction.
+    private(set) var barPalette: [AlbumColor]?
+
     /// The accent the Now Playing chrome should use — the cover's, or the one it is handed.
     ///
     /// **What this tints, and what it deliberately does not.** It tints the transport glyphs and
     /// the cover's fallback well — the chrome that belongs to *this track* — the equaliser
-    /// included, through `barColors(increaseContrast:)`, which leans this same color across the six
-    /// bars rather than answering with a second one.
+    /// included, through `barColors(increaseContrast:)`, which reads the same cover across the six
+    /// bars from the same middle region this accent is averaged from.
     ///
     /// It does not tint the numerals, which are gray because a colored number reads as a value that
     /// means something by its color — and **it no longer tints the scrub bar either, for exactly
@@ -575,27 +581,24 @@ public final class NowPlayingController {
 
     /// The color each equaliser bar should be drawn in, or nil for the white row.
     ///
-    /// **The accent, not a second reading of the cover.** An earlier version took a color per
-    /// vertical band of the sleeve, which put a row of up to six unrelated hues on one island, and
-    /// on a busy sleeve the row read as a rainbow rather than as the record. This is
-    /// `accent(_:increaseContrast:)`, leaned across the row by `AlbumColor.row(_:count:)` so the
-    /// bars have a direction without having a second color.
+    /// **The cover, read left to right.** The leading bar is the left of the sleeve's middle band
+    /// and the trailing bar its right (`AlbumColor.row(from:count:)`), so the row beside the cover
+    /// runs the way the cover does. The version before this leaned the single accent across the
+    /// bars, dimmest at the leading end — which put a direction on the row that had nothing to do
+    /// with the record, and on a black-and-white sleeve gave six shades of a hue the sleeve did not
+    /// have. Reading only the middle of the cover, and lifting each bar through
+    /// `AlbumColor.legible(_:)`, is what keeps this from being the rainbow an edge-to-edge read was:
+    /// borders and type are out of it, and a near-gray strip stays gray.
     ///
-    /// **It is now the only place the accent lands in this header.** The scrub bar used to be drawn
-    /// in the same color and is white again, so the row is no longer half of a pair — which makes
-    /// the one-color rule matter more rather than less: the bars are the whole of what says which
-    /// record this is.
-    ///
-    /// Derived on demand rather than stored beside `albumColor`: it is arithmetic on three doubles
-    /// with no image in it, and a stored copy would be one more thing `reset()` has to remember to
-    /// clear with the track.
+    /// Read once per cover in `setArtwork(_:reduceMotion:)` and stored, because unlike the lean it
+    /// replaced it needs the image; cleared by `reset()` with `albumColor`.
     ///
     /// Gated exactly like `accent(_:increaseContrast:)`, and for its reason: off under Increase
     /// Contrast, where no color taken off an arbitrary image can be promised any contrast and white
     /// is the answer the user has already given.
     public func barColors(increaseContrast: Bool) -> [AlbumColor]? {
-        guard !increaseContrast, let albumColor else { return nil }
-        return AlbumColor.row(albumColor)
+        guard !increaseContrast else { return nil }
+        return barPalette
     }
 
     /// Whether a drag is in progress. The playhead must not run under the pointer while it is.
@@ -787,6 +790,7 @@ public final class NowPlayingController {
         // the *next* song wearing the *last* one's color, which is the one way this feature could
         // look broken rather than merely absent.
         albumColor = nil
+        barPalette = nil
         isPlaying = false
         // Cleared with the rest of it. A next track outliving the queue it came from is the one
         // failure mode of this feature that a user would actually notice: the island naming a song

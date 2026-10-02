@@ -507,7 +507,7 @@ public final class CalendarSource: ActivitySource {
                     tint: .neutral,
                     accessibilityLabel: sourceText("glance.meeting.a11y", "\(event.title), ready to join")
                 ),
-                trailing: ActivityContent(title: GlanceFormat.clock(event.start), tint: .neutral),
+                trailing: ActivityContent(title: GlanceFormat.flankClock(event.start), tint: .neutral),
                 compact: ActivityContent(
                     symbol: provider?.symbol ?? "video.fill",
                     title: event.title,

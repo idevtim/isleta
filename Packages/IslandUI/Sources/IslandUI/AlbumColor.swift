@@ -113,21 +113,60 @@ public struct AlbumColor: Equatable, Sendable {
     /// that. Pulling it back a little costs nothing anybody can name and removes the worst case.
     static let maximumSaturation = 0.88
 
+    /// The saturation under which a color is treated as having no hue at all.
+    ///
+    /// A black-and-white sleeve — or a white glyph on a black icon, which is what a browser hands
+    /// over for a site — does not average to an exact gray. Compression and antialiasing leave it a
+    /// percent or two off, and lifting *that* to `minimumSaturation` turned a monochrome Apple logo
+    /// into a violet row, reported from hardware. The hue of a color this close to gray is noise,
+    /// so it is not saturated; it is drawn as the gray it is, at a readable brightness.
+    static let neutralSaturation = 0.12
+
     /// The same color, guaranteed to read as an accent against `#000000`.
     ///
     /// Pure arithmetic on the components — no `NSColor`, no `Color`, no appearance — so the rule
     /// "a black cover does not produce an invisible transport row" is a test rather than a look.
     public static func legible(_ color: AlbumColor) -> AlbumColor {
         var (hue, saturation, brightness) = hsb(color)
-        saturation = min(max(saturation, minimumSaturation), maximumSaturation)
+        saturation = saturation < neutralSaturation
+            ? 0
+            : min(max(saturation, minimumSaturation), maximumSaturation)
         brightness = max(brightness, minimumBrightness)
         return rgb(hue: hue, saturation: saturation, brightness: brightness)
     }
 
     /// The accent a cover gives, or nil if it gives none. One call, so nobody averages without
     /// lifting.
+    ///
+    /// Read off `centre(of:)` rather than the whole sleeve: a border, a label strip or a
+    /// letterboxed icon's background is at the edges, and the thing a person would say the cover
+    /// *is* sits in the middle of it.
     public static func accent(from image: CGImage) -> AlbumColor? {
-        average(of: image).map(legible)
+        average(of: centre(of: image) ?? image).map(legible)
+    }
+
+    // MARK: - The middle of the cover
+
+    /// The part of the cover that is read: the middle 70% across and the middle half down.
+    ///
+    /// Wide rather than square because the row reads the cover left to right, and cutting the sides
+    /// in as far as the top and bottom would leave the outer bars reading the same pixels as their
+    /// neighbours. Short because the top and bottom of a sleeve are where the title, the label and
+    /// the parental-advisory box live — text, not the record's color.
+    static let sampleRegion = CGRect(x: 0.15, y: 0.25, width: 0.7, height: 0.5)
+
+    /// The cover cropped to `sampleRegion`, or nil for an image too small to crop. A crop shares
+    /// the source's pixels rather than copying them.
+    static func centre(of image: CGImage) -> CGImage? {
+        let width = Double(image.width)
+        let height = Double(image.height)
+        let rect = CGRect(
+            x: (sampleRegion.minX * width).rounded(.down),
+            y: (sampleRegion.minY * height).rounded(.down),
+            width: max((sampleRegion.width * width).rounded(), 1),
+            height: max((sampleRegion.height * height).rounded(), 1)
+        )
+        return image.cropping(to: rect)
     }
 
     // MARK: - HSB, by hand
@@ -182,40 +221,76 @@ extension AlbumColor {
     /// a row for "the bars" does not have to name a number.
     public static let defaultBandCount = 6
 
-    /// How dark the far end of the row goes, as a fraction of the accent's own brightness.
+    /// The cover read left to right, one color per bar — the leading bar is the left of the sleeve
+    /// and the trailing bar its right, so the row runs the way the cover beside it does.
     ///
-    /// **Slight, on purpose.** The row is one color with a lean in it, not a gradient: past about a
-    /// third the leading bars stop reading as the same color further away and start reading as a
-    /// second color, which is the thing the accent exists to avoid. At the accent's guaranteed
-    /// `minimumBrightness` this floor still leaves the dimmest bar well clear of the `#000000` it is
-    /// drawn on.
-    static let rowFadeFloor = 0.65
-
-    /// One accent, spread across the bars — full strength at the trailing end and fading slightly
-    /// toward the leading one.
+    /// Read across `centre(of:)`, not the full width, for the reason the accent is: the edges of a
+    /// sleeve are borders and type, and a row whose outer bars wore a white border would say
+    /// nothing about the record. Each bar is the alpha-weighted average of its vertical strip of
+    /// that region, then `legible(_:)`, so no bar is invisible on `#000000` and no near-gray strip
+    /// is given a hue it does not have.
     ///
-    /// **The same color the scrub bar's played portion wears**, and that is the whole point: the
-    /// island's Now Playing chrome has exactly one album color, and a row that read six of them off
-    /// the sleeve was a second, unrelated answer to "what color is this record" sitting 40pt from
-    /// the first. The lean is what keeps the row from being a flat block of tint — it gives the bars
-    /// a direction, toward the transport controls and away from the cutout, without introducing a
-    /// color the rest of the player does not use.
+    /// A strip with no opaque pixels in it — a cover with a transparent margin — takes the region's
+    /// own average rather than leaving a gap or a black bar. Nil when nothing in the region is
+    /// opaque, which is the same "no cover" `accent(from:)` answers.
     ///
-    /// Pure arithmetic on the components, like everything else in this type: no view, no image, and
-    /// no second read of the artwork. The fade multiplies **brightness** rather than lowering alpha,
-    /// because a translucent bar shows whatever the island is made of — a synthesized island is
-    /// Liquid Glass, and a faded bar there would take the color of the user's wallpaper.
-    public static func row(_ accent: AlbumColor, count: Int = defaultBandCount) -> [AlbumColor]? {
+    /// One CoreGraphics draw of an already-decoded image into a `count`×4 context, once per track
+    /// change, like `average(of:)`. Never on a frame.
+    public static func row(from image: CGImage, count: Int = defaultBandCount) -> [AlbumColor]? {
         guard count > 0 else { return nil }
-        guard count > 1 else { return [accent] }
-        return (0..<count).map { index in
-            let position = Double(index) / Double(count - 1)
-            let scale = rowFadeFloor + (1 - rowFadeFloor) * position
-            return AlbumColor(
-                red: accent.red * scale,
-                green: accent.green * scale,
-                blue: accent.blue * scale
-            )
+        let region = centre(of: image) ?? image
+        let rows = 4
+        let bytesPerRow = count * 4
+        var pixels = [UInt8](repeating: 0, count: bytesPerRow * rows)
+
+        let drawn: Bool = pixels.withUnsafeMutableBytes { buffer -> Bool in
+            guard let base = buffer.baseAddress,
+                  let context = CGContext(
+                      data: base,
+                      width: count,
+                      height: rows,
+                      bitsPerComponent: 8,
+                      bytesPerRow: bytesPerRow,
+                      space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+                  )
+            else { return false }
+            context.interpolationQuality = .medium
+            context.draw(region, in: CGRect(x: 0, y: 0, width: count, height: rows))
+            return true
+        }
+        guard drawn else { return nil }
+
+        // Premultiplied, so weighted by alpha exactly as `average(of:)` is.
+        var strips = [(red: Double, green: Double, blue: Double, weight: Double)](
+            repeating: (0, 0, 0, 0), count: count
+        )
+        for row in 0..<rows {
+            for column in 0..<count {
+                let index = row * bytesPerRow + column * 4
+                strips[column].red += Double(pixels[index]) / 255
+                strips[column].green += Double(pixels[index + 1]) / 255
+                strips[column].blue += Double(pixels[index + 2]) / 255
+                strips[column].weight += Double(pixels[index + 3]) / 255
+            }
+        }
+
+        let total = strips.reduce((red: 0.0, green: 0.0, blue: 0.0, weight: 0.0)) {
+            ($0.red + $1.red, $0.green + $1.green, $0.blue + $1.blue, $0.weight + $1.weight)
+        }
+        guard total.weight > 0 else { return nil }
+        let whole = AlbumColor(
+            red: total.red / total.weight,
+            green: total.green / total.weight,
+            blue: total.blue / total.weight
+        )
+        return strips.map { strip in
+            guard strip.weight > 0 else { return legible(whole) }
+            return legible(AlbumColor(
+                red: strip.red / strip.weight,
+                green: strip.green / strip.weight,
+                blue: strip.blue / strip.weight
+            ))
         }
     }
 }

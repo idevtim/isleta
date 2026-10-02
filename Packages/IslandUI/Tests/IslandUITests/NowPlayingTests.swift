@@ -794,17 +794,18 @@ struct NowPlayingCoverColorTests {
         #expect(bars.count == NowPlayingEqualiserView.count)
     }
 
-    /// The row and the scrub bar are the same color, which is the whole revision: the trailing bar
-    /// is the accent itself and the rest are that accent, dimmer.
-    @Test("the row is the scrub bar's own color, leaning")
-    func theRowIsTheAccent() throws {
+    /// The row runs the way the cover does: the striped cover goes from green on its left to red on
+    /// its right, and so do the bars.
+    @Test("the row reads the cover left to right")
+    func theRowFollowsTheCover() throws {
         let controller = controller()
         let cover = try #require(Self.stripedCover())
         controller.setArtwork(cover, reduceMotion: false)
         let bars = try #require(controller.barColors(increaseContrast: false))
-        #expect(bars.last == controller.albumColor)
-        let hues = bars.map { AlbumColor.hsb($0).hue }
-        #expect(hues.allSatisfy { abs($0 - hues[0]) < 1e-9 })
+        let first = try #require(bars.first)
+        let last = try #require(bars.last)
+        #expect(first.green > first.red)
+        #expect(last.red > last.green)
     }
 
     /// The regression this suite now exists to catch, and it shipped in the settings cut: the accent
@@ -1570,5 +1571,29 @@ struct AudioFormatBadgeTests {
     func unbadgedKinds() {
         #expect(AudioFormatBadge.image(for: .multichannel) == nil)
         #expect(AudioFormatBadge.image(for: .lossy) == nil)
+    }
+}
+
+/// Hovering the collapsed island's bars turns them into play/pause. They dim behind the glyph and
+/// stay visible — 0.16 read as the bars vanishing, which is the indicator being replaced rather than
+/// becoming a control.
+@Suite("The bars under the play/pause glyph")
+struct NowPlayingEqualiserHoverTests {
+
+    @Test("the bars dim behind the glyph rather than disappearing")
+    func barsDimNotHide() {
+        for increaseContrast in [false, true] {
+            let opacity = NowPlayingEqualiserControl.barsUnderGlyph(increaseContrast: increaseContrast)
+            #expect(opacity >= 0.2)
+            #expect(opacity < 0.5, "the glyph has to stay in front")
+        }
+    }
+
+    @Test("increase contrast dims further, because the bars are white there")
+    func increaseContrastDimsMore() {
+        #expect(
+            NowPlayingEqualiserControl.barsUnderGlyph(increaseContrast: true)
+                < NowPlayingEqualiserControl.barsUnderGlyph(increaseContrast: false)
+        )
     }
 }

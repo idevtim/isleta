@@ -142,6 +142,16 @@ public struct ActivityContentView: View {
         content.symbol == nil ? 4 : 10
     }
 
+    /// The size a flank's title is drawn at.
+    ///
+    /// A point under the 12 a labelled flank uses when the title *is* the flank — a meeting's start
+    /// time, a shelf's count. Those are numerals standing alone in 32pt of room, and at 12 a time
+    /// like "12:30" sat within a point of the edge; one size down it has air on both sides and still
+    /// reads as the same weight as the glyph opposite it.
+    nonisolated static func flankTitleSize(for content: ActivityContent) -> CGFloat {
+        content.symbol == nil && content.value == nil ? 11 : 12
+    }
+
     /// The widest a level is drawn in a sliver, whatever room the sliver has.
     ///
     /// **76, which is 16pt of black either side of it on a wide island** (`IslandLayout`'s
@@ -174,7 +184,7 @@ public struct ActivityContentView: View {
             symbol(size: 13, weight: .semibold, matched: false)
             if let title = content.title {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: Self.flankTitleSize(for: content), weight: .medium))
                     .foregroundStyle(tintColor)
                     .lineLimit(1)
                     // The sliver is a constant and the word in it is not: `IslandLayout`'s
