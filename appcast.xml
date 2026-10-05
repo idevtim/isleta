@@ -20,10 +20,75 @@
 -->
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
-        <title>2.4.1</title>
+        <title>2.5.0</title>
         <link>https://tryisleta.com</link>
         <description>Updates for Isleta.</description>
         <language>en</language>
+        <item>
+            <title>2.5.0</title>
+            <pubDate>Mon, 05 Oct 2026 12:20:00 -0400</pubDate>
+            <link>https://github.com/idevtim/isleta</link>
+            <sparkle:fullReleaseNotesLink>https://github.com/idevtim/isleta/releases</sparkle:fullReleaseNotesLink>
+            <sparkle:version>2.5.0</sparkle:version>
+            <sparkle:shortVersionString>2.5.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Isleta 2.5.0
+
+The weather page is in color. Each day's range is drawn in the colors of its temperatures, the
+way Weather does, so a hot week reads warm and a cold one reads blue at a glance. The bars beside
+the music now flow smoothly between the cover's colors.
+
+## Improved
+
+- **The forecast's bars are colored by temperature.** Blue when it is freezing, green when it is
+  mild, yellow into orange and red as it gets hot, so the colors show what the week is like.
+- **Today's bar marks the temperature right now.** A white dot sits on today's range where the
+  current reading falls.
+- **The weather icons are in full color, and the chance of rain is in blue.** Suns are yellow and
+  raindrops blue, so a wet day stands out down the list before you read a number.
+
+## Fixed
+
+- **The bars beside the music flow from one color to the next.** They still run from the left of
+  the cover to the right, as one smooth blend instead of six unrelated colors side by side.
+
+## Requirements
+
+macOS 26 or later, on Apple Silicon. Displays with a real notch get the island; a Mac without one
+gets a floating island on the main display.
+
+## Known limitations
+
+- **The lean at the end of a range needs Accessibility.** Reaching the end of the volume or
+  brightness no longer moves the island on its own, and the press after it is only visible to Isleta
+  with that permission granted. The reading itself, and the bar filling and emptying, work either
+  way.
+- **A muted Mac's bar cannot be dragged.** It is drawn at nothing whatever the volume behind it is,
+  so pressing it opens the island instead. Unmute first.
+- **You cannot see who is calling.** macOS does not let apps outside Apple read that, or answer for
+  you. Isleta shows that a call is happening and nothing more.
+- **Weather needs your location, or a city you type.** Isleta asks for neither until you use it.
+- **A connected device's battery is read once, when it connects.** It does not tick down as you wear
+  them, and most non-Apple headphones report no level at all.
+- **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
+  started by hand in Clock is there immediately.
+- **Replacing the system HUDs is on by default, and it needs Accessibility.** Two switches in
+  Settings hand the keys back. Quitting Isleta hands them back too; if Isleta is force-quit, the
+  system HUD stays out of the way until Isleta next starts. Brightness covers the built-in display
+  only.
+- **Apple's own banner still appears when headphones connect.** It is drawn by the menu bar rather
+  than by the HUD helper Isleta can stand in for, so the island announces the connection alongside
+  it rather than instead of it.
+- **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
+  can sit over the middle of the space labels.
+- **Today and tomorrow show five entries and then a count.** A busy pair of days says how many it
+  could not fit rather than scrolling.
+- **The equalizer moves in a set pattern rather than to the song.** Its colors come from the cover;
+  its motion does not come from the audio.
+]]></description>
+            <enclosure url="https://github.com/idevtim/isleta/releases/download/v2.5.0/Isleta-2.5.0.zip" length="6490957" type="application/octet-stream" sparkle:edSignature="yJx7UmU6XaprXlBHd81O+71lvLeRl7FOcirgbs2P3QONXUpwDDXN+yTw3DxvLF5zszdivsYgrsThGU44P/JLAA=="/>
+        </item>
         <item>
             <title>2.4.1</title>
             <pubDate>Fri, 02 Oct 2026 17:26:58 -0400</pubDate>
@@ -153,80 +218,6 @@ gets a floating island on the main display.
   could not fit rather than scrolling.
 ]]></description>
             <enclosure url="https://github.com/idevtim/isleta/releases/download/v2.4.0/Isleta-2.4.0.zip" length="6478457" type="application/octet-stream" sparkle:edSignature="nCG9tVYK0Bmmd0BilEMdiFBsNke7pAS3w18YEpTmWmPzQLdxhSvU7Wi5Jc0Qv4opNbveIq0mu3528hKmoL6NCw=="/>
-        </item>
-        <item>
-            <title>2.3.0</title>
-            <pubDate>Thu, 10 Sep 2026 21:25:43 -0400</pubDate>
-            <link>https://github.com/idevtim/isleta</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/idevtim/isleta/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>2.3.0</sparkle:version>
-            <sparkle:shortVersionString>2.3.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Isleta 2.3.0
-
-The volume and brightness bars in the notch are controls now: press or drag one and the level goes
-there. Press anywhere else on them and they get out of the way.
-
-## New
-
-- **Drag the volume or brightness bar in the notch.** Press anywhere along it to send the level
-  there, or hold and drag to slide it. The bar is a few points tall and what you can aim at is much
-  taller, so you do not have to be precise about it.
-- **Press the middle of the notch to put a level away and open the island.** The reading goes, and
-  the island opens on whatever you were last looking at — the player, if something is playing.
-
-## Improved
-
-- **A video in a browser shows the browser's icon instead of a music note.** Anything playing
-  without cover art — a Safari tab, a video on a site that publishes none — now says which
-  app the sound is coming from, on every surface that draws a cover.
-- **The island no longer springs at the end of a range until you ask twice.** Running the volume or
-  brightness all the way down leaves the island where it is; the *next* press on the key is what
-  makes it lean, and it keeps leaning for as long as you hold it.
-
-## Fixed
-
-- **Nothing appears on screen while the Mac is still unlocking.** Plugging in the charger — or
-  anything else the island announces — part way through the unlock used to draw the island over
-  the top of it. It waits in the notch now, and arrives once the unlock has finished.
-- **A film's remaining time is no longer cut off.** Anything over an hour showed `-1:0…` where the
-  countdown belonged; the two times either side of the scrub bar now make room for the hours, and
-  give the room back on tracks that do not need it.
-
-## Requirements
-
-macOS 26 or later, on Apple Silicon. Displays with a real notch get the island; a Mac without one
-gets a floating island on the main display.
-
-## Known limitations
-
-- **The lean at the end of a range needs Accessibility.** Reaching the end of the volume or
-  brightness no longer moves the island on its own, and the press after it is only visible to Isleta
-  with that permission granted. The reading itself, and the bar filling and emptying, work either
-  way.
-- **A muted Mac's bar cannot be dragged.** It is drawn at nothing whatever the volume behind it is,
-  so pressing it opens the island instead. Unmute first.
-- **You cannot see who is calling.** macOS does not let apps outside Apple read that, or answer for
-  you. Isleta shows that a call is happening and nothing more.
-- **Weather needs your location, or a city you type.** Isleta asks for neither until you use it.
-- **A connected device's battery is read once, when it connects.** It does not tick down as you wear
-  them, and most non-Apple headphones report no level at all.
-- **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
-  started by hand in Clock is there immediately.
-- **Replacing the system HUDs is on by default, and it needs Accessibility.** Two switches in
-  Settings hand the keys back. Quitting Isleta hands them back too; if Isleta is force-quit, the
-  system HUD stays out of the way until Isleta next starts. Brightness covers the built-in display
-  only.
-- **Apple's own banner still appears when headphones connect.** It is drawn by the menu bar rather
-  than by the HUD helper Isleta can stand in for, so the island announces the connection alongside
-  it rather than instead of it.
-- **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
-  can sit over the middle of the space labels.
-- **Today and tomorrow show five entries and then a count.** A busy pair of days says how many it
-  could not fit rather than scrolling.
-]]></description>
-            <enclosure url="https://github.com/idevtim/isleta/releases/download/v2.3.0/Isleta-2.3.0.zip" length="6475671" type="application/octet-stream" sparkle:edSignature="oo4Ok4u6AZzHGAtxDzGZN0zNPzXIIhiit31s1sTH0lsd4heR8WtKT3towHAU6Vb0kmLSKgODGj8e5Ad5LKqsAA=="/>
         </item>
     </channel>
 </rss>
