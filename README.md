@@ -60,7 +60,8 @@ the invitation. You pick which calendars count.
 
 <img src="assets/screenshots/music.png" alt="Music page with artwork, scrubber and transport controls" width="640">
 
-Album art on one side of the notch, an equalizer that actually moves with the music on the other.
+Album art on one side of the notch, moving equalizer bars on the other, blending from one of the
+cover's colors to the next across their width.
 Play, pause, skip, shuffle, favorite, and see what's coming **Up Next** — double-click anything in
 the queue to jump to it. Works with Apple Music, Spotify, and anything else that reports to macOS.
 
@@ -75,6 +76,11 @@ generic music note, so you can see where the sound is coming from.
 
 Today's high and low, what it feels like, and the chance of rain for the next few days. Use your
 location, or just type a city.
+
+Each day's range is drawn in the colors of its own temperatures — blue when it's freezing, green
+when it's mild, yellow into orange and red as it gets hot — so a hot week reads warm and a cold one
+reads blue before you've read a number. A white dot marks where the current reading falls on
+today's bar, and the icons are in full color with the chance of rain in blue.
 
 When it's raining outside, it rains **inside** the island, and the drops land on its bottom edge
 instead of fading away. Snow falls too. Both stop if you've asked macOS to reduce motion.
@@ -265,6 +271,8 @@ actually pressed.
   can sit over the middle of the space labels.
 - **Today and tomorrow show five entries and then a count.** A busy pair of days says how many it
   couldn't fit rather than scrolling.
+- **The equalizer moves in a set pattern rather than to the song.** Its colors come from the cover;
+  its motion doesn't come from the audio.
 - **The hover target is the notch itself** — about 185 points wide, and easy to overshoot.
 
 </details>
