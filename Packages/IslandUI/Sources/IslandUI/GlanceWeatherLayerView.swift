@@ -1,3 +1,4 @@
+import AppKit
 import IslandActivities
 import IslandKit
 import SwiftUI
@@ -165,9 +166,9 @@ struct GlanceWeatherLayerView: View {
     /// more space would not have answered anything.
     private func current(_ weather: WeatherReading) -> some View {
         HStack(alignment: .center, spacing: 12) {
-            Image(systemName: weather.symbolName)
+            Image(systemName: filledSymbol(weather.symbolName))
                 .font(.system(size: 26, weight: .medium))
-                .symbolRenderingMode(.hierarchical)
+                .symbolRenderingMode(.multicolor)
                 .frame(width: 34)
 
             Text(WeatherFormat.compact(weather.temperatureCelsius, unit: unit))
@@ -270,7 +271,7 @@ struct GlanceWeatherLayerView: View {
         return VStack(spacing: GlanceWeatherLayout.forecastRowSpacing) {
             ForEach(0..<GlanceWeatherLayout.forecastRows, id: \.self) { index in
                 if index < days.count, let bounds {
-                    forecastRow(days[index], bounds: bounds)
+                    forecastRow(days[index], bounds: bounds, current: weather.temperatureCelsius)
                 } else {
                     Color.clear
                         .frame(height: GlanceWeatherLayout.forecastRowHeight)
@@ -279,12 +280,24 @@ struct GlanceWeatherLayerView: View {
         }
     }
 
-    private func forecastRow(_ day: WeatherDay, bounds: (coldest: Double, warmest: Double)) -> some View {
+    private func forecastRow(
+        _ day: WeatherDay,
+        bounds: (coldest: Double, warmest: Double),
+        current: Double
+    ) -> some View {
         let low = Double(WeatherFormat.rounded(day.lowCelsius, unit: unit))
         let high = Double(WeatherFormat.rounded(day.highCelsius, unit: unit))
         let segment = WeatherRangeBar.segment(
             low: low, high: high, coldest: bounds.coldest, warmest: bounds.warmest
         )
+        // Only today's bar carries the mark: the current temperature is a fact about now, and on
+        // any other row it would be a reading the day has not had yet.
+        let mark: Double? = calendar.isDate(day.date, inSameDayAs: now)
+            ? WeatherRangeBar.currentPosition(
+                Double(WeatherFormat.rounded(current, unit: unit)),
+                within: segment, coldest: bounds.coldest, warmest: bounds.warmest
+            )
+            : nil
         return HStack(spacing: 0) {
             Text(dayName(day.date))
                 .font(.system(size: 11, weight: .medium))
@@ -292,18 +305,19 @@ struct GlanceWeatherLayerView: View {
                 .lineLimit(1)
                 .frame(width: GlanceWeatherLayout.dayColumnWidth, alignment: .leading)
 
-            Image(systemName: day.symbolName)
+            Image(systemName: filledSymbol(day.symbolName))
                 .font(.system(size: 11, weight: .medium))
-                .symbolRenderingMode(.hierarchical)
+                .symbolRenderingMode(.multicolor)
                 .frame(width: GlanceWeatherLayout.daySymbolWidth, alignment: .center)
 
             // The percentage the surface is here for. Drawn only where there is one worth reading —
             // a column of "0%" down five dry days is five rows spent saying nothing, and the blank
-            // is unambiguous beside a sun.
+            // is unambiguous beside a sun. In Weather.app's rain blue, the same blue the glyph's
+            // drops are drawn in beside it, so the number reads as belonging to them.
             Text(chanceText(day.precipitationChance) ?? "")
-                .font(.system(size: 10, weight: .medium, design: .rounded))
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(.white.opacity(model.increaseContrast ? 0.9 : 0.6))
+                .foregroundStyle(Self.chanceColor.opacity(model.increaseContrast ? 1 : 0.95))
                 .lineLimit(1)
                 .frame(width: GlanceWeatherLayout.chanceColumnWidth, alignment: .trailing)
 
@@ -316,7 +330,7 @@ struct GlanceWeatherLayerView: View {
                 .padding(.leading, GlanceWeatherLayout.rangeBarSpacing)
 
             if let barWidth = GlanceWeatherLayout.rangeBarWidth(inBodyWidth: model.contentBodySize.width) {
-                rangeBar(segment: segment, width: barWidth)
+                rangeBar(segment: segment, low: low, high: high, mark: mark, width: barWidth)
                     .padding(.horizontal, GlanceWeatherLayout.rangeBarSpacing)
             }
 
@@ -333,24 +347,83 @@ struct GlanceWeatherLayerView: View {
         .accessibilityLabel(spokenDay(day))
     }
 
-    /// The day's range as a segment of the week's.
+    /// The day's range as a segment of the week's, in the colors of the temperatures it covers.
     ///
-    /// Two capsules and no gradient. A gradient from blue to orange is what every weather app draws
-    /// here and it carries no information the numbers either side do not — and under Increase
-    /// Contrast it would have to be thrown away entirely, which is the test that says it was
-    /// decoration. The *position* is the information, and it survives every accessibility setting.
-    private func rangeBar(segment: (start: Double, length: Double), width: CGFloat) -> some View {
-        ZStack(alignment: .leading) {
+    /// **Each segment runs from the color of its own low to the color of its own high** on
+    /// `WeatherTemperatureScale`. Because a color is a function of the temperature alone, that is the
+    /// same picture as one gradient across the week revealed by each day's capsule — a cool day sits
+    /// in the yellow end of a hot week and the hottest day reaches the orange — without a mask that
+    /// has to be offset into place. An offset capsule used as a `.mask` was tried first and drew the
+    /// whole gradient's width from the segment's start, past the high temperature beside it. That
+    /// is how Weather.app draws it, and it is what makes the color information rather than
+    /// decoration: the position says how a day compares with the week, the color says what the week
+    /// is like at all.
+    ///
+    /// This replaces a white bar whose note argued a gradient was decoration because Increase
+    /// Contrast would have to throw it away. It does not: the colors are already opaque and
+    /// stand on a black island, so under Increase Contrast the track is raised and the bar is
+    /// drawn exactly as it is, and nothing here depends on a color that a setting removes. The
+    /// position carries the same information as before in every mode.
+    ///
+    /// The gradient is a `LinearGradient` *view* framed to the segment and clipped to a capsule,
+    /// never a shape filled with a gradient — `docs/TRAPS.md` has a gradient *fill* widening the
+    /// panel's event shape, measured on the island's own outline. This one is bounded by its 4pt
+    /// frame, which sits wholly inside the island body that already claims every point under it.
+    private func rangeBar(
+        segment: (start: Double, length: Double),
+        low: Double,
+        high: Double,
+        mark: Double?,
+        width: CGFloat
+    ) -> some View {
+        let height = GlanceWeatherLayout.rangeBarHeight
+        let stops = WeatherTemperatureScale.gradient(
+            coldest: WeatherTemperatureScale.celsius(low, from: unit),
+            warmest: WeatherTemperatureScale.celsius(high, from: unit)
+        ).map { Gradient.Stop(color: Self.color($0.color), location: $0.location) }
+        let segmentWidth = max(height, width * segment.length)
+        return ZStack(alignment: .leading) {
             Capsule()
                 .fill(.white.opacity(model.increaseContrast ? 0.35 : 0.15))
-                .frame(width: width, height: GlanceWeatherLayout.rangeBarHeight)
-            Capsule()
-                .fill(.white.opacity(model.increaseContrast ? 1 : 0.75))
-                .frame(width: max(2, width * segment.length), height: GlanceWeatherLayout.rangeBarHeight)
+                .frame(width: width, height: height)
+            LinearGradient(stops: stops, startPoint: .leading, endPoint: .trailing)
+                .frame(width: segmentWidth, height: height)
+                .clipShape(Capsule())
                 .offset(x: width * segment.start)
+            if let mark {
+                // White on a black ring, as Weather.app draws it: the ring is what keeps a white
+                // mark visible on the pale yellow end of the scale.
+                let diameter = GlanceWeatherLayout.currentMarkDiameter
+                let ring = GlanceWeatherLayout.currentMarkRing
+                Circle()
+                    .fill(.white)
+                    .frame(width: diameter, height: diameter)
+                    .background(
+                        Circle().fill(.black).frame(width: diameter + 2 * ring, height: diameter + 2 * ring)
+                    )
+                    .offset(x: min(max(width * mark - diameter / 2, 0), width - diameter))
+            }
         }
         .frame(width: width, alignment: .leading)
         .accessibilityHidden(true)
+    }
+
+    /// The blue Weather.app prints a chance of precipitation in.
+    private static let chanceColor = Color(.sRGB, red: 0.40, green: 0.78, blue: 0.98)
+
+    private static func color(_ rgb: WeatherTemperatureScale.RGB) -> Color {
+        Color(.sRGB, red: rgb.red, green: rgb.green, blue: rgb.blue)
+    }
+
+    /// The `.fill` variant of a condition's symbol where SF Symbols has one, as Weather.app draws
+    /// them: under `.multicolor` an outlined cloud is a white line with blue drops under it, and a
+    /// filled one is the white cloud a reader recognizes. WeatherKit names the outlined form, and
+    /// not every condition has a filled one — `wind` does not — so the lookup falls back to the
+    /// name it was given rather than drawing nothing.
+    private func filledSymbol(_ name: String) -> String {
+        guard !name.hasSuffix(".fill") else { return name }
+        let filled = name + ".fill"
+        return NSImage(systemSymbolName: filled, accessibilityDescription: nil) == nil ? name : filled
     }
 
     /// "Today", then the abbreviated weekday. The first row is named rather than dated because that

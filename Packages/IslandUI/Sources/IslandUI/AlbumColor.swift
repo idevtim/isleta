@@ -221,33 +221,39 @@ extension AlbumColor {
     /// a row for "the bars" does not have to name a number.
     public static let defaultBandCount = 6
 
-    /// The cover read left to right, one color per bar — the leading bar is the left of the sleeve
-    /// and the trailing bar its right, so the row runs the way the cover beside it does.
+    /// The cover read left to right as one smooth gradient — the leading bar is the left of the
+    /// sleeve and the trailing bar its right, so the row runs the way the cover beside it does.
+    ///
+    /// **Two readings, not one per bar.** 2.4.1 averaged each bar's own vertical strip, and on a
+    /// cover with any detail in it neighbouring strips land on unrelated colors — a pale face, then
+    /// a red shirt, then a gray background — so the row read as six separate swatches rather than
+    /// as the record, reported from hardware. Now only the two halves of `centre(of:)` are read, and
+    /// the bars between them step evenly from one to the other (`blend(from:to:count:)`). The row
+    /// keeps its direction and its two colors off the cover, and loses the jumps.
     ///
     /// Read across `centre(of:)`, not the full width, for the reason the accent is: the edges of a
-    /// sleeve are borders and type, and a row whose outer bars wore a white border would say
-    /// nothing about the record. Each bar is the alpha-weighted average of its vertical strip of
-    /// that region, then `legible(_:)`, so no bar is invisible on `#000000` and no near-gray strip
-    /// is given a hue it does not have.
+    /// sleeve are borders and type. Each end is `legible(_:)`, so no bar is invisible on `#000000`
+    /// and a near-gray half stays gray.
     ///
-    /// A strip with no opaque pixels in it — a cover with a transparent margin — takes the region's
-    /// own average rather than leaving a gap or a black bar. Nil when nothing in the region is
-    /// opaque, which is the same "no cover" `accent(from:)` answers.
+    /// A half with no opaque pixels in it — a cover with a transparent margin — takes the other
+    /// half's color rather than leaving a black bar. Nil when nothing in the region is opaque, which
+    /// is the same "no cover" `accent(from:)` answers.
     ///
-    /// One CoreGraphics draw of an already-decoded image into a `count`×4 context, once per track
-    /// change, like `average(of:)`. Never on a frame.
+    /// One CoreGraphics draw of an already-decoded image into a 2×4 context, once per track change,
+    /// like `average(of:)`. Never on a frame.
     public static func row(from image: CGImage, count: Int = defaultBandCount) -> [AlbumColor]? {
         guard count > 0 else { return nil }
         let region = centre(of: image) ?? image
+        let columns = 2
         let rows = 4
-        let bytesPerRow = count * 4
+        let bytesPerRow = columns * 4
         var pixels = [UInt8](repeating: 0, count: bytesPerRow * rows)
 
         let drawn: Bool = pixels.withUnsafeMutableBytes { buffer -> Bool in
             guard let base = buffer.baseAddress,
                   let context = CGContext(
                       data: base,
-                      width: count,
+                      width: columns,
                       height: rows,
                       bitsPerComponent: 8,
                       bytesPerRow: bytesPerRow,
@@ -256,41 +262,61 @@ extension AlbumColor {
                   )
             else { return false }
             context.interpolationQuality = .medium
-            context.draw(region, in: CGRect(x: 0, y: 0, width: count, height: rows))
+            context.draw(region, in: CGRect(x: 0, y: 0, width: columns, height: rows))
             return true
         }
         guard drawn else { return nil }
 
         // Premultiplied, so weighted by alpha exactly as `average(of:)` is.
-        var strips = [(red: Double, green: Double, blue: Double, weight: Double)](
-            repeating: (0, 0, 0, 0), count: count
+        var halves = [(red: Double, green: Double, blue: Double, weight: Double)](
+            repeating: (0, 0, 0, 0), count: columns
         )
         for row in 0..<rows {
-            for column in 0..<count {
+            for column in 0..<columns {
                 let index = row * bytesPerRow + column * 4
-                strips[column].red += Double(pixels[index]) / 255
-                strips[column].green += Double(pixels[index + 1]) / 255
-                strips[column].blue += Double(pixels[index + 2]) / 255
-                strips[column].weight += Double(pixels[index + 3]) / 255
+                halves[column].red += Double(pixels[index]) / 255
+                halves[column].green += Double(pixels[index + 1]) / 255
+                halves[column].blue += Double(pixels[index + 2]) / 255
+                halves[column].weight += Double(pixels[index + 3]) / 255
             }
         }
-
-        let total = strips.reduce((red: 0.0, green: 0.0, blue: 0.0, weight: 0.0)) {
-            ($0.red + $1.red, $0.green + $1.green, $0.blue + $1.blue, $0.weight + $1.weight)
-        }
-        guard total.weight > 0 else { return nil }
-        let whole = AlbumColor(
-            red: total.red / total.weight,
-            green: total.green / total.weight,
-            blue: total.blue / total.weight
-        )
-        return strips.map { strip in
-            guard strip.weight > 0 else { return legible(whole) }
+        let ends = halves.map { half -> AlbumColor? in
+            guard half.weight > 0 else { return nil }
             return legible(AlbumColor(
-                red: strip.red / strip.weight,
-                green: strip.green / strip.weight,
-                blue: strip.blue / strip.weight
+                red: half.red / half.weight,
+                green: half.green / half.weight,
+                blue: half.blue / half.weight
             ))
+        }
+        guard let left = ends[0] ?? ends[1], let right = ends[1] ?? ends[0] else { return nil }
+        return blend(from: left, to: right, count: count)
+    }
+
+    /// `count` colors stepping evenly from `start` to `end`, both included.
+    ///
+    /// **In hue, saturation and brightness, the short way round the hue circle** — not in RGB,
+    /// where the midpoint of a red and a green is a muddy brown and the row would dip through a
+    /// color neither end has. A gray end (no saturation) has no hue worth keeping, so it borrows
+    /// the other end's and the row fades in saturation alone; two gray ends give a row of grays.
+    static func blend(from start: AlbumColor, to end: AlbumColor, count: Int) -> [AlbumColor] {
+        guard count > 1 else { return count == 1 ? [start] : [] }
+        var a = hsb(start)
+        var b = hsb(end)
+        if a.saturation == 0 { a.hue = b.hue }
+        if b.saturation == 0 { b.hue = a.hue }
+        var hueDelta = b.hue - a.hue
+        if hueDelta > 0.5 { hueDelta -= 1 }
+        if hueDelta < -0.5 { hueDelta += 1 }
+        return (0..<count).map { index in
+            let t = Double(index) / Double(count - 1)
+            var hue = a.hue + hueDelta * t
+            if hue < 0 { hue += 1 }
+            if hue >= 1 { hue -= 1 }
+            return rgb(
+                hue: hue,
+                saturation: a.saturation + (b.saturation - a.saturation) * t,
+                brightness: a.brightness + (b.brightness - a.brightness) * t
+            )
         }
     }
 }

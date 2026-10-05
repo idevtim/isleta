@@ -236,6 +236,15 @@ Every pixel Isleta draws, and every curve it moves along.
   spread is a division by zero that SwiftUI draws as no bars at all — so it is a pure function with
   its own suite.
 
+  **`WeatherTemperatureScale`** colors the bars the way Weather.app does: a fixed scale of absolute
+  temperatures in Celsius (blue at freezing, green when it's mild, yellow into orange and red as it
+  gets hot), so the color says what the week is like and the position says how a day compares with
+  it. Each segment runs from the color of its own low to the color of its own high, and today's
+  carries a white mark at the current temperature. The precipitation chance is in rain blue, and the
+  condition glyphs are drawn `.multicolor` in their `.fill` form where SF Symbols has one. The
+  gradient is a `LinearGradient` view clipped to the segment, never a gradient-filled shape —
+  `docs/TRAPS.md` has why.
+
   **Which nothing decides the words.** A refused calendar and a genuinely free afternoon return
   byte-identical results from every EventKit call there is, so the empty state's sentence comes from
   `CalendarAccess` and never from `events.isEmpty` — and the "Allow…" button appears only in

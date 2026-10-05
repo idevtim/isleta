@@ -550,7 +550,7 @@ public final class NowPlayingController {
     /// case where a color off an arbitrary image is the wrong answer.
     public private(set) var albumColor: AlbumColor?
 
-    /// The cover read left to right, one color per equaliser bar — see `barColors(increaseContrast:)`.
+    /// The cover read left to right as a gradient, one color per equaliser bar — see `barColors(increaseContrast:)`.
     /// Set and cleared with `albumColor`, on the same transaction.
     private(set) var barPalette: [AlbumColor]?
 
@@ -586,9 +586,11 @@ public final class NowPlayingController {
     /// runs the way the cover does. The version before this leaned the single accent across the
     /// bars, dimmest at the leading end — which put a direction on the row that had nothing to do
     /// with the record, and on a black-and-white sleeve gave six shades of a hue the sleeve did not
-    /// have. Reading only the middle of the cover, and lifting each bar through
+    /// have. Reading only the middle of the cover, and lifting each end through
     /// `AlbumColor.legible(_:)`, is what keeps this from being the rainbow an edge-to-edge read was:
-    /// borders and type are out of it, and a near-gray strip stays gray.
+    /// borders and type are out of it, and a near-gray half stays gray. **And it is one gradient,
+    /// not six readings:** the left and right halves give the two ends and the bars step evenly
+    /// between them, because a bar per strip made neighbouring bars jump between unrelated colors.
     ///
     /// Read once per cover in `setArtwork(_:reduceMotion:)` and stored, because unlike the lean it
     /// replaced it needs the image; cleared by `reset()` with `albumColor`.

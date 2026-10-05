@@ -68,8 +68,16 @@ public enum GlanceWeatherLayout {
     /// for "-10°" rather than for "8°" — a Mac in Fahrenheit in January is the wide case.
     public static let temperatureColumnWidth: CGFloat = 30
 
-    /// The bar between the low and the high.
-    public static let rangeBarHeight: CGFloat = 3
+    /// The bar between the low and the high. Four points rather than three since it carries the
+    /// temperature colors — a three-point line of orange reads as a hairline with a tint.
+    public static let rangeBarHeight: CGFloat = 4
+
+    /// The current temperature's mark on today's bar, and the dark ring that separates it from a
+    /// bar of the same lightness. Larger than the bar, as Weather.app draws it, so it reads as a
+    /// point on the line rather than a gap in it.
+    public static let currentMarkDiameter: CGFloat = 6
+
+    public static let currentMarkRing: CGFloat = 1.5
 
     public static let rangeBarSpacing: CGFloat = 6
 
@@ -167,6 +175,26 @@ public enum WeatherRangeBar {
         return (clampedStart, min(length, 1 - clampedStart))
     }
 
+    /// Where the current temperature sits on today's bar, 0…1 — kept inside today's own segment.
+    ///
+    /// Clamped to the segment rather than to the bar because the two can disagree: the current
+    /// reading and the daily forecast are separate answers from the service, and an afternoon that
+    /// has run a degree past the forecast high would otherwise put the mark on bare track, off the
+    /// day it belongs to.
+    public static func currentPosition(
+        _ current: Double,
+        within segment: (start: Double, length: Double),
+        coldest: Double,
+        warmest: Double
+    ) -> Double {
+        let span = warmest - coldest
+        let raw = span > 0 ? (current - coldest) / span : 0.5
+        let lower = segment.start
+        let upper = segment.start + segment.length
+        guard raw.isFinite else { return lower + segment.length / 2 }
+        return min(max(raw, lower), upper)
+    }
+
     /// The coldest low and the warmest high across the days on screen, or nil for no days.
     ///
     /// Taken across what is *drawn* rather than across what was fetched, so the bars answer the
@@ -177,5 +205,99 @@ public enum WeatherRangeBar {
         let highs = days.map { Double(WeatherFormat.rounded($0.highCelsius, unit: unit)) }
         guard let coldest = lows.min(), let warmest = highs.max() else { return nil }
         return (coldest, warmest)
+    }
+}
+
+/// The color a temperature is drawn in, on the forecast's range bars.
+///
+/// **A fixed scale of absolute temperatures, not the week's own spread.** Weather.app draws a
+/// tropical week in yellows and oranges and a January one in blues, and that is the information the
+/// color carries that the bar's position cannot: position says how a day compares with the rest of
+/// *this* week, color says what the week is like at all. A scale stretched to the week would paint
+/// every week blue-to-red and say nothing.
+///
+/// Stops are in Celsius, whatever the reader's unit, because the scale is a fact about the weather
+/// and not about the numbers printed beside it; the bar's ends are converted back to Celsius before
+/// they are looked up. Colors are sRGB components rather than `Color` so a nonisolated test can
+/// read them — the reason `WeatherFormat` is an `enum`.
+public enum WeatherTemperatureScale {
+
+    public struct RGB: Equatable, Sendable {
+        public let red: Double
+        public let green: Double
+        public let blue: Double
+
+        public init(_ red: Double, _ green: Double, _ blue: Double) {
+            self.red = red
+            self.green = green
+            self.blue = blue
+        }
+    }
+
+    public struct Stop: Equatable, Sendable {
+        public let celsius: Double
+        public let color: RGB
+    }
+
+    /// Cold to hot, coldest first. Matched by eye against Weather.app on macOS 27 with a week of
+    /// 23–31 °C on screen (yellow into orange), and placed so that a mild day is green and a
+    /// freezing one is blue — every stop is bright enough for 11pt white type to sit beside it.
+    public static let stops: [Stop] = [
+        Stop(celsius: -15, color: RGB(0.55, 0.45, 0.98)),
+        Stop(celsius: 0, color: RGB(0.29, 0.62, 0.99)),
+        Stop(celsius: 9, color: RGB(0.33, 0.82, 0.86)),
+        Stop(celsius: 16, color: RGB(0.55, 0.85, 0.38)),
+        Stop(celsius: 22, color: RGB(0.99, 0.78, 0.22)),
+        Stop(celsius: 30, color: RGB(0.97, 0.52, 0.16)),
+        Stop(celsius: 37, color: RGB(0.93, 0.29, 0.21)),
+    ]
+
+    /// The color at one temperature: interpolated between the two stops either side, and the end
+    /// stop's own color past either end of the scale.
+    public static func color(atCelsius celsius: Double) -> RGB {
+        guard let first = stops.first, let last = stops.last else { return RGB(1, 1, 1) }
+        guard celsius.isFinite else { return first.color }
+        if celsius <= first.celsius { return first.color }
+        if celsius >= last.celsius { return last.color }
+        for (lower, upper) in zip(stops, stops.dropFirst()) where celsius <= upper.celsius {
+            let t = (celsius - lower.celsius) / (upper.celsius - lower.celsius)
+            return RGB(
+                lower.color.red + (upper.color.red - lower.color.red) * t,
+                lower.color.green + (upper.color.green - lower.color.green) * t,
+                lower.color.blue + (upper.color.blue - lower.color.blue) * t
+            )
+        }
+        return last.color
+    }
+
+    /// The gradient across one bar whose ends are `coldest` and `warmest` °C, as locations 0…1.
+    ///
+    /// The ends are looked up exactly and every scale stop strictly between them is carried at its
+    /// own location, so a bar spanning a stop bends where the scale does rather than drawing a
+    /// straight line between two colors that skips the green in the middle. Locations always rise
+    /// and always lie in 0…1 — what `Gradient` requires of them — and a bar with no spread is one
+    /// color drawn twice.
+    public static func gradient(coldest: Double, warmest: Double) -> [(location: Double, color: RGB)] {
+        let low = min(coldest, warmest)
+        let high = max(coldest, warmest)
+        guard high > low else {
+            let color = color(atCelsius: low)
+            return [(0, color), (1, color)]
+        }
+        var result: [(location: Double, color: RGB)] = [(0, color(atCelsius: low))]
+        for stop in stops where stop.celsius > low && stop.celsius < high {
+            result.append(((stop.celsius - low) / (high - low), stop.color))
+        }
+        result.append((1, color(atCelsius: high)))
+        return result
+    }
+
+    /// A temperature drawn in `unit`, back in Celsius — for the bar's ends, which are taken in the
+    /// unit the rows are printed in.
+    public static func celsius(_ value: Double, from unit: TemperatureUnit) -> Double {
+        switch unit {
+        case .celsius: value
+        case .fahrenheit: (value - 32) * 5 / 9
+        }
     }
 }

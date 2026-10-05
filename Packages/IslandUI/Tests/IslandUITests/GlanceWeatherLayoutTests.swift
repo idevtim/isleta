@@ -195,3 +195,81 @@ struct GlanceWeatherSetupTests {
         #expect(glance.weatherNeedsPlace)
     }
 }
+
+/// The colors on the range bars, and the current temperature's mark on today's.
+@Suite("The forecast's temperature colors")
+struct WeatherTemperatureScaleTests {
+
+    @Test("a temperature on a stop is that stop's color, and past either end is the end's")
+    func stopsAndEnds() {
+        for stop in WeatherTemperatureScale.stops {
+            #expect(WeatherTemperatureScale.color(atCelsius: stop.celsius) == stop.color)
+        }
+        let first = WeatherTemperatureScale.stops[0]
+        let last = WeatherTemperatureScale.stops[WeatherTemperatureScale.stops.count - 1]
+        #expect(WeatherTemperatureScale.color(atCelsius: first.celsius - 40) == first.color)
+        #expect(WeatherTemperatureScale.color(atCelsius: last.celsius + 40) == last.color)
+        #expect(WeatherTemperatureScale.color(atCelsius: .nan) == first.color)
+    }
+
+    @Test("the scale runs cold to hot, and a hot week is warmer in color than a cold one")
+    func theScaleIsOrdered() {
+        let celsius = WeatherTemperatureScale.stops.map(\.celsius)
+        #expect(celsius == celsius.sorted())
+        // Red rises and blue falls from a freezing day to a hot one — the whole of what a reader
+        // takes from the color without reading a number.
+        let freezing = WeatherTemperatureScale.color(atCelsius: -5)
+        let hot = WeatherTemperatureScale.color(atCelsius: 32)
+        #expect(hot.red > freezing.red)
+        #expect(hot.blue < freezing.blue)
+    }
+
+    @Test("a bar's gradient starts and ends at its own temperatures, with stops inside in order")
+    func gradientsAreWellFormed() {
+        let stops = WeatherTemperatureScale.gradient(coldest: 5, warmest: 31)
+        #expect(stops.first?.location == 0)
+        #expect(stops.last?.location == 1)
+        #expect(stops.first?.color == WeatherTemperatureScale.color(atCelsius: 5))
+        #expect(stops.last?.color == WeatherTemperatureScale.color(atCelsius: 31))
+        let locations = stops.map(\.location)
+        #expect(locations == locations.sorted())
+        #expect(locations.allSatisfy { (0...1).contains($0) })
+        // 9, 16, 22 and 30 lie strictly inside 5…31 and are carried at their own places, so the bar
+        // bends through green rather than drawing straight from blue to orange.
+        #expect(stops.count == 6)
+    }
+
+    @Test("a bar with no spread is one color, and reversed ends are taken in order")
+    func degenerateGradients() {
+        let flat = WeatherTemperatureScale.gradient(coldest: 20, warmest: 20)
+        #expect(flat.count == 2)
+        #expect(flat[0].color == flat[1].color)
+
+        let reversed = WeatherTemperatureScale.gradient(coldest: 31, warmest: 5)
+        #expect(reversed.map(\.location) == WeatherTemperatureScale.gradient(coldest: 5, warmest: 31).map(\.location))
+    }
+
+    @Test("Fahrenheit ends are converted back before they are colored")
+    func fahrenheitConvertsToCelsius() {
+        #expect(WeatherTemperatureScale.celsius(32, from: .fahrenheit) == 0)
+        #expect(abs(WeatherTemperatureScale.celsius(87, from: .fahrenheit) - 30.5556) < 0.001)
+        #expect(WeatherTemperatureScale.celsius(12, from: .celsius) == 12)
+    }
+
+    @Test("the current temperature's mark sits where it is, inside today's segment")
+    func currentMarkIsPlacedAndClamped() {
+        let segment = WeatherRangeBar.segment(low: 2, high: 8, coldest: 0, warmest: 10)
+        let inside = WeatherRangeBar.currentPosition(5, within: segment, coldest: 0, warmest: 10)
+        #expect(abs(inside - 0.5) < 0.0001)
+
+        // An afternoon past the forecast high stays on the day's own bar rather than bare track.
+        let over = WeatherRangeBar.currentPosition(9.5, within: segment, coldest: 0, warmest: 10)
+        #expect(abs(over - 0.8) < 0.0001)
+        let under = WeatherRangeBar.currentPosition(-3, within: segment, coldest: 0, warmest: 10)
+        #expect(abs(under - 0.2) < 0.0001)
+
+        // A week with no spread puts it in the middle of the full bar, not at NaN.
+        let flat = WeatherRangeBar.currentPosition(4, within: (0, 1), coldest: 4, warmest: 4)
+        #expect(flat == 0.5)
+    }
+}

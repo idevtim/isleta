@@ -189,6 +189,51 @@ struct AlbumColorTests {
         }
     }
 
+    /// The bug 2.4.1 shipped: a bar per strip of a detailed cover gave neighbours unrelated
+    /// colors. Every step along the row is now the same size, so it reads as one gradient.
+    @Test("the row steps evenly from one end to the other")
+    func theRowIsAGradient() throws {
+        let image = try #require(Self.leftRightImage())
+        let row = try #require(AlbumColor.row(from: image))
+        let hsb = row.map(AlbumColor.hsb)
+        var steps: [Double] = []
+        for (a, b) in zip(hsb, hsb.dropFirst()) {
+            var delta = b.hue - a.hue
+            if delta > 0.5 { delta -= 1 }
+            if delta < -0.5 { delta += 1 }
+            steps.append(delta)
+        }
+        let first = try #require(steps.first)
+        for step in steps { #expect(abs(step - first) < 0.01) }
+    }
+
+    @Test("the blend goes the short way round the hue circle and keeps both ends")
+    func blendTakesTheShortArc() {
+        // Red-magenta (hue 0.95) to red-orange (0.05): through red, not through green.
+        let start = AlbumColor.rgb(hue: 0.95, saturation: 0.8, brightness: 0.9)
+        let end = AlbumColor.rgb(hue: 0.05, saturation: 0.8, brightness: 0.9)
+        let row = AlbumColor.blend(from: start, to: end, count: 6)
+        #expect(row.count == 6)
+        #expect(row.first == start)
+        for bar in row {
+            let hue = AlbumColor.hsb(bar).hue
+            #expect(hue > 0.9 || hue < 0.1, "every bar stays near red")
+        }
+        #expect(abs(AlbumColor.hsb(row[5]).hue - 0.05) < 0.001)
+    }
+
+    @Test("a gray end borrows the other end's hue rather than sweeping through red")
+    func grayEndKeepsTheOtherHue() {
+        let gray = AlbumColor(red: 0.7, green: 0.7, blue: 0.7)
+        let blue = AlbumColor.rgb(hue: 0.6, saturation: 0.7, brightness: 0.9)
+        let row = AlbumColor.blend(from: gray, to: blue, count: 6)
+        for bar in row.dropFirst() {
+            #expect(abs(AlbumColor.hsb(bar).hue - 0.6) < 0.001)
+        }
+        #expect(AlbumColor.blend(from: gray, to: gray, count: 1) == [gray])
+        #expect(AlbumColor.blend(from: gray, to: blue, count: 0).isEmpty)
+    }
+
     @Test("a transparent cover gives no row, and a row of no bars is no row")
     func noRow() throws {
         let clear = try #require(Self.flatImage(red: 0, green: 0, blue: 0, alpha: 0))
