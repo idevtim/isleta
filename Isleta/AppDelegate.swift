@@ -290,6 +290,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// canceled by anything that makes it wrong.
     private var pendingReturn: Task<Void, Never>?
 
+    /// Which notification is asking for the return — the two need different proof. See
+    /// `scheduleReturn(after:)`.
+    private enum ScreenReturnSignal {
+        /// `com.apple.screenIsUnlocked`: somebody authenticated, and that is the whole answer.
+        case unlock
+        /// `NSWorkspace.screensDidWakeNotification`: the displays are lit, which may be the lock
+        /// screen appearing rather than the desktop.
+        case wake
+    }
+
     /// How long the island waits after the screen comes back before springing out of the notch.
     ///
     /// Long enough to let loginwindow finish dissolving its shield, so the island arrives *onto* the
@@ -438,6 +448,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.refreshDebugInfo()
         }
         controller.onHoverChanged = { [weak self] screen, hovering in
+            // First, so a return that was missed is made before the hover is answered — otherwise
+            // the peek below plays on an island still held at nothing. See `returnIfStranded`.
+            if hovering { self?.returnIfStranded() }
             // A pin's eight seconds runs from the last interaction, not from the swipe (§5), and
             // the pointer arriving on the island is an interaction. Free when nothing is pinned.
             self?.activities.noteInteraction()
@@ -3213,7 +3226,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ) { [weak self] _ in
                 MainActor.assumeIsolated {
                     SystemOSDSuppressor.screenLockDidChange(locked: false)
-                    self?.scheduleReturn()
+                    self?.scheduleReturn(after: .unlock)
                 }
             }
         )
@@ -3232,7 +3245,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
-                MainActor.assumeIsolated { self?.scheduleReturn() }
+                MainActor.assumeIsolated { self?.scheduleReturn(after: .wake) }
             }
         )
     }
@@ -3304,9 +3317,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// possibly minutes later. `ScreenLock.isLocked` is what separates the two, and getting it wrong
     /// costs the whole animation — the island would spring out of the notch under the shield, unseen,
     /// and be sitting there flatly by the time the user was actually let in.
-    private func scheduleReturn() {
+    ///
+    /// **An unlock is a return, and is not asked again.** `ScreenLock` is consulted for the wake
+    /// only. Until 2.5.1 both paths asked it, and `com.apple.screenIsUnlocked` is delivered *before*
+    /// the session dictionary catches up: measured on macOS 27.0, 2026-10-06, the key read `1` at
+    /// delivery and was gone 10 ms later, so the answer depended on how long the main queue took to
+    /// reach the observer. When it lost, nothing asked again — a lock and unlock with the displays
+    /// awake throughout has no wake to follow — and the return was dropped for good: `isScreenAway`
+    /// stuck true, the island held at `reentry` 0, hover tapping on an island with nothing drawn
+    /// and every click landing on nothing. It happened twice in one morning of ordinary use.
+    /// `LockScreenController` already trusted the notification alone; now both halves of the lock
+    /// do. `returnIfStranded` is the net under any signal that is missed some other way.
+    private func scheduleReturn(after signal: ScreenReturnSignal) {
         guard isScreenAway else { return }
-        guard !ScreenLock.isLocked else { return }
+        if signal == .wake, ScreenLock.isLocked { return }
 
         pendingReturn?.cancel()
         // A one-shot `Task.sleep`, not a `Timer` and not a poll (§9): one exists for the length of
@@ -3352,6 +3376,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             controller.refreshHover(forScreen: screen.id)
         }
         openIslandsAfterReturn()
+    }
+
+    /// Brings the islands back if the pointer has reached one while the screen is still marked away
+    /// and no return is on its way.
+    ///
+    /// The return hangs on one of two notifications, and an island whose return was never scheduled
+    /// has no third chance: it sits at `reentry` 0 indefinitely, tapping on hover over a notch with
+    /// nothing in it. A pointer arriving is evidence no notification can be — on the lock screen
+    /// loginwindow captures every event, so a hover that reaches the panel at all is the user at
+    /// their own desktop. Skipped while a return is pending, because that is the shield still
+    /// dissolving and the delay is the point; and while `ScreenLock` says locked, in case any hover
+    /// does slip past the shield.
+    private func returnIfStranded() {
+        guard isScreenAway, pendingReturn == nil, !ScreenLock.isLocked else { return }
+        IslandLog.system.info("pointer reached the island with the screen still marked away — returning")
+        bringIslandsBack()
     }
 
     /// Opens the islands for a greeting that arrived while the screen was still somebody else's.

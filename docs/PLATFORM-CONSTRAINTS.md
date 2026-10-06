@@ -5,7 +5,7 @@ Verified on macOS 27.0 — what each system API actually does, and which ones re
 Extracted from `CLAUDE.md`, which now carries the map rather than the record.
 
 <details>
-<summary>Topics in this file (58)</summary>
+<summary>Topics in this file (59)</summary>
 
 - No public notch API
 - No ActivityKit on macOS — and the framework is in the macOS SDK, which is what makes this worth a line
@@ -47,6 +47,7 @@ Extracted from `CLAUDE.md`, which now carries the map rather than the record.
 - Shuffle and repeat cannot be read back *from MediaRemote*, and on a radio station they cannot be set — by anyone
 - After a skip the player names the new track before it has the cover
 - The AppleScript fallback is push, not poll
+- `com.apple.screenIsUnlocked` arrives before `CGSSessionScreenIsLocked` clears, so checking one against the other drops the unlock
 - `CGShieldingWindowLevel()` is not the lock screen's level, and `+ 1` on it is sixteen levels *below* the thing it is trying to beat
 - `SLSSetWindowLevel` returns `kCGErrorFailure` (1000) and does nothing — and the first attempt to measure that was unfalsifiable
 - `canBecomeVisibleWithoutLogin` is about *before login*, which a locked screen is not
@@ -739,6 +740,16 @@ Never invent a symbol.
   And `tell application "Music"` **launches Music** — AppleScript specifiers are launch-on-demand, so
   the naive read opens a music app on a silent machine at every login; guard on
   `NSWorkspace.runningApplications`.
+- **`com.apple.screenIsUnlocked` arrives before `CGSSessionScreenIsLocked` clears, so checking one
+  against the other drops the unlock.** Measured 2026-10-06 on macOS 27.0 with a probe observing the
+  notification and reading the session dictionary at delivery and after: the key read **`1` at
+  delivery** and was **absent 10 ms later** (and at every later sample, to 2 s). The lock is the
+  other way round and consistent — the key is already `1` when `com.apple.screenIsLocked` arrives.
+  So a handler that asks "is it really unlocked?" gets a coin flip decided by main-queue latency,
+  and it lost in use twice in one morning: Isleta 2.5.0 held the island off screen until relaunch,
+  with hover still tapping and nothing to click. **The notification is the answer; the key is only
+  for disambiguating a display wake**, which on a password-protected Mac may be the lock screen
+  appearing. See `AppDelegate.scheduleReturn(after:)`.
 - **`CGShieldingWindowLevel()` is not the lock screen's level, and `+ 1` on it is sixteen levels
   *below* the thing it is trying to beat.** Measured 2026-08-23.
   It returns **2147483628** and belongs to `CGDisplayCapture` — its header says "the shield window
