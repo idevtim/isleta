@@ -378,9 +378,10 @@ struct NowPlayingQueueSurfaceTests {
 
     @Test("the rate reads as a setting rather than a measurement")
     func rateText() {
-        #expect(NowPlayingRateFormat.text(1.5) == "1.5×")
+        let separator = Locale.current.decimalSeparator ?? "."
+        #expect(NowPlayingRateFormat.text(1.5) == "1\(separator)5×")
         #expect(NowPlayingRateFormat.text(2) == "2×")
-        #expect(NowPlayingRateFormat.text(0.75) == "0.75×")
+        #expect(NowPlayingRateFormat.text(0.75) == "0\(separator)75×")
     }
 
     @Test("VoiceOver hears the position and the track, and hears the current one named")

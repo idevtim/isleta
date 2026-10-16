@@ -238,6 +238,20 @@ public final class IslandScreenModel {
     public private(set) var isHovering = false
     public private(set) var isExpanded = false
 
+    /// A menu conflict retracts only the unattended island; explicit hover/open always wins.
+    public private(set) var menuBarNeedsSpace = false
+
+    public var isRetractedForMenuBar: Bool {
+        notchKind == .hardware && menuBarNeedsSpace && !isHovering && !isExpanded
+    }
+
+    public func setMenuBarNeedsSpace(
+        _ needsSpace: Bool, reduceMotion: Bool,
+        completion: @escaping @MainActor () -> Void = {}
+    ) {
+        apply(menuBarNeedsSpace: needsSpace, reduceMotion: reduceMotion, completion: completion)
+    }
+
     /// How far a swipe in progress has displaced the content (§5). Its own object, deliberately —
     /// see `IslandSwipeModel` for why it is not an input like the two above.
     public let swipe = IslandSwipeModel()
@@ -790,14 +804,14 @@ public final class IslandScreenModel {
     /// False while stowed, which is what makes the island narrow back to the bare cutout: the flanks
     /// are the only reason it is wider than the hole, so taking their content away is the same thing
     /// as putting the island back.
-    public var hasFlankContent: Bool { !isStowed && Self.hasFlankContent(in: stage) }
+    public var hasFlankContent: Bool { !isStowed && !isRetractedForMenuBar && Self.hasFlankContent(in: stage) }
 
     /// How wide the slivers are — the flank axis of the island's shape.
     ///
     /// `.none` while stowed, for `hasFlankContent`'s reason: the flanks are the only thing making the
     /// island wider than the hole, so putting the content away is the same thing as putting the
     /// island back.
-    public var flanks: IslandFlanks { isStowed ? .none : Self.flanks(in: stage) }
+    public var flanks: IslandFlanks { isStowed || isRetractedForMenuBar ? .none : Self.flanks(in: stage) }
 
     /// The same question asked of a stage the model has not adopted yet, so the app shell can tell
     /// whether an incoming activity is about to move the island's outline — and therefore whether
@@ -910,14 +924,19 @@ public final class IslandScreenModel {
     /// The island's shape key: the presentation plus whether it is carrying flank content. Derived
     /// from all three inputs at once, for the same reason `presentation` is derived from two.
     public var form: IslandForm {
-        IslandForm.resolve(
-            isHovering: isHovering,
-            isExpanded: isExpanded,
-            flanks: flanks,
+        resolvedForm(hovering: isHovering, expanded: isExpanded,
+                     hoveringArtwork: isHoveringArtwork, menuBarNeedsSpace: menuBarNeedsSpace)
+    }
+
+    private func resolvedForm(
+        hovering: Bool, expanded: Bool, hoveringArtwork: Bool, menuBarNeedsSpace: Bool
+    ) -> IslandForm {
+        if notchKind == .hardware && menuBarNeedsSpace && !hovering && !expanded { return .rest }
+        return IslandForm.resolve(
+            isHovering: hovering, isExpanded: expanded,
+            flanks: isStowed ? .none : Self.flanks(in: stage),
             hasPageIndicator: hasPageIndicator,
-            // Both halves, never just the pointer: the shape must not grow for a strip that would
-            // be drawn empty. See `trackLipContent`.
-            showsTrackLip: isHoveringArtwork && trackLipContent != nil
+            showsTrackLip: hoveringArtwork && trackLipContent != nil
         )
     }
 
@@ -1042,6 +1061,7 @@ public final class IslandScreenModel {
     /// superset over transparent pixels is one the window server never routes to us in the first
     /// place, so the cost of being generous here is nothing.
     public var hitRegionMetrics: IslandShapeMetrics {
+        if isRetractedForMenuBar { return metrics }
         guard stage?.primary.kind.reboundsAtItsLimits == true else { return metrics }
         var widened = metrics
         widened.bodySize.width += 2 * IslandLayout.limitBounceDistance
@@ -1900,11 +1920,13 @@ public final class IslandScreenModel {
         hovering: Bool? = nil,
         expanded: Bool? = nil,
         hoveringArtwork: Bool? = nil,
+        menuBarNeedsSpace: Bool? = nil,
         reduceMotion: Bool,
         completion: @escaping @MainActor () -> Void
     ) {
         let newHovering = hovering ?? isHovering
         let newExpanded = expanded ?? isExpanded
+        let newMenuBarNeedsSpace = menuBarNeedsSpace ?? self.menuBarNeedsSpace
         let newHoveringArtwork = hoveringArtwork ?? isHoveringArtwork
         let before = presentation
         let after = IslandPresentation.resolve(isHovering: newHovering, isExpanded: newExpanded)
@@ -1920,18 +1942,16 @@ public final class IslandScreenModel {
         // early return on it — assigning the state outside any transaction, so the island snaps to
         // its new size with nothing to watch.
         let beforeForm = form
-        let afterForm = IslandForm.resolve(
-            isHovering: newHovering,
-            isExpanded: newExpanded,
-            flanks: flanks,
-            hasPageIndicator: hasPageIndicator,
-            showsTrackLip: newHoveringArtwork && trackLipContent != nil
+        let afterForm = resolvedForm(
+            hovering: newHovering, expanded: newExpanded,
+            hoveringArtwork: newHoveringArtwork, menuBarNeedsSpace: newMenuBarNeedsSpace
         )
 
         guard beforeForm != afterForm else {
             isHovering = newHovering
             isExpanded = newExpanded
             isHoveringArtwork = newHoveringArtwork
+            self.menuBarNeedsSpace = newMenuBarNeedsSpace
             completion()
             return
         }
@@ -1967,6 +1987,7 @@ public final class IslandScreenModel {
             isHovering = newHovering
             isExpanded = newExpanded
             isHoveringArtwork = newHoveringArtwork
+            self.menuBarNeedsSpace = newMenuBarNeedsSpace
         } completion: {
             completion()
         }
