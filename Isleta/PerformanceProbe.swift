@@ -92,7 +92,8 @@ enum DiagnosticsReport {
         controller: IslandController,
         diagnostics: Diagnostics,
         sources: SourceReport = .none,
-        window: TimeInterval? = nil
+        window: TimeInterval? = nil,
+        menuBar: String? = nil
     ) -> String {
         // Version and build, read from the bundle rather than written here — this string said
         // "Milestone 0" for four milestones. The **build** number appears in this report and
@@ -124,6 +125,11 @@ enum DiagnosticsReport {
         lines.append("  log file        \(IslandLog.status), level \(IslandLog.minimumLevel.label.trimmingCharacters(in: .whitespaces).lowercased())")
 
         lines.append("")
+        if let menuBar {
+            lines.append("Menu clearance")
+            lines.append("  \(menuBar)")
+            lines.append("")
+        }
         lines.append("Sources (§10: authorization is read live, never cached at launch)")
         if sources.isDisabled {
             lines.append("  not started — --no-sources, or the first frame has not composited yet")

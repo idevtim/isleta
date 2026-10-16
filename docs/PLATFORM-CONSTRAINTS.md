@@ -1188,3 +1188,47 @@ in the tree.
   Neither is in the public `NSWindow` interface, so it is declared rather than overridden and the
   runtime binds it; if a future macOS stops consulting it nothing is called and the material falls
   back to the frost it had before. `LockScreenPanel.hasKeyAppearance` is the shipping use.
+
+## Application menu geometry — macOS 26.0.1, 2026-10-16
+
+The installed HIServices SDK declares `AXMenuBar`, `AXChildren`, `AXPosition`, `AXSize` and AX
+observers. Position and size are generally read-only; reading them is not a supported mechanism
+for reorganizing a different application's menus. A local process without Accessibility returned
+`apiDisabled` (-25211) for `AXMenuBar`. The same read-only probe saw a 1512×982 display, a 32pt top
+safe area and auxiliary areas ending at x=663 and starting at x=848: the physical cutout is 185pt.
+The geometry reader bounds IPC and uses no idle polling. Pending reads, missing permission and
+read failures preserve the last confirmed shape; they are not evidence that a menu overlaps.
+The initial state is the ordinary island width. This supersedes the earlier conservative
+retraction policy, which caused a narrow/wide pulse on every app switch. Authorized geometry was
+validated from a trusted LaunchServices build as described below. App-defined dynamic menus may
+omit AX layout hints; activation, focused-window changes and opening Isleta's settings
+or status menu offer further refresh points.
+
+### Menu clearance requires the running build's grant
+
+On macOS 26.0.1, a LaunchServices-launched Debug copy reported `AXIsProcessTrusted() == false`
+and a refused media-key event tap. Its on-disk designated requirement was a cdhash. The original
+conservative menu fallback had masked that refusal by retracting on unknown snapshots. Preserving
+the previous shape removed the fallback motion and exposed the fact that menu geometry had never
+been readable by that build. Unit tests of rectangle intersection cannot establish Accessibility.
+
+The local Debug build can be signed with an available Apple Development certificate without a
+provisioning profile, using Debug entitlements only. Deep signature verification passed; its
+designated requirement uses the signing certificate/team and identifier rather than the cdhash.
+This does not transfer or grant Accessibility. The user must authorize and relaunch the newly
+signed app before the menu-reading branch can be verified. `Tools/check.sh` supports an ignored
+per-checkout signing identity so future checks do not silently replace that signature with ad hoc.
+
+A later LaunchServices launch of the certificate-signed build still reported no Accessibility
+grant while System Settings displayed its Isleta toggle as on. The system `tccd` log explicitly
+reported `Failed to match existing code requirement` for Accessibility, comparing the old ad-hoc
+cdhash with the new certificate requirement. A visible enabled row is therefore not evidence of
+effective access. Reset only this app's Accessibility entry with the owner's consent, then have
+the owner add/enable the exact signed bundle again; do not reset other applications or services.
+
+After that scoped reset and the owner's re-grant, a rebuilt/re-signed LaunchServices copy read
+seven real menu rectangles and retained its 265×32pt ordinary body. Activating Chrome through its
+address field yielded eleven real menu rectangles and a 185×32pt body/shape, exactly the physical
+notch. The same build retained effective Accessibility across the rebuild. This validates the authorized geometry-to-retraction path on this hardware, rather than
+merely an AX observer registration. App-specific dynamic menu notifications remain a separate
+compatibility question; no polling was added to compensate for unsupported hints.

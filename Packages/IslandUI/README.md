@@ -561,3 +561,12 @@ testing: the content slides under a stationary island outline, so the panel's al
 server's event shape and `islandPath` are all exactly as they were. That is also why the offset is
 its own object rather than a property on `IslandScreenModel` — everything on that model is an input
 to the island's *shape*, and this deliberately is not.
+
+## Keeping application menus visible
+
+The shell supplies `menuBarNeedsSpace`. On a hardware notch, `IslandScreenModel` resolves an
+unattended conflicting island to the bare cutout. Hover or an explicit open reveals it again;
+leaving/closing retracts it while the conflict remains. This input never changes `isStowed`, the
+activity stage, playback or the user's page. Geometry, content-follow and hit testing use the same
+resolved form. A retracted HUD cannot lean beyond the physical cutout. Synthesized islands retain
+their existing behavior. No permissions or system reads enter IslandUI.

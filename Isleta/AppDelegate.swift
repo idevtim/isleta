@@ -16,6 +16,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var controller: IslandController?
     private var models: [CGDirectDisplayID: IslandScreenModel] = [:]
+    private let menuBarMonitor = MenuBarMonitor()
+    private var menuBarItems: [CGRect]?
 
     /// One coordinator for the whole app, not one per screen.
     ///
@@ -450,6 +452,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.controller = controller
         controller.onScreensChanged = { [weak self] screens in
             self?.pruneModels(keeping: screens)
+            self?.refreshMenuBarAvoidance()
+            self?.menuBarMonitor.refresh()
             self?.refreshDebugInfo()
         }
         controller.onHoverChanged = { [weak self] screen, hovering in
@@ -901,6 +905,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSEvent.removeMonitor(outsideClickMonitor)
             self.outsideClickMonitor = nil
         }
+        menuBarMonitor.stop()
         hotKeys.unregisterAll()
         pendingReturn?.cancel()
         pendingReturn = nil
@@ -1030,6 +1035,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // close: the return that is already scheduled clears it. See
         // `IslandScreenModel.isHeldOffScreen`.
         if isScreenAway { model.collapseIntoNotch() }
+        model.setMenuBarNeedsSpace(menuBarNeedsSpace(on: screen), reduceMotion: true)
         models[screen.id] = model
 
         // The shelf is app-wide, so it goes in the environment rather than through the per-screen
@@ -1170,7 +1176,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     controller: controller,
                     diagnostics: self.diagnostics,
                     sources: self.sourceReport,
-                    window: seconds
+                    window: seconds,
+                    menuBar: self.menuBarMonitor.diagnosticSummary
                 ))
                 NSApp.terminate(nil)
             }
@@ -2958,6 +2965,7 @@ long Isleta has been running, and a typed city always gets its weather.
     /// island being drawn for the length of the morph — clicks on the flanks reach us and get
     /// dropped on the floor, which is the failure `IslandHitTestView` is written around.
     private func activityChanged(_ change: ActivityChange) {
+        defer { refreshMenuBarAvoidance() }
         guard let controller else { return }
         let stage = activities.stage
         let presentations = stage?.primary.presentations
@@ -3296,6 +3304,28 @@ long Isleta has been running, and a typed city always gets its weather.
             return
         }
         controller?.setSuppressed(hidden.contains(frontmost))
+    }
+
+    /// Compare the full unattended width, never the already-retracted model width, to avoid
+    /// oscillating between "fits" and "overlaps". Rect conversion uses the primary display origin.
+    private func menuBarNeedsSpace(on screen: IslandScreen) -> Bool {
+        let form = IslandForm(presentation: .rest, flanks: IslandScreenModel.flanks(in: activities.stage))
+        let width = IslandLayout.metrics(for: form, on: screen, sizing: islandSizing).bodySize.width
+        return MenuBarAvoidance.needsSpace(
+            items: menuBarItems, on: screen, closedWidth: width,
+            desktopTop: NSScreen.screens.first?.frame.maxY ?? screen.frame.maxY,
+            wasRetracted: models[screen.id]?.menuBarNeedsSpace ?? false
+        )
+    }
+
+    private func refreshMenuBarAvoidance() {
+        for screen in controller?.screens ?? [] {
+            let needsSpace = menuBarNeedsSpace(on: screen)
+            guard let model = models[screen.id], model.menuBarNeedsSpace != needsSpace else { continue }
+            transition(on: screen) { model, reduceMotion, completion in
+                model.setMenuBarNeedsSpace(needsSpace, reduceMotion: reduceMotion, completion: completion)
+            }
+        }
     }
 
     // MARK: - The screen stopping being the user's
@@ -3680,6 +3710,10 @@ long Isleta has been running, and a typed city always gets its weather.
         // Sources first, then the flow. The Accessibility page reads the notification source's
         // authorization, and a hub that does not exist yet reports nothing — the page would open
         // saying Isleta will ask later, on a machine where it could have offered the button.
+        menuBarMonitor.start { [weak self] items in
+            self?.menuBarItems = items
+            self?.refreshMenuBarAvoidance()
+        }
         startSources()
         presentOnboardingIfNeeded()
         // After the first frame, for the same reason the sources are — see `SparkleUpdater.start()`.
@@ -5310,7 +5344,8 @@ long Isleta has been running, and a typed city always gets its weather.
         let text = DiagnosticsReport.text(
             controller: controller,
             diagnostics: diagnostics,
-            sources: sourceReport
+            sources: sourceReport,
+            menuBar: menuBarMonitor.diagnosticSummary
         )
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
@@ -5325,7 +5360,8 @@ long Isleta has been running, and a typed city always gets its weather.
 
     private func runLogExport(to destination: URL?) {
         let report = controller.map {
-            DiagnosticsReport.text(controller: $0, diagnostics: diagnostics, sources: sourceReport)
+            DiagnosticsReport.text(controller: $0, diagnostics: diagnostics, sources: sourceReport,
+                                   menuBar: menuBarMonitor.diagnosticSummary)
         } ?? "no island controller"
         LogExporter.run(diagnostics: report, destination: destination)
     }
@@ -5447,6 +5483,7 @@ extension AppDelegate: NSMenuDelegate {
     }
 
     func menuWillOpen(_ menu: NSMenu) {
+        menuBarMonitor.refresh()
         sources?.refreshAuthorizations()
         // Rebuilt on every open rather than kept in step. Opening the menu is already a
         // user-initiated event, which is what makes reading the world here free of §9's idle

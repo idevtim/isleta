@@ -945,3 +945,20 @@ compact title, which does not grow, so the German ones truncate sooner than the 
 
 Every feature here must be fully usable in the **denied** state, with a clear in-app explanation of
 what each permission unlocks, and no nagging (§10).
+
+## Menu bar geometry
+
+`MenuBarMonitor` reads only the frontmost application's top-level menu item rectangles through
+Accessibility. AX IPC runs on a serial utility queue with per-element timeouts and a bounded scan;
+activation, display/space changes and coalesced AX hints trigger reads. There is no idle timer,
+permission prompt, title collection or menu modification. Stale results from another foreground
+application are discarded. Missing permission or an unreadable tree publishes an unknown snapshot;
+the shell retains the last confirmed shape until a successful read proves a collision or clearance.
+An unverified first launch leaves the island at its ordinary width. `MenuBarAvoidance` converts AX
+y-down coordinates into the display layout and compares the full unattended island width, with a
+4pt clearance. It does not manage other applications' menus or status icons.
+
+`MenuBarMonitor.diagnosticSummary` distinguishes missing Accessibility from a successful menu
+read, reporting only permission state and item count. Authorization changes are logged once.
+An unknown snapshot cannot prove that the bar is clear or overlapping; local Debug copies need
+stable signing and their own user grant before this source can read other applications' menus.
