@@ -2,7 +2,8 @@ import CoreLocation
 import Foundation
 import IslandActivities
 import IslandKit
-import MapKit
+// The macOS 26.1 SDK predates Sendable annotations on the async geocoding response.
+@preconcurrency import MapKit
 
 /// Where the weather should be asked about.
 ///

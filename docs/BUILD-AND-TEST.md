@@ -213,3 +213,12 @@ attaches one are replayed in order. Quit drains the sink synchronously, for the 
 Entry point is `IsletaMain.swift`, not `@main` on the delegate: `@main` on an
 `NSApplicationDelegate` resolves to `NSApplicationMain`, which finds its delegate in the main nib —
 Isleta has no nib, so the delegate was never set and `applicationDidFinishLaunching` never ran.
+
+### Swift 6.2.1 / macOS 26.1 SDK compatibility
+
+The older SDK lacks Sendable annotations on MapKit's async geocoding response;
+`WeatherPlaceResolver` imports MapKit with `@preconcurrency`. In `FileActionRunner`, each main-queue
+hop re-captures weak self instead of transferring the outer closure's weak storage across repeated
+loop iterations. The media-key test also separates the expected `Double` from its `#expect`
+expression to avoid this compiler's type-checking timeout. These are build compatibility changes,
+not changes to file conversion, weather, or media-key behavior.
