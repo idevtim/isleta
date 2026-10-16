@@ -213,3 +213,29 @@ attaches one are replayed in order. Quit drains the sink synchronously, for the 
 Entry point is `IsletaMain.swift`, not `@main` on the delegate: `@main` on an
 `NSApplicationDelegate` resolves to `NSApplicationMain`, which finds its delegate in the main nib —
 Isleta has no nib, so the delegate was never set and `applicationDidFinishLaunching` never ran.
+
+## Audio source validation
+
+`ISLETA_TEST_AUDIO_CALLBACKS=1` includes the real CoreAudio start/stop check, with silent output.
+`ISLETA_TEST_AUDIO_RENDER=1` writes populated and empty audio-page renders under `/tmp/isleta-audio-*`.
+Both are opt-in for machines with a display/audio service; the normal pure tests need neither.
+
+`ISLETA_TEST_AUDIO_SCROLL=1` enables the native audio-list routing regression. It sends phased
+scroll events through a nonactivating panel with real source rows, checks that a horizontal swipe
+reaches the page tracker and that a vertical swipe scrolls the list, and confirms the panel never
+becomes key. `AudioPageSettingsTests` cover schema-28 persistence and menu checkmarks;
+`AudioPageVisibilityTests` cover removal, restoration and hiding the current page.
+
+The opt-in `AudioApplicationCallbackTests` also stop the monitor during actual silent output,
+requiring teardown within one second and no later delivered snapshots. A LaunchServices launch
+must reach its diagnostics and exit: package tests alone cannot expose a missing Hardened Runtime
+Automation entitlement blocking the audio page's initial permission check on the main thread.
+
+### Swift 6.2.1 / macOS 26.1 SDK compatibility
+
+The older SDK lacks Sendable annotations on MapKit's async geocoding response;
+`WeatherPlaceResolver` imports MapKit with `@preconcurrency`. In `FileActionRunner`, each main-queue
+hop re-captures weak self instead of transferring the outer closure's weak storage across repeated
+loop iterations. The media-key test also separates the expected `Double` from its `#expect`
+expression to avoid this compiler's type-checking timeout. These are build compatibility changes,
+not changes to file conversion, weather, or media-key behavior.

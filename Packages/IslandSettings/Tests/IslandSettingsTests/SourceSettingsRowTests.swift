@@ -111,6 +111,7 @@ struct SourceSettingsRowTests {
         for option in row.options {
             #expect(option.toggle != master)
             var configuration = IsletaConfiguration()
+            configuration.sources.systemHUDs = true
             configuration[keyPath: option.toggle] = false
             // The master is untouched, so the source still runs and reports what is left.
             #expect(configuration.sources[row.kind])

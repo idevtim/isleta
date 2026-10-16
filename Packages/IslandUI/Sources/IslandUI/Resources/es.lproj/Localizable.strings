@@ -157,3 +157,11 @@
 "update.install" = "Instalar actualización…";
 "update.install.a11y" = "Instalar la actualización";
 "update.install.help" = "Cierra la isla y abre la ventana de actualización, donde puedes instalarla y reiniciar Isleta.";
+
+// Audio sources
+"page.audio" = "Fuentes de audio";
+"audioSources.empty" = "No se detectaron fuentes de audio";
+"audioSources.open" = "Abrir aplicación";
+"audioSources.active" = "Activa";
+"audioSources.paused" = "En pausa";
+"audioSources.inactive" = "Inactiva";

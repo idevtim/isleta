@@ -111,7 +111,8 @@ public final class NowPlayingAdapterProvider: NowPlayingProvider {
                 // the pipe's ordering survives the hop.
                 DispatchQueue.main.async {
                     MainActor.assumeIsolated {
-                        self?.onUpdate?(update)
+                        guard let self, self.reader != nil, self.retirementReason == nil else { return }
+                        self.onUpdate?(update)
                     }
                 }
             },
@@ -122,7 +123,8 @@ public final class NowPlayingAdapterProvider: NowPlayingProvider {
                 // visible result is a list that briefly names the previous track's successors.
                 DispatchQueue.main.async {
                     MainActor.assumeIsolated {
-                        self?.onQueue?(items)
+                        guard let self, self.reader != nil, self.retirementReason == nil else { return }
+                        self.onQueue?(items)
                     }
                 }
             },

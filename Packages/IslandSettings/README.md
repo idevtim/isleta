@@ -470,3 +470,18 @@ load-bearing:
 
 `--onboarding [page]` opens it on a named page and `--onboarding-reset` puts the ledger back, because
 the flow is otherwise something you get one look at per machine.
+
+## Native system feedback
+
+Schema 27 defaults `sources.systemHUDs`, `suppressSystemHUDs` and `suppressBrightnessHUD` to false,
+including when migrating existing installations. This keeps automatic brightness adjustments out of
+the island and leaves manual brightness, volume and mute feedback to macOS. The existing controls
+remain available for an explicit opt-in; disabling the source or an individual level also disables
+its replacement key path, so an invisible source cannot suppress the native HUD.
+
+## Audio sources page visibility
+
+Schema 28 adds `showsAudioSourcesPage`, true by default for new and upgraded configurations.
+The Sources pane's Pages card and the checked Show Audio Sources Page item in both Isleta menus
+edit the same persisted value. Hiding the page changes navigation only. The menu toggle remains
+available when the page is hidden or the audio source has no current applications.

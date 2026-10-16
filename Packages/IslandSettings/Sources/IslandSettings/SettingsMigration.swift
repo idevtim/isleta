@@ -106,6 +106,8 @@ public enum SettingsMigration {
         if version < 23 { migrateV22ToV23(&object) }
         if version < 25 { migrateV24ToV25(&object) }
         if version < 26 { migrateV25ToV26(&object) }
+        if version < 27 { migrateV26ToV27(&object) }
+        if version < 28 { removeNonBooleans(["showsAudioSourcesPage"], from: &object) }
 
         object["schemaVersion"] = IsletaConfiguration.currentSchemaVersion
         return object
@@ -759,6 +761,16 @@ public enum SettingsMigration {
               CFGetTypeID(card as CFTypeRef) == CFBooleanGetTypeID()
         else { return }
         object["playsUnlockSound"] = card
+    }
+
+    /// Native level HUDs become the default for existing installations as well. Disable the
+    /// source itself so an automatic brightness ramp cannot publish an island activity.
+    static func migrateV26ToV27(_ object: inout [String: Any]) {
+        object["suppressSystemHUDs"] = nil
+        object["suppressBrightnessHUD"] = nil
+        var sources = object["sources"] as? [String: Any] ?? [:]
+        sources["systemHUDs"] = false
+        object["sources"] = sources
     }
 
     static func migrateV21ToV22(_ object: inout [String: Any]) {

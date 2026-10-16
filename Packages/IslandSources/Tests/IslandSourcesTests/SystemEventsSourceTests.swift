@@ -192,7 +192,7 @@ struct SystemEventsSourceTests {
         // `ContinuousClock`, which knows nothing about mornings; the phrasing comes off the wall
         // clock, which cannot be trusted to measure an absence across a wake-time resync.
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "America/New_York")!
+        calendar.timeZone = .current
         var components = DateComponents()
         components.year = 2026
         components.month = 8

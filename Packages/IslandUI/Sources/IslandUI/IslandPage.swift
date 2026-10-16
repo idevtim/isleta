@@ -51,6 +51,9 @@ public enum IslandPage: String, CaseIterable, Sendable {
     /// The full player: artwork, the scrubber, the transport.
     case music
 
+    /// All detected audio applications, including paused sessions.
+    case audio
+
     /// The forecast.
     case weather
 
@@ -59,6 +62,7 @@ public enum IslandPage: String, CaseIterable, Sendable {
         switch self {
         case .home: islandText("page.home", "Today")
         case .music: islandText("page.music", "Music")
+        case .audio: islandText("page.audio", "Audio sources")
         case .weather: islandText("page.weather", "Weather")
         }
     }
@@ -214,6 +218,7 @@ public final class IslandPageModel {
     /// un-wired preview of the island a two-page carousel, which is a fact about the wiring rather
     /// than about the Mac.
     @ObservationIgnored private var musicHasTrack = true
+    @ObservationIgnored private var audioSourcesPageVisible = true
 
     /// The page a closing island will come back to.
     ///
@@ -300,12 +305,28 @@ public final class IslandPageModel {
         refreshRoster()
     }
 
+    /// An explicit hide takes effect immediately. The shell defers this while a swipe is moving.
+    public func setAudioSourcesPageVisible(_ visible: Bool) {
+        guard audioSourcesPageVisible != visible else { return }
+        audioSourcesPageVisible = visible
+        if !visible, rememberedPage == .audio { rememberedPage = .home }
+        if !visible, current == .audio {
+            arrive(at: .home)
+        } else {
+            refreshRoster()
+        }
+    }
+
     /// Whether a page would be on the carousel if nobody were standing on it.
     ///
     /// The question `refreshRoster()` asks of every page and `reset()` asks of the remembered one —
     /// two callers, so it is one function rather than a condition written twice.
     private func isAvailable(_ page: IslandPage) -> Bool {
-        page != .music || musicHasTrack
+        switch page {
+        case .music: musicHasTrack
+        case .audio: audioSourcesPageVisible
+        case .home, .weather: true
+        }
     }
 
     /// Rebuilds the roster from what is available **plus the page the user is on**.

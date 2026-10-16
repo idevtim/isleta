@@ -67,6 +67,9 @@ public enum IslandPageHeight {
             )
         case .music:
             nil
+        case .audio:
+            // Header and three source rows, with additional applications scrolling below.
+            AudioApplicationsLayout.contentHeight
         case .weather:
             // A constant: `GlanceWeatherLayout` draws a fixed number of forecast rows whether or not
             // the service answered with that many, so a reading landing while the page is open

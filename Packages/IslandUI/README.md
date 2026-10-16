@@ -509,11 +509,29 @@ would otherwise answer `.compact` and draw the activity's badge in the same rect
 contradict `flankedHeightGrowth` being zero: that rule is about a strip hanging under the notch *at
 rest*, and this one is under the pointer and gone when the pointer is.
 
+## Audio sources page
+
+The carousel now runs home → music → audio → weather. Audio sources stays reachable even while the
+music page is unavailable. `AudioApplicationsModel` holds injected application rows and an open
+callback; the page performs no system I/O. Rows show observed active, explicitly paused or inactive
+state, and open the owning app through the shell. The list scrolls within a fixed 224pt body below the cutout, with room for the header and three
+source rows. No close or global play/pause action is offered.
+
+The Audio sources list uses the island's existing scroll route instead of an enabled native
+scroller. `AudioApplicationsModel` locks the gesture axis on its first moving sample: vertical
+movement and momentum scroll the bounded list; horizontal movement continues to the page carousel.
+`AudioApplicationsLayout` supplies the fixed row and viewport extents to both the model and view.
+The disabled native `ScrollView` clips the lazy rows and follows the model's scroll position.
+
+The shell supplies the persisted audio-page visibility preference. Hiding a page removes its dot
+and swipe destination; hiding the currently viewed audio page returns to Today. Roster changes
+wait until a live page swipe settles. Hiding the page does not alter audio monitoring or playback.
+
 ## The pages, and what is on the carousel
 
-`IslandPage` is the fixed enum of surfaces a person can browse — `home`, `music`, `weather` —
+`IslandPage` is the fixed enum of surfaces a person can browse — `home`, `music`, `audio`, `weather` —
 and `IslandPageRoster` is the ordered list of the ones a swipe is currently walking. The two are
-not the same list, and since 2.2.0 they differ in one case: **the music page is on the carousel
+not the same list. Audio sources can be hidden explicitly in Settings or the menu; since 2.2.0, **the music page is on the carousel
 only while something is playing.** A page whose answer is "Not playing" is a third of the gesture
 spent on nothing, and it put the forecast two flicks away for somebody who plays no music at all.
 
@@ -524,7 +542,7 @@ the other half.
 Two rules hold the rest of it together, and both live on `IslandPageModel` so no caller can forget
 them:
 
-- **The page you are standing on is always on the roster.** A track ending while the player is open
+- **Automatic music availability keeps the page you are standing on.** A track ending while the player is open
   leaves it where it is; the page goes when the user turns away from it or when the island closes.
   The alternative is the island turning a page by itself because a song finished.
 - **The remembered page is resolved rather than corrected.** Somebody who lives on the player still

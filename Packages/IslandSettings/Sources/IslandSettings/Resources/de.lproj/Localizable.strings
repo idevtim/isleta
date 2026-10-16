@@ -182,3 +182,9 @@
 "sources.systemHUD.replace.caption" = "Isleta beantwortet die Lautstärke- und Stummtasten selbst, sodass macOS seine eigene Anzeige nie zeigt. Benötigt Bedienungshilfen. Beim Beenden von Isleta gehen die Tasten sofort zurück.";
 "sources.systemHUD.replaceBrightness" = "System-Helligkeitsanzeige ersetzen";
 "sources.systemHUD.replaceBrightness.caption" = "Isleta beantwortet die Helligkeitstasten für das eingebaute Display selbst. Benötigt Bedienungshilfen. Beim Beenden von Isleta gehen die Tasten sofort zurück.";
+
+// Audio page visibility
+"pages.title" = "Seiten";
+"pages.audioSources" = "Seite „Audioquellen“ anzeigen";
+"pages.audioSources.caption" = "Audioanwendungen auf den Seiten der Insel anzeigen.";
+"menu.showAudioSourcesPage" = "Seite „Audioquellen“ anzeigen";

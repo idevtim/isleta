@@ -533,6 +533,26 @@ prompt in one and an explanation in the other.
   hover-to-frame budget, so a volume HUD never asks. The answer is reused for one second, which
   covers a burst of notifications and schedules nothing.
 
+## Audio application list
+
+`CoreAudioApplicationMonitor` observes the public HAL process list and each process's output-running
+property. It captures no audio, requests no permission and uses no timer. The shell resolves nested
+browser helper bundles to their owning application. `AudioApplicationState` joins this with Now
+Playing and Music/Spotify state notifications: paused sessions stay visible when another player
+becomes current. Only an explicit player state is labeled paused; inactive IO is labeled inactive.
+An unavailable HAL retains the Now Playing/notification route.
+
+This is one row per application, not a browser-tab inventory. Chrome's scripting dictionary exposes
+no audible/paused property; sessions already paused before observation can be absent. Initial
+Music/Spotify reads use already-granted Automation only. Exiting an app removes its session.
+The initial read's consent check runs on the script worker: even a non-prompting Apple-event
+preflight can block. Hardened builds declare the Automation resource entitlement. HAL callback
+bursts are coalesced before property reads; stopping rejects queued scans before synchronous
+listener removal, so an audio burst cannot make quit drain a backlog of full-list reads.
+`ISLETA_TEST_AUDIO_CALLBACKS=1 swift test --package-path Packages/IslandSources --scratch-path
+.build/spm --filter AudioApplicationCallbackTests` verifies real HAL callbacks using two seconds of
+silent output without touching any existing playback.
+
 ## Will not own
 
 - **Notifications, in every form.** `NotificationSource` shipped via the Accessibility route —

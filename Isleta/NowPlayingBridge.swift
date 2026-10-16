@@ -24,6 +24,7 @@ import IslandUI
 final class NowPlayingBridge {
 
     let controller = NowPlayingController()
+    let audioApplications = AudioApplicationsBridge()
 
     private let source: NowPlayingSource
 
@@ -224,6 +225,7 @@ final class NowPlayingBridge {
         // concern and the package that owns content has no views in it.
         source.onSnapshot = { [weak self] snapshot in
             guard let self else { return }
+            self.audioApplications.update(snapshot)
             let wasPlaying = self.controller.isPlaying
             self.transportCanFavorite = snapshot?.canFavorite ?? false
             self.refreshScriptedFavorite(for: snapshot)
@@ -344,10 +346,12 @@ final class NowPlayingBridge {
     /// idempotent, per the same contract every source in this app follows.
     func startOutputRouting() {
         outputRouting.start()
+        audioApplications.start()
     }
 
     func stopOutputRouting() {
         outputRouting.stop()
+        audioApplications.stop()
     }
 
     /// Asks for a wider queue window as the reader scrolls.

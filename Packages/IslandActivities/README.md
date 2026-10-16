@@ -396,3 +396,7 @@ why a probe that looks a folder up by its source-tree spelling finds nothing. An
 prune a resource you deleted**: after `zh-Hans.lproj` was removed from the source tree,
 `Bundle.module.localizations` went on reporting it until `swift package clean`. A fresh build reports
 exactly `["de", "en", "es", "fr"]`.
+
+`AudioApplication` carries the source page's per-app identity, optional media title and observed
+state. Active IO, an explicit pause and an inactive session are distinct; the value carries no
+commands and opens no application.

@@ -182,3 +182,9 @@
 "sources.systemHUD.replace.caption" = "Isleta répond elle-même aux touches de volume et de sourdine, si bien que macOS n’affiche jamais le sien. Nécessite l’Accessibilité. Quitter Isleta rend les touches immédiatement.";
 "sources.systemHUD.replaceBrightness" = "Remplacer l’indicateur de luminosité du système";
 "sources.systemHUD.replaceBrightness.caption" = "Isleta répond elle-même aux touches de luminosité pour l’écran intégré. Nécessite l’Accessibilité. Quitter Isleta rend les touches immédiatement.";
+
+// Audio page visibility
+"pages.title" = "Pages";
+"pages.audioSources" = "Afficher la page des sources audio";
+"pages.audioSources.caption" = "Inclure les applications audio dans les pages de l’îlot.";
+"menu.showAudioSourcesPage" = "Afficher la page des sources audio";

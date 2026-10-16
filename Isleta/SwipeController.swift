@@ -102,6 +102,7 @@ final class SwipeController {
     /// scrolls the notes and goes no further, and anything else carries on to the carousel.
     private let isShowingUpdateNotes: @MainActor () -> Bool
     private let scrollUpdateNotes: @MainActor (IslandScrollSample) -> Void
+    private let scrollAudioSourcesIfVertical: @MainActor (IslandScrollSample) -> Bool
 
     /// Diagnostics for the debug overlay and the self-test: what the last sample did.
     private(set) var lastOutcome: SwipeTracker.Outcome = .ignored
@@ -127,7 +128,8 @@ final class SwipeController {
         setTurnDirection: @escaping @MainActor (Int) -> Void = { _ in },
         scrollDropHistory: @escaping @MainActor (IslandScrollSample) -> Void = { _ in },
         isShowingUpdateNotes: @escaping @MainActor () -> Bool = { false },
-        scrollUpdateNotes: @escaping @MainActor (IslandScrollSample) -> Void = { _ in }
+        scrollUpdateNotes: @escaping @MainActor (IslandScrollSample) -> Void = { _ in },
+        scrollAudioSourcesIfVertical: @escaping @MainActor (IslandScrollSample) -> Bool = { _ in false }
     ) {
         self.activities = activities
         self.swipeModels = swipeModels
@@ -149,6 +151,7 @@ final class SwipeController {
         self.scrollDropHistory = scrollDropHistory
         self.isShowingUpdateNotes = isShowingUpdateNotes
         self.scrollUpdateNotes = scrollUpdateNotes
+        self.scrollAudioSourcesIfVertical = scrollAudioSourcesIfVertical
     }
 
     func handle(_ sample: IslandScrollSample) {
@@ -216,6 +219,11 @@ final class SwipeController {
            !swipeModels().contains(where: \.isPaging) {
             _ = closeGesture.consume(sample, isExpanded: false)
             scrollUpdateNotes(sample)
+            return
+        }
+
+        if expanded, !swipeModels().contains(where: \.isPaging), scrollAudioSourcesIfVertical(sample) {
+            _ = closeGesture.consume(sample, isExpanded: false)
             return
         }
 

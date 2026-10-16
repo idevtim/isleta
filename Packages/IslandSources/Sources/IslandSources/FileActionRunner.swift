@@ -84,7 +84,7 @@ public final class FileActionRunner {
             // `NowPlayingAdapterReader` keeps, and for the same reason: the decoder's partial-line
             // state must not live somewhere teardown cannot fence against.
             for event in job.consume(data) {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
                     MainActor.assumeIsolated {
                         guard let self, self.jobs[id] != nil else { return }
                         switch event {

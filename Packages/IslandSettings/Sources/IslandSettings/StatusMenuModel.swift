@@ -64,17 +64,20 @@ public enum StatusMenuModel {
         /// the shell passes what it knows. The three rows it gates are the same three
         /// `installStatusItem` gates today.
         public var includesDebugItems: Bool
+        public var showsAudioSourcesPage: Bool
 
         public init(
             sources: SourceToggles = SourceToggles(),
             kindsOnIsland: Set<ActivityKind> = [],
             performableActions: Set<StatusMenuAction> = [],
-            includesDebugItems: Bool = false
+            includesDebugItems: Bool = false,
+            showsAudioSourcesPage: Bool = true
         ) {
             self.sources = sources
             self.kindsOnIsland = kindsOnIsland
             self.performableActions = performableActions
             self.includesDebugItems = includesDebugItems
+            self.showsAudioSourcesPage = showsAudioSourcesPage
         }
     }
 
@@ -90,6 +93,9 @@ public enum StatusMenuModel {
         let groups: [[StatusMenuItem]] = [
             quickActions(for: state).filter(\.isDrawn),
             windowItems(),
+            [StatusMenuItem(action: .toggleAudioSourcesPage,
+                            title: settingsText("menu.showAudioSourcesPage", "Show Audio Sources Page"),
+                            availability: .ready, isChecked: state.showsAudioSourcesPage)],
             diagnosticItems(for: state),
             [quitItem()]
         ]
@@ -383,17 +389,20 @@ public struct StatusMenuItem: Equatable, Sendable, Identifiable {
     /// rule and is gone — nothing dispatches it, and the app it appears to promise to quit is
     /// whichever one the user is actually looking at.
     public let keyEquivalent: KeyEquivalent?
+    public let isChecked: Bool
 
     public init(
         action: StatusMenuAction,
         title: String,
         availability: Availability,
-        keyEquivalent: KeyEquivalent? = nil
+        keyEquivalent: KeyEquivalent? = nil,
+        isChecked: Bool = false
     ) {
         self.action = action
         self.title = title
         self.availability = availability
         self.keyEquivalent = keyEquivalent
+        self.isChecked = isChecked
     }
 
     /// Whether this row appears in the menu at all.
@@ -522,6 +531,9 @@ public enum StatusMenuAction: Hashable, Sendable {
     /// touches a shared record Settings, the migration and the app shell all read, so it belongs
     /// with the Settings rows that bind them rather than smuggled in here.
     case showWeather
+
+    /// Toggle carousel visibility. Settings ▸ Sources offers the same persisted preference.
+    case toggleAudioSourcesPage
 
     case openSettings
     case openSetupGuide
