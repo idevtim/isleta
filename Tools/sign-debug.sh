@@ -40,19 +40,25 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP="${1:-$PROJECT_DIR/.build/xcode/Build/Products/Debug/Isleta.app}"
 TEAM_ID="${APPLE_TEAM_ID:-UA2RJP3TSL}"
-# Override both when building with your own certificate: `APPLE_TEAM_ID` alone is enough if your
-# identity follows Apple's default naming, otherwise set `CODE_SIGN_IDENTITY` to the exact string
-# `security find-identity -v -p codesigning` prints for it.
-IDENTITY="${CODE_SIGN_IDENTITY:-Developer ID Application: Tim Murphy ($TEAM_ID)}"
+# Select a certificate by exact name or SHA-1 with CODE_SIGN_IDENTITY, or store that one line in
+# .build/debug-signing-identity for this checkout. APPLE_TEAM_ID customizes the Developer ID default.
+LOCAL_IDENTITY_FILE="$PROJECT_DIR/.build/debug-signing-identity"
+if [ -n "${CODE_SIGN_IDENTITY:-}" ]; then
+  IDENTITY="$CODE_SIGN_IDENTITY"
+elif [ -s "$LOCAL_IDENTITY_FILE" ]; then
+  IFS= read -r IDENTITY < "$LOCAL_IDENTITY_FILE"
+else
+  IDENTITY="Developer ID Application: Tim Murphy ($TEAM_ID)"
+fi
 ENTITLEMENTS="$PROJECT_DIR/Config/Isleta-Debug.entitlements"
 
 [ -d "$APP" ] || { echo "❌ no app at $APP — build it first"; exit 1; }
-security find-identity -v -p codesigning | grep -q "$TEAM_ID" \
-  || { echo "❌ no codesigning identity for team $TEAM_ID"; exit 1; }
+security find-identity -v -p codesigning | grep -Fq -- "$IDENTITY" \
+  || { echo "❌ the requested codesigning identity is unavailable: $IDENTITY"; exit 1; }
 
 echo "==> signing $(basename "$APP") as $IDENTITY"
 
-sign() { codesign --force --timestamp --options runtime --sign "$IDENTITY" "$@" 2>&1 | sed 's/^/   /'; }
+sign() { codesign --force --timestamp=none --options runtime --sign "$IDENTITY" "$@" 2>&1 | sed 's/^/   /'; }
 
 # Sparkle's nested code, innermost first.
 SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"

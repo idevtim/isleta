@@ -63,3 +63,10 @@ fi
 # `CFBundleLocalizations`, so that language is still offered to a user set to it.
 echo "==> localization (built app)"
 python3 Tools/localization-audit.py --built-app .build/xcode/Build/Products/Debug/Isleta.app
+
+# Optional per-checkout signing keeps local Accessibility grants stable across rebuilds. This
+# ignored file contains one exact certificate name or SHA-1, never a private key or a shell script.
+if [ -s "$PWD/.build/debug-signing-identity" ]; then
+    echo "==> local Debug signing"
+    ./Tools/sign-debug.sh
+fi

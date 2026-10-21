@@ -213,3 +213,43 @@ attaches one are replayed in order. Quit drains the sink synchronously, for the 
 Entry point is `IsletaMain.swift`, not `@main` on the delegate: `@main` on an
 `NSApplicationDelegate` resolves to `NSApplicationMain`, which finds its delegate in the main nib —
 Isleta has no nib, so the delegate was never set and `applicationDidFinishLaunching` never ran.
+
+### Swift 6.2.1 / macOS 26.1 SDK compatibility
+
+The older SDK lacks Sendable annotations on MapKit's async geocoding response;
+`WeatherPlaceResolver` imports MapKit with `@preconcurrency`. In `FileActionRunner`, each main-queue
+hop re-captures weak self instead of transferring the outer closure's weak storage across repeated
+loop iterations. The media-key test also separates the expected `Double` from its `#expect`
+expression to avoid this compiler's type-checking timeout. These are build compatibility changes,
+not changes to file conversion, weather, or media-key behavior.
+
+`ISLETA_TEST_MENU_RENDER=1` enables the offscreen menu-clearance render test. It writes
+`/tmp/isleta-menu-retracted.png` and `/tmp/isleta-menu-hover.png`, and checks that pixels beside the
+physical cutout are transparent at rest and become island pixels on hover. The regular
+`MenuBarRetractionTests` also cover rapid hover reversals, manual stow, incoming activities and
+keyboard/click opening. `MenuBarAvoidanceTests` cover denied permission and arranged displays.
+
+## Stable local signing for permission-dependent development
+
+An optional ignored `.build/debug-signing-identity` file contains one exact certificate name or
+SHA-1 from `security find-identity -v -p codesigning`. When present, `Tools/check.sh` signs its
+finished Debug app with `Tools/sign-debug.sh` after the checks pass. Apple Development and
+Developer ID certificates both work for local testing; all nested code must use the same team.
+The signing helper checks the selected identity itself, rather than assuming the default team's
+certificate. Debug signatures omit the timestamp: this is local test code, not a distributable app.
+
+Switching from an ad-hoc signature to a certificate still requires a new user Accessibility grant
+and a relaunch. Once granted, subsequent `Tools/check.sh` runs in that configured checkout keep
+the certificate-based designated requirement. Bare Xcode builds still use the project's ad-hoc
+Debug configuration and need the helper afterward. No script edits TCC or grants consent.
+
+Exported diagnostics and `--perf-report` now include menu clearance authorization and the last
+successful menu item count. `Accessibility not granted` distinguishes an unreadable menu from a
+known empty one. The monitor logs authorization changes once, without menu titles or repeated
+per-switch permission warnings.
+
+An enabled Accessibility row can still refer to an earlier signature. On macOS 26.0.1, `tccd`
+explicitly rejected the saved ad-hoc requirement after certificate signing while Settings showed
+the switch as on. With the owner's consent, reset only `Accessibility com.tryisleta.isleta`, then
+have them add and enable this checkout's exact signed app. Re-read the app's diagnostics; the
+Settings switch alone is not a verification.

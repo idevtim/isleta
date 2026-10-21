@@ -80,3 +80,16 @@ Load-bearing decisions, in the order they matter:
 - **Coordinate spaces:** `NotchGeometry`/`IslandLayout.panelFrame` are global AppKit y-up;
   `IslandShapeGeometry`, `IslandHitTestView` (`isFlipped`), and SwiftUI are y-down. Convert at the
   boundary, and say which space a rect is in when adding one.
+
+## Application menu clearance
+
+The app shell compares `MenuBarMonitor`'s AX menu rectangles with the island's full unattended
+width, not the already-retracted width (which would alternate between fitting and overlapping).
+AX coordinates are global y-down; `NSScreen.screens.first.frame.maxY` supplies the primary display
+reference for conversion to AppKit y-up, including displays above or below it. Display identities
+remain `CGDirectDisplayID` throughout. A conflict is a presentation input, `menuBarNeedsSpace`,
+separate from manual stow: only hardware islands at rest retract, and hover/open always wins.
+Changes go through the normal widen/animate/tighten path. Pending or failed reads preserve the
+last confirmed shape; only a successful snapshot changes the clearance decision. At launch the
+ordinary width is retained until an overlap is established. The app does not resize or rewrite menus
+owned by other processes.

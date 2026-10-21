@@ -92,6 +92,7 @@ public struct IslandRootView: View {
                 // see `IslandScreenModel.stowReveal` for why this is not `reentry`.
                 .scaleEffect(IslandScreenModel.stowScale(model.stowReveal), anchor: .top)
                 .opacity(IslandScreenModel.stowOpacity(model.stowReveal, isStowed: model.isStowed))
+                .opacity(model.isRetractedForMenuBar ? 0 : 1)
                 .mask(islandMask)
 
             // The shelf (§5, Milestone 3), masked to the same outline for the same reason: content
@@ -452,7 +453,7 @@ public struct IslandRootView: View {
     private var leaningShape: IslandShape {
         IslandShape(
             metrics: model.metrics,
-            lean: model.limitLean,
+            lean: model.isRetractedForMenuBar ? 0 : model.limitLean,
             leansTrailing: model.limitLeansTrailing
         )
     }

@@ -53,7 +53,9 @@ struct ExpandedHeightTests {
             kind: .calendarAlert,
             measure: fake
         )
-        try #expect(#require(short) < #require(long))
+        let shortHeight = try #require(short)
+        let longHeight = try #require(long)
+        #expect(shortHeight < longHeight)
     }
 
     /// The failure this whole change exists to fix, stated as a number: the message is what the
