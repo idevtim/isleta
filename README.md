@@ -11,7 +11,7 @@
 [tryisleta.com](https://tryisleta.com) &nbsp;·&nbsp; [What's new](release-notes/) &nbsp;·&nbsp; [Contributing](CONTRIBUTING.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-2.6.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.7.0-blue.svg)
 ![Platform](https://img.shields.io/badge/macOS-26%2B-lightgrey.svg)
 ![Silicon](https://img.shields.io/badge/silicon-Apple-black.svg)
 ![Price](https://img.shields.io/badge/price-free-brightgreen.svg)
@@ -65,7 +65,8 @@ the invitation. You pick which calendars count.
 Album art on one side of the notch, moving equalizer bars on the other, blending from one of the
 cover's colors to the next across their width.
 Play, pause, skip, shuffle, favorite, and see what's coming **Up Next** — double-click anything in
-the queue to jump to it. Works with Apple Music, Spotify, and anything else that reports to macOS.
+the queue to jump to it. Click the song to see it in Music. Works with Apple Music, Spotify, and
+anything else that reports to macOS.
 
 Long titles scroll once and settle instead of sliding forever. The artwork lends the island its
 color. Track changes crossfade in place, so the island never flickers open and shut. When there is
@@ -166,6 +167,8 @@ taps once under your finger.
 - There's no Dock icon and no window — Isleta lives in the menu bar, and you can hide that icon too
 - Clicking the island never steals focus. No title bar flicker, no lost cursor in the thing you
   were typing
+- It stays out of your menus. When something on the island would cover the menus of the app you're
+  using, it narrows back to the notch until you point at it
 - The first launch walks you through eight short screens. Five are permissions, each explaining
   what it's for *before* it asks. Skip any of them and the rest of Isleta still works
 - You can give it a list of apps to stay out of entirely — handy for full-screen video or a
@@ -220,8 +223,8 @@ press — never at launch.
 | Permission | Needed for | If you decline |
 |---|---|---|
 | **None at all** | Volume, mute and brightness, timers, the shelf, file conversion, transcription, the wake greeting, power, hover, haptics, the shortcut | — |
-| **Accessibility** | Answering the media keys, and replacing Apple's HUD | Apple's HUD comes back alongside Isleta's, and the island stops leaning at the end of a range. The level itself still shows, and the bar still works |
-| **Automation** (Music / Spotify) | A one-shot "what's playing right now?" read at launch | You lose the first track of a session, nothing else |
+| **Accessibility** | Answering the media keys, replacing Apple's HUD, and keeping the island off your app's menus | Apple's HUD comes back alongside Isleta's, the island stops leaning at the end of a range, and it keeps its usual width over the menu bar. The level itself still shows, and the bar still works |
+| **Automation** (Music / Spotify) | A one-shot "what's playing right now?" read at launch, and showing the song in Music when you click it | You lose the first track of a session, and clicking the song just opens Music |
 | **Calendar** | Today's events, meeting links, calendar alerts | Today shows the weather half only |
 | **Location** | Weather where you are | Type a city instead — same weather, no location |
 | **Bluetooth** | Hearing a device connect, so AirPods can say hello | No device ever appears; nothing else changes |
@@ -280,6 +283,8 @@ actually pressed.
 - **The equalizer moves in a set pattern rather than to the song.** Its colors come from the cover;
   its motion doesn't come from the audio.
 - **The hover target is the notch itself** — about 185 points wide, and easy to overshoot.
+- **The island can still cover menu bar icons beside the notch.** It keeps the menus of the app
+  you're using clear, but macOS doesn't tell Isleta where other apps' icons are.
 
 </details>
 
