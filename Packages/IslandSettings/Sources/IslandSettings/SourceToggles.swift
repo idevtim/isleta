@@ -15,9 +15,9 @@ import IslandActivities
 /// `Set` would additionally have to answer "does absence mean off, or mean written by an older
 /// build" — and those are opposite answers.
 ///
-/// **Everything defaults to on.** A source the user has not heard of that is off by default is a
-/// feature they never discover; a source that is on and unpermitted is a source that quietly does
-/// nothing and says so in Settings, which is what §10 asks for.
+/// Content sources default to on and remain quiet until permitted. System level HUDs default
+/// to off since schema 27: macOS already draws those controls, and brightness also changes
+/// automatically without a user action.
 ///
 /// There were two exceptions once. `appSwitcher` went with the switcher itself, and `focusChanges`
 /// is now `respectsFocus` — a *behavior* rather than a source, defaulting to on. Its declaration
@@ -113,7 +113,7 @@ public struct SourceToggles: Equatable, Sendable {
 
     public init(
         nowPlaying: Bool = true,
-        systemHUDs: Bool = true,
+        systemHUDs: Bool = false,
         volumeHUD: Bool = true,
         displayBrightnessHUD: Bool = true,
         welcomeBack: Bool = true,

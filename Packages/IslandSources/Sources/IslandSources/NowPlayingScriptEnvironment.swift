@@ -127,6 +127,10 @@ public final class NowPlayingSystemScriptEnvironment: NowPlayingScriptEnvironmen
     /// Inferring the state by sending an event and reading the error would work and is wrong: the
     /// send *is* the prompt in the undetermined case.
     public func automationStatus(for player: NowPlayingPlayer) -> SourceAuthorization {
+        Self.readAutomationStatus(for: player)
+    }
+
+    private nonisolated static func readAutomationStatus(for player: NowPlayingPlayer) -> SourceAuthorization {
         var target = AEAddressDesc()
         let identifier = Array(player.bundleIdentifier.utf8)
         let created = AECreateDesc(
@@ -227,14 +231,17 @@ public final class NowPlayingSystemScriptEnvironment: NowPlayingScriptEnvironmen
         // Guarded twice on purpose. `isRunning` keeps the event from launching the player, and the
         // authorization check keeps a refused permission from spawning `osascript` once per start()
         // for a result that is known in advance to be an error.
-        guard isRunning(player), automationStatus(for: player) == .granted else {
+        guard isRunning(player) else {
             completion(nil)
             return
         }
 
         let script = player.currentTrackScript
         queue.async {
-            let output = Self.runOSAScript(script)
+            // Measured on macOS 26.0.1: even askUserIfNeeded=false waited indefinitely on the
+            // launch thread in a hardened build missing the Automation entitlement.
+            let output = Self.readAutomationStatus(for: player) == .granted
+                ? Self.runOSAScript(script) : nil
             DispatchQueue.main.async {
                 MainActor.assumeIsolated {
                     // `nil`, not `.cleared`, when the script fails. A failed read means Isleta does
@@ -363,7 +370,7 @@ public final class NowPlayingSystemScriptEnvironment: NowPlayingScriptEnvironmen
     }
 
     /// §10: what the user gains, in their words, naming the exact place they would go.
-    private static func explanation(for player: NowPlayingPlayer) -> String {
+    private nonisolated static func explanation(for player: NowPlayingPlayer) -> String {
         // The player's name is its own — Music, Spotify — and travels as an argument.
         sourceText("nowPlaying.scripting.denied", """
             Isleta shows what’s playing as soon as you next play, pause, or change track. \

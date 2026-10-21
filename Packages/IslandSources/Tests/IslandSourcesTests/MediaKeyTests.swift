@@ -366,7 +366,9 @@ struct VolumeKeyReplacementTests {
     func fineStepWrites() {
         withSource(volume: 0.5) { _, keys, control in
             #expect(keys.press(.volumeUp, fine: true))
-            #expect(abs((control.volumeWrites.first ?? 0) - (0.5 + 1.0 / 64.0)) < 1e-9)
+            let expected: Double = 0.5 + 1.0 / 64.0
+            let difference = abs((control.volumeWrites.first ?? 0) - expected)
+            #expect(difference < 1e-9)
         }
     }
 

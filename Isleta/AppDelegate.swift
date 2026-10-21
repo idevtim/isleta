@@ -60,7 +60,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setTurnDirection: { [weak self] direction in self?.pages.setTurnDirection(direction) },
         scrollDropHistory: { [weak self] sample in self?.dropHistory.scroll(sample) },
         isShowingUpdateNotes: { [weak self] in self?.models.values.contains(where: \.drawsUpdateBody) ?? false },
-        scrollUpdateNotes: { [weak self] sample in self?.updateModel.scroll(sample) }
+        scrollUpdateNotes: { [weak self] sample in self?.updateModel.scroll(sample) },
+        scrollAudioSourcesIfVertical: { [weak self] sample in
+            guard let self, self.pages.current == .audio,
+                  self.models.values.contains(where: \.pagesOwnBody),
+                  let audio = self.nowPlaying?.audioApplications.model else { return false }
+            return audio.scrollIfVertical(sample)
+        }
     )
 
     private let hotKeys = HotKeyMonitor()
@@ -1002,6 +1008,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.settingsWindow.show()
             self?.collapseAll()
         }
+        model.audioApplications = nowPlaying?.audioApplications.model
         model.nowPlaying = nowPlaying?.controller
         model.glance = glance
         model.page = pages
@@ -2543,7 +2550,7 @@ long Isleta has been running, and a typed city always gets its weather.
     /// not the moment it changed — see `refreshMusicPage()`.
     private var musicPageHasTrack = false
 
-    /// Puts the music page on the carousel, or takes it off.
+    /// Applies music availability and the user's audio-page visibility to the carousel.
     ///
     /// **Never while a page is moving.** The roster decides what a swipe's neighbours are and what
     /// its commit steps onto, so a page joining or leaving mid-gesture would land the carousel
@@ -2553,11 +2560,20 @@ long Isleta has been running, and a typed city always gets its weather.
     /// moving. Re-asked from both gestures' completions, which is what makes the deferral a delay
     /// rather than a dropped update.
     ///
-    /// The page the user is *standing on* is never taken away — that rule lives in
-    /// `IslandPageModel.refreshRoster()`, not here, so it cannot be lost by a caller.
+    /// Automatic music availability keeps the current page. Explicitly hiding Audio sources
+    /// instead returns to Today, through the same animated resize as a normal page change.
     private func refreshMusicPage() {
         guard !models.values.contains(where: { $0.swipe.isPaging }) else { return }
         pages.setMusicAvailable(musicPageHasTrack)
+        let visible = settings.configuration.showsAudioSourcesPage
+        if !visible, pages.current == .audio {
+            performPageChange {
+                pages.setAudioSourcesPageVisible(false)
+                return true
+            }
+        } else {
+            pages.setAudioSourcesPageVisible(visible)
+        }
     }
 
     // MARK: - Dragging a page
@@ -4044,6 +4060,7 @@ long Isleta has been running, and a typed city always gets its weather.
             reduceMotion: { [weak self] in self?.accessibility.reduceMotion ?? false }
         )
         bridge.onOpenedPlayer = { [weak self] in self?.collapseAll() }
+        bridge.audioApplications.onOpenedApplication = { [weak self] in self?.collapseAll() }
         bridge.onToggleQueue = { [weak self] in self?.toggleNowPlayingQueue() }
         bridge.onQueueChanged = { [weak self] rows in self?.applyNowPlayingQueue(rows) }
         bridge.onPlayingChanged = { [weak self] isPlaying in
@@ -4077,7 +4094,10 @@ long Isleta has been running, and a typed city always gets its weather.
         // After `apply(isEnabled:)`, which the demo overrides: a run with the setting off would
         // otherwise turn the surfaces on and then immediately tear them down.
         lockScreen.presentDemoIfRequested()
-        for model in models.values { model.nowPlaying = bridge.controller }
+        for model in models.values {
+            model.nowPlaying = bridge.controller
+            model.audioApplications = bridge.audioApplications.model
+        }
         // `--nowplaying-demo` puts a synthetic *playing* track on the stage so the equaliser runs for
         // the whole of a `--perf-report` window.
         //
@@ -5222,6 +5242,7 @@ long Isleta has been running, and a typed city always gets its weather.
     private func apply(_ configuration: IsletaConfiguration) {
         setStatusItemVisible(configuration.showMenuBarIcon)
         updater.setAutomaticallyChecksForUpdates(configuration.automaticUpdateChecks)
+        refreshMusicPage()
 
         // Rebuilt from the controller's screens rather than from the models, because a model does
         // not hold its own `IslandScreen` — the geometry lives in IslandKit and the model holds only
@@ -5475,7 +5496,8 @@ extension AppDelegate: NSMenuDelegate {
             sources: settings.configuration.sources,
             kindsOnIsland: Set(activities.chips.map(\.kind)),
             performableActions: performable,
-            includesDebugItems: includesDebugItems
+            includesDebugItems: includesDebugItems,
+            showsAudioSourcesPage: settings.configuration.showsAudioSourcesPage
         )
     }
 
@@ -5501,6 +5523,7 @@ extension AppDelegate: NSMenuDelegate {
                 }
                 row.subtitle = item.subtitle
                 row.isEnabled = item.isEnabled
+                row.state = item.isChecked ? .on : .off
                 row.target = self
                 row.representedObject = item.action
                 menu.addItem(row)
@@ -5557,6 +5580,8 @@ extension AppDelegate: NSMenuDelegate {
         // see `IslandScreenModel.drawsPages` — and the glance row passes nothing for the same
         // reason.
         case .showWeather: openIsland(on: .weather)
+        case .toggleAudioSourcesPage:
+            settings.update { $0.showsAudioSourcesPage.toggle() }
         case .openSettings: openSettings()
         case .openSetupGuide: openOnboarding()
         case .exportLogs: exportLogs()

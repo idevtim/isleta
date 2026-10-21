@@ -182,3 +182,9 @@
 "sources.systemHUD.replace.caption" = "Isleta responde ella misma a las teclas de volumen y silencio, así que macOS nunca muestra el suyo. Necesita Accesibilidad. Al salir de Isleta las teclas vuelven de inmediato.";
 "sources.systemHUD.replaceBrightness" = "Sustituir el indicador de brillo del sistema";
 "sources.systemHUD.replaceBrightness.caption" = "Isleta responde ella misma a las teclas de brillo de la pantalla integrada. Necesita Accesibilidad. Al salir de Isleta las teclas vuelven de inmediato.";
+
+// Audio page visibility
+"pages.title" = "Páginas";
+"pages.audioSources" = "Mostrar la página de fuentes de audio";
+"pages.audioSources.caption" = "Incluir las aplicaciones de audio en las páginas de la isla.";
+"menu.showAudioSourcesPage" = "Mostrar página de fuentes de audio";

@@ -95,29 +95,22 @@ struct MigrationTests {
         #expect(decoded.suppressSystemHUDs == IsletaConfiguration.defaults.suppressSystemHUDs)
     }
 
-    /// **The default itself, reversed on 2026-09-07 and pinned here so it cannot drift back
-    /// silently.** Both switches ship on; nothing is suppressed until Accessibility is granted, which
-    /// is where the consent now lives — `SourceHub` is what gates it, and the first run is what asks.
-    @Test("both HUD switches ship on")
-    func suppressionIsOnByDefault() {
-        #expect(IsletaConfiguration.defaults.suppressSystemHUDs)
-        #expect(IsletaConfiguration.defaults.suppressBrightnessHUD)
+    /// Native system feedback is the default; the island's optional replacement starts off.
+    @Test("native system HUDs remain enabled by default")
+    func suppressionIsOffByDefault() {
+        #expect(!IsletaConfiguration.defaults.suppressSystemHUDs)
+        #expect(!IsletaConfiguration.defaults.suppressBrightnessHUD)
     }
 
-    /// **An existing install lands on the new default rather than keeping the old one.**
-    ///
-    /// A blob written under schema 24 carries an explicit `false` for both switches — the old
-    /// default, written out by the encoder whether or not a hand ever set it. Schema 25 clears both
-    /// keys so the decoder falls back. If this fails, the reversal reaches new installs only and
-    /// every existing user keeps Apple's HUDs with nothing saying why.
+    /// Older replacement settings are cleared, then schema 27 restores native system feedback.
     @Test("the v24 to v25 step puts an existing install on the new default")
     func v25ClearsBothHUDKeys() throws {
         let json = """
         {"schemaVersion":24,"suppressSystemHUDs":false,"suppressBrightnessHUD":false}
         """
         let decoded = try SettingsMigration.decode(Data(json.utf8))
-        #expect(decoded.suppressSystemHUDs)
-        #expect(decoded.suppressBrightnessHUD)
+        #expect(!decoded.suppressSystemHUDs)
+        #expect(!decoded.suppressBrightnessHUD)
 
         // And on the raw object, which is the only place the cleared keys are visible at all.
         let migrated = SettingsMigration.migrate([
@@ -238,7 +231,7 @@ struct MigrationTests {
             {"schemaVersion":13,"sources":{"systemHUDs":\(stored)}}
             """
             let decoded = try SettingsMigration.decode(Data(json.utf8))
-            #expect(decoded.sources.systemHUDs == stored)
+            #expect(!decoded.sources.systemHUDs)
             #expect(decoded.sources.enabledHUDs == Set(SystemHUD.allCases))
         }
     }

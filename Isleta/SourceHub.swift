@@ -249,8 +249,10 @@ final class SourceHub {
         // would swallow no keys and suppress no HUD while the settings switch claimed otherwise.
         // Read live rather than cached: the user can grant it from the first-run flow's own page,
         // and the next `apply` after they come back picks it up.
-        systemHUD.replacesVolumeKeys = configuration.suppressSystemHUDs && AXIsProcessTrusted()
-        systemHUD.replacesBrightnessKeys = configuration.suppressBrightnessHUD && AXIsProcessTrusted()
+        systemHUD.replacesVolumeKeys = configuration.sources.systemHUDs && configuration.sources.volumeHUD
+            && configuration.suppressSystemHUDs && AXIsProcessTrusted()
+        systemHUD.replacesBrightnessKeys = configuration.sources.systemHUDs && configuration.sources.displayBrightnessHUD
+            && configuration.suppressBrightnessHUD && AXIsProcessTrusted()
 
         // The Focus gate is a behavior rather than a source, so it is not in the loop below — there
         // is nothing to start or stop, only a question to stop asking. Assigned on every apply for

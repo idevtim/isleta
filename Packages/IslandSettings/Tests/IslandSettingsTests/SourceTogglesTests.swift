@@ -9,11 +9,11 @@ import Testing
 @Suite("Source toggles")
 struct SourceTogglesTests {
 
-    @Test("every source ships on")
+    @Test("content sources ship on and duplicate system HUDs ship off")
     func defaultsAreOn() {
         let toggles = SourceToggles()
         #expect(toggles.nowPlaying)
-        #expect(toggles.systemHUDs)
+        #expect(!toggles.systemHUDs)
         #expect(toggles.welcomeBack)
     }
 
@@ -65,8 +65,8 @@ struct SourceTogglesTests {
         var toggles = SourceToggles()
         toggles.volumeHUD = false
         toggles.displayBrightnessHUD = false
-        #expect(toggles.systemHUDs)
-        #expect(toggles[.systemHUD])
+        #expect(!toggles.systemHUDs)
+        #expect(!toggles[.systemHUD])
         #expect(toggles.enabledHUDs.isEmpty)
     }
 
@@ -136,7 +136,7 @@ struct SourceTogglesTests {
         let toggles = try JSONDecoder().decode(SourceToggles.self, from: Data(json.utf8))
         #expect(toggles.nowPlaying == false)
         #expect(toggles.timers == false)
-        #expect(toggles.systemHUDs)
+        #expect(!toggles.systemHUDs)
         #expect(toggles.welcomeBack)
     }
 

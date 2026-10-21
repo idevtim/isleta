@@ -5,16 +5,16 @@ import Testing
 @Suite("Island pages")
 struct IslandPageTests {
 
-    @Test("the pages run home → music → weather")
+    @Test("the pages run home → music → audio → weather")
     func orderIsTheDeclaredOne() {
-        #expect(IslandPage.allCases == [.home, .music, .weather])
+        #expect(IslandPage.allCases == [.home, .music, .audio, .weather])
     }
 
     @Test("two fingers left walks forward and comes back to home")
     func nextWraps() {
         let roster = IslandPageRoster.all
         #expect(roster.next(after: .home) == .music)
-        #expect(roster.next(after: .music) == .weather)
+        #expect(roster.next(after: .music) == .audio)
         #expect(roster.next(after: .weather) == .home)
     }
 
@@ -22,7 +22,7 @@ struct IslandPageTests {
     func previousWraps() {
         let roster = IslandPageRoster.all
         #expect(roster.previous(before: .home) == .weather)
-        #expect(roster.previous(before: .weather) == .music)
+        #expect(roster.previous(before: .weather) == .audio)
         #expect(roster.previous(before: .music) == .home)
     }
 
@@ -45,8 +45,8 @@ struct IslandPageTests {
     func steppingBackFromHome() {
         let roster = IslandPageRoster.all
         #expect(roster.stepped(from: .home, by: -1) == .weather)
-        #expect(roster.stepped(from: .home, by: -3) == .home)
-        #expect(roster.stepped(from: .home, by: -4) == .weather)
+        #expect(roster.stepped(from: .home, by: -4) == .home)
+        #expect(roster.stepped(from: .home, by: -5) == .weather)
     }
 
     @Test("a step of nothing stays put")
@@ -65,7 +65,7 @@ struct IslandPageTests {
         #expect(roster.steps(from: .home, to: .music) == 1)
         #expect(roster.steps(from: .home, to: .weather) == -1)
         #expect(roster.steps(from: .weather, to: .home) == 1)
-        #expect(roster.steps(from: .weather, to: .music) == -1)
+        #expect(roster.steps(from: .weather, to: .music) == 2)
         #expect(roster.steps(from: .music, to: .home) == -1)
     }
 
@@ -233,8 +233,11 @@ struct IslandPageModelTests {
         #expect(model.rememberedPage == .music)
 
         #expect(model.step(by: 1))
+        #expect(model.current == .audio)
+        #expect(model.rememberedPage == .audio)
+        #expect(model.step(by: 1))
         #expect(model.current == .weather)
-        #expect(model.rememberedPage == .music)
+        #expect(model.rememberedPage == .audio)
     }
 
     @Test("paging is allowed by default and can be taken away")
@@ -262,7 +265,7 @@ struct IslandPageRosterTests {
     func silenceHidesMusic() {
         let model = IslandPageModel()
         model.setMusicAvailable(false)
-        #expect(model.roster.pages == [.home, .weather])
+        #expect(model.roster.pages == [.home, .audio, .weather])
     }
 
     @Test("a track starting puts it back")
@@ -273,16 +276,15 @@ struct IslandPageRosterTests {
         #expect(model.roster.pages == IslandPage.allCases)
     }
 
-    /// **The two-page carousel still wraps**, in both directions, and both neighbours of home are
-    /// the weather. That is what a two-page carousel is; the alternative is an end-stop the user
-    /// has to learn.
-    @Test("two pages wrap the way three do")
-    func twoPagesWrap() {
+    @Test("the audio page remains reachable with nothing playing")
+    func silentCarouselIncludesAudio() {
         let model = IslandPageModel()
         model.setMusicAvailable(false)
-        #expect(model.page(steppedBy: 1) == .weather)
+        #expect(model.page(steppedBy: 1) == .audio)
         #expect(model.page(steppedBy: -1) == .weather)
-        #expect(model.page(steppedBy: 2) == .home)
+        #expect(model.page(steppedBy: 3) == .home)
+        #expect(model.step(by: 1))
+        #expect(model.current == .audio)
         #expect(model.step(by: 1))
         #expect(model.current == .weather)
         #expect(model.step(by: 1))
@@ -331,7 +333,7 @@ struct IslandPageRosterTests {
         #expect(model.go(to: .music))
         model.setMusicAvailable(false)
         #expect(model.go(to: .home))
-        #expect(model.roster.pages == [.home, .weather])
+        #expect(model.roster.pages == [.home, .audio, .weather])
     }
 
     /// The memory is kept and *resolved*: somebody who lives on the player still lives there, and
@@ -345,7 +347,7 @@ struct IslandPageRosterTests {
         model.reset()
         #expect(model.current == .home)
         #expect(model.rememberedPage == .music, "the memory is kept, not corrected")
-        #expect(model.roster.pages == [.home, .weather])
+        #expect(model.roster.pages == [.home, .audio, .weather])
 
         // And the next track brings both back.
         model.setMusicAvailable(true)
@@ -401,9 +403,9 @@ struct IslandPagesOverActivityTests {
         let roster = IslandPageRoster.all
         #expect(roster.stepped(fromActivityBy: 1) == .home)
         #expect(roster.stepped(fromActivityBy: 2) == .music)
-        #expect(roster.stepped(fromActivityBy: 3) == .weather)
+        #expect(roster.stepped(fromActivityBy: 3) == .audio)
         #expect(roster.stepped(fromActivityBy: -1) == .weather)
-        #expect(roster.stepped(fromActivityBy: -2) == .music)
+        #expect(roster.stepped(fromActivityBy: -2) == .audio)
     }
 
     @Test("with nothing playing, the music page is skipped")
@@ -411,7 +413,7 @@ struct IslandPagesOverActivityTests {
         let model = IslandPageModel()
         model.setMusicAvailable(false)
         #expect(model.roster.stepped(fromActivityBy: 1) == .home)
-        #expect(model.roster.stepped(fromActivityBy: 2) == .weather)
+        #expect(model.roster.stepped(fromActivityBy: 2) == .audio)
         #expect(model.roster.stepped(fromActivityBy: -1) == .weather)
     }
 
@@ -442,5 +444,44 @@ struct IslandPagesOverActivityTests {
         model.turnFromActivity(to: .home)
         model.uncoverActivity()
         #expect(!model.isCoveringActivity)
+    }
+}
+
+@Suite("Audio page visibility")
+@MainActor
+struct AudioPageVisibilityTests {
+    @Test("hidden audio pages leave the swipe roster and return in their original order")
+    func roster() {
+        let pages = IslandPageModel()
+        pages.setAudioSourcesPageVisible(false)
+        #expect(pages.roster.pages == [.home, .music, .weather])
+        pages.setMusicAvailable(false)
+        #expect(pages.roster.pages == [.home, .weather])
+        #expect(!pages.go(to: .audio))
+        pages.setAudioSourcesPageVisible(true)
+        #expect(pages.roster.pages == [.home, .audio, .weather])
+    }
+
+    @Test("hiding the current audio page returns home and does not reopen a hidden page")
+    func hideCurrent() {
+        let pages = IslandPageModel()
+        #expect(pages.go(to: .audio))
+        pages.setAudioSourcesPageVisible(false)
+        #expect(pages.current == .home)
+        #expect(!pages.roster.contains(.audio))
+        pages.reset()
+        #expect(pages.current == .home)
+        pages.setAudioSourcesPageVisible(true)
+        #expect(pages.current == .home)
+    }
+
+    @Test("hiding audio while reading weather preserves that page and clears hidden-page memory")
+    func hideRemembered() {
+        let pages = IslandPageModel()
+        _ = pages.go(to: .audio)
+        _ = pages.go(to: .weather)
+        pages.setAudioSourcesPageVisible(false)
+        #expect(pages.current == .weather)
+        #expect(pages.pageAfterReset == .home)
     }
 }

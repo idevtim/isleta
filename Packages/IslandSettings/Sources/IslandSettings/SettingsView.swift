@@ -783,6 +783,12 @@ public struct SettingsView: View {
                 }
             }
 
+            SettingsCard(settingsText("pages.title", "Pages")) {
+                SettingsRow(caption: settingsText("pages.audioSources.caption", "Include audio applications in the island’s pages.")) {
+                    Toggle(settingsText("pages.audioSources", "Show Audio sources page"), isOn: binding(\.showsAudioSourcesPage))
+                }
+            }
+
             focusCard
             hiddenApplicationsCard
         }

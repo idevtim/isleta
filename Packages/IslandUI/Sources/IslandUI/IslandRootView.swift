@@ -347,6 +347,8 @@ public struct IslandRootView: View {
             )
         case .music:
             IslandMusicPageView(model: model, content: model.nowPlayingContent, now: now)
+        case .audio:
+            IslandAudioPageView(model: model)
         case .weather:
             GlanceWeatherLayerView(model: model, glance: glance, now: now)
         }

@@ -742,3 +742,12 @@ so a closed island and a peek have none, and the view is **absent** there rather
 behind-window blur is work the window server does on our behalf and it does not stop because a layer
 above is at zero opacity, and §9's idle budget is measured on a closed island, which is the state
 Isleta is in essentially always.
+
+## Audio list gestures
+
+The audio page's `ScrollView` is disabled for native gesture handling, as the other island lists
+are. The panel receives the complete sequence even when it begins over a source row. Vertical
+sequences, including momentum, move the bounded audio list; horizontal sequences continue to the
+carousel. The first moving sample locks the axis until the gesture/momentum ends, so diagonal
+noise cannot turn a list scroll into a page turn or a page turn into a list scroll. A vertical
+sample consumed by audio resets the close recognizer instead of closing the island.

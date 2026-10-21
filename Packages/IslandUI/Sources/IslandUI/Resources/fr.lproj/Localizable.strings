@@ -157,3 +157,11 @@
 "update.install" = "Installer la mise à jour…";
 "update.install.a11y" = "Installer la mise à jour";
 "update.install.help" = "Ferme l’îlot et ouvre la fenêtre de mise à jour, où vous pouvez l’installer et redémarrer Isleta.";
+
+// Audio sources
+"page.audio" = "Sources audio";
+"audioSources.empty" = "Aucune source audio détectée";
+"audioSources.open" = "Ouvrir l’application";
+"audioSources.active" = "Active";
+"audioSources.paused" = "En pause";
+"audioSources.inactive" = "Inactive";

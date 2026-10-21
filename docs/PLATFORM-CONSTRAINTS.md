@@ -4,6 +4,53 @@ Verified on macOS 27.0 — what each system API actually does, and which ones re
 
 Extracted from `CLAUDE.md`, which now carries the map rather than the record.
 
+## Audio applications — macOS 26.0.1, 2026-10-16
+
+The installed CoreAudio SDK declares `kAudioHardwarePropertyProcessObjectList`,
+`kAudioProcessPropertyPID` and `kAudioProcessPropertyIsRunningOutput`. A controlled two-second silent
+`afplay` changed the process list from 41 idle clients to 42, with one active output. A sandboxed
+probe returned zero clients despite `noErr`; the same probe outside the sandbox found the real list.
+Isleta ships without App Sandbox. The process list includes inactive and input clients, so only
+observed output adds an unknown app; inactive IO does not prove media is paused.
+
+The installed Chrome scripting dictionary exposes tab id, title, URL and active-tab index, but no
+per-tab audible or paused-media property. The audio page therefore opens the owning application;
+it does not identify or close a browser tab. Paused browser sessions need prior observation, and
+multiple tabs in one app share a row. Music/Spotify notifications independently retain explicit
+paused state. Initial scripted reads require an existing Automation grant and never prompt at launch.
+
+System level HUDs are optional since schema 27. The source and both replacement flags default off
+and migrate off together: native macOS HUDs own manual volume/brightness feedback, while automatic
+brightness changes produce no island activity under the default configuration. The earlier API
+measurements above remain historical evidence, not a statement of current default behavior.
+
+The callback control matters: `IsRunningOutput` reads the right value but produced no notification
+for the silent `afplay` on this OS. `IsRunning` did notify. The monitor listens to both and re-reads
+the output flag on either signal. Its live integration test then observed both output start and
+stop in 2.53 seconds; the same test with only `IsRunningOutput` failed despite seeing the process
+appear. The process-list registration alone is not an activity-state signal.
+
+Browser ownership needs an executable-path fallback as well as `NSRunningApplication.bundleURL`.
+The installed Chrome exposed three process clients: the application-only lookup resolved two;
+`proc_pidpath` plus containment in the running browser bundle resolved all three. The SDK macro
+`PROC_PIDPATHINFO_MAXSIZE` is not imported in Swift 6.2.1; its header definition is `4 * MAXPATHLEN`.
+No bundle-name guessing is used to identify the owning app.
+
+### Startup and teardown
+
+On the same Mac, `sample` found the LaunchServices-launched, hardened Debug app's main thread in
+`AudioApplicationsBridge.start` → `automationStatus` → `AEDeterminePermissionToAutomateTarget`
+with `askUserIfNeeded=false`, still waiting five minutes after launch. `tccd` explicitly reported
+that `com.apple.security.automation.apple-events` was missing. Both entitlement files now declare
+the resource already used by Music/Spotify scripting. The audio page's initial read checks consent
+on the script worker, never on the launch thread, and still never asks for consent automatically.
+
+A separate sample during graceful quit found the main thread waiting for the CoreAudio application
+queue while queued property callbacks repeatedly scanned every process. Output equality checked
+after a full scan did not bound that work. The worker now coalesces callback flags before scanning,
+closes a thread-safe stop gate before draining its queue, and removes listeners synchronously.
+This does not change the synchronous child-process teardown rule.
+
 <details>
 <summary>Topics in this file (59)</summary>
 

@@ -157,3 +157,11 @@
 "update.install" = "Update installieren …";
 "update.install.a11y" = "Das Update installieren";
 "update.install.help" = "Schließt die Insel und öffnet das Update-Fenster, in dem du es installieren und Isleta neu starten kannst.";
+
+// Audio sources
+"page.audio" = "Audioquellen";
+"audioSources.empty" = "Keine Audioquellen erkannt";
+"audioSources.open" = "App öffnen";
+"audioSources.active" = "Aktiv";
+"audioSources.paused" = "Pausiert";
+"audioSources.inactive" = "Inaktiv";

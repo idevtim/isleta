@@ -538,6 +538,8 @@ public final class IslandScreenModel {
     /// listening to one thing, and a controller per panel would let a drag started on the laptop
     /// leave the external display showing the old position. Nil on a build with no Now Playing
     /// source running at all.
+    public var audioApplications: AudioApplicationsModel?
+
     public var nowPlaying: NowPlayingController?
 
     /// Which page the open island is on. One instance for the whole app, pushed in by the shell —
