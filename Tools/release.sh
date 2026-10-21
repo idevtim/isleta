@@ -82,12 +82,13 @@ fi
 
 APP_NAME="Isleta"
 # The source, the releases and the appcast are all one public repo as of 2026-09-01, when Isleta
-# was open sourced. It used to be two — a private source repo (idevtim/isleta-app) and this one for
-# releases — because `raw.githubusercontent.com` on a private repo requires a token, so an appcast
-# served from there would 404 for every user and Sparkle would silently never find an update. That
-# split is gone; the constraint it existed for is still the reason this repo must stay public.
+# was open sourced. It used to be two — a private source repo (idevtim/isleta-app, since renamed
+# idevtim/isleta-archive) and this one for releases — because `raw.githubusercontent.com` on a
+# private repo requires a token, so an appcast served from there would 404 for every user and
+# Sparkle would silently never find an update. That split is gone; the constraint it existed for is
+# still the reason this repo must stay public.
 #
-# idevtim/isleta-app still exists as the private archive of the pre-open-source history and of the
+# idevtim/isleta-archive still exists as the private archive of the pre-open-source history and of the
 # files that are not published. `Tools/private-sync.sh` is what writes to it.
 GITHUB_REPO="idevtim/isleta"
 INFO_PLIST="$PROJECT_DIR/Config/Isleta-Info.plist"

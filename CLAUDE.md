@@ -64,7 +64,7 @@ are all `idevtim/isleta`, which is public and must stay public — Sparkle's fee
 raw URL, and a private repo would 404 for every user without a token.
 
 Some files are deliberately kept out of it and are **gitignored, not deleted**. They are still on
-disk, and `Tools/private-sync.sh` commits them to `idevtim/isleta-app`, the private archive that also
+disk, and `Tools/private-sync.sh` commits them to `idevtim/isleta-archive`, the private archive that also
 holds the pre-open-source history:
 
 - `docs/PROBES-2.0.md`, `docs/PROBE-*.md` — the raw probe sessions. Session records rather than
