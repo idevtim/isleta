@@ -747,6 +747,17 @@ Never invent a symbol.
   And `tell application "Music"` **launches Music** — AppleScript specifiers are launch-on-demand, so
   the naive read opens a music app on a silent machine at every login; guard on
   `NSWorkspace.runningApplications`.
+- **Under Hardened Runtime, the initial snapshot needs `com.apple.security.automation.apple-events`;
+  `NSAppleEventsUsageDescription` alone is refused before any prompt.** Every release through 2.6.0
+  shipped without the entitlement. Measured 2026-10-21 on the installed, notarized 2.6.0 launched
+  through LaunchServices: `tccd` logged `service: kTCCServiceAppleEvents requires entitlement
+  com.apple.security.automation.apple-events but it is missing` for `com.tryisleta.isleta`: the
+  scripted read is refused at the daemon, and the fallback has only ever learned what plays from
+  change notifications. A contributor also sampled a hardened Debug build (macOS 26.0.1) whose main thread sat in
+  `AEDeterminePermissionToAutomateTarget` with `askUserIfNeeded=false` for five minutes in the same
+  state — so the consent check in `readCurrentTrack` runs on the script worker, never on the launch
+  thread. Both entitlement files declare the key; it is a Hardened Runtime entitlement and needs no
+  provisioning profile.
 - **`com.apple.screenIsUnlocked` arrives before `CGSSessionScreenIsLocked` clears, so checking one
   against the other drops the unlock.** Measured 2026-10-06 on macOS 27.0 with a probe observing the
   notification and reading the session dictionary at delivery and after: the key read **`1` at

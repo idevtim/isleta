@@ -69,5 +69,9 @@
 	     app can no longer be hung by this. That is a seatbelt, not the fix; this key is the fix. -->
 	<key>com.apple.security.device.bluetooth</key>
 	<true/>
+	<!-- Required by the existing Music/Spotify scripting route under Hardened Runtime.
+	     The usage string alone does not permit even its non-prompting consent check. -->
+	<key>com.apple.security.automation.apple-events</key>
+	<true/>
 </dict>
 </plist>
