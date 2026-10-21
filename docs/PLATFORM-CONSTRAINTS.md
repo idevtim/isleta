@@ -1232,3 +1232,21 @@ address field yielded eleven real menu rectangles and a 185×32pt body/shape, ex
 notch. The same build retained effective Accessibility across the rebuild. This validates the authorized geometry-to-retraction path on this hardware, rather than
 merely an AX observer registration. App-specific dynamic menu notifications remain a separate
 compatibility question; no polling was added to compensate for unsupported hints.
+
+### Menu bar icons are out of reach — macOS 27.2, 2026-10-21
+
+Clearance covers the frontmost app's menus only; the island can still sit over other apps' menu
+bar icons beside the notch. Measured on a notched MacBook Pro with an external display arranged
+above it, while the right flank visibly covered icons:
+
+- **The window list has no per-icon windows.** `CGWindowListCopyWindowInfo` showed the whole bar
+  as one 1728×33pt window owned by `/System/Library/CoreServices/MenuBarAgent.app`; no status item
+  appeared as a window of its own.
+- **`kAXExtrasMenuBarAttribute` reports one display's positions.** Asking all 141 running apps
+  returned 14 icons, every one at y = −1080 on the external display and none beside the notch the
+  island was covering. A read that answers for the wrong display is not evidence of clearance.
+- **The scan is not affordable on a switch.** The same pass took 2.2–2.6 s, against a budget that
+  allows nothing like it per activation.
+
+Options weighed and not taken for 2.7.0: a setting that holds a hardware island at the notch until
+hovered, and never widening the right flank. Both are product decisions rather than detection.
