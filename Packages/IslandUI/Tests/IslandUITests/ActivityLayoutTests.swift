@@ -276,6 +276,16 @@ struct ActivityVisibleSlotTests {
                 "three characters of rounded 12pt text need more than this or they truncate")
     }
 
+    @Test("an app icon in a flank is the album cover's size and fits a resting flank")
+    func applicationIconFitsAFlank() {
+        // A call in Zoom drew the app icon at the glyph's 13pt and read as a blue smudge. It is now
+        // drawn as the album cover is — the same side, the same margin — and has to fit the sliver.
+        let side = ActivityContentView.flankApplicationIconSide
+        let padding = ActivityContentView.flankApplicationIconPadding
+        #expect(side == 24, "the album cover's side, so a call and a track match")
+        #expect(side + 2 * padding <= IslandLayout.flankedFlankWidth)
+    }
+
     @Test("a flanked island still shows both flanks")
     func flankedRestKeepsFlanks() {
         #expect(

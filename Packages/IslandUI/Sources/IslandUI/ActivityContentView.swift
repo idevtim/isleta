@@ -142,6 +142,19 @@ public struct ActivityContentView: View {
         content.symbol == nil ? 4 : 10
     }
 
+    /// The side an application icon is drawn at in a flank, and the margin around it — **the album
+    /// cover's, exactly**, so a call in Zoom and a track in Music wear the same square beside the
+    /// notch. `NowPlayingSlotView` reads these too, which is what keeps the two from drifting.
+    ///
+    /// A symbol stays at 13 inside `flankPadding`: it is a line drawing and reads at that size. An
+    /// app icon is a picture, and at 13 a call in Zoom was a blue smudge whose wordmark no one could
+    /// read — reported from hardware with a screenshot. 24 is 4pt of air top and bottom in the 32pt
+    /// flank, and the 8pt margin is what lets 24 fit a 40pt sliver.
+    nonisolated static let flankApplicationIconSide: CGFloat = 24
+
+    /// See `flankApplicationIconSide`.
+    nonisolated static let flankApplicationIconPadding: CGFloat = 8
+
     /// The size a flank's title is drawn at.
     ///
     /// A point under the 12 a labelled flank uses when the title *is* the flank — a meeting's start
@@ -181,7 +194,21 @@ public struct ActivityContentView: View {
         return HStack(spacing: 4) {
             if levelFills { Spacer(minLength: 0) }
             if alignment == .trailing, !levelFills { Spacer(minLength: 0) }
-            symbol(size: 13, weight: .semibold, matched: false)
+            if let icon = applicationIcon {
+                // Drawn by the album cover's own view, so the icon is cropped to the same rounded
+                // square at the same side — the call and the track look like one family.
+                NowPlayingArtworkView(
+                    image: nil,
+                    fallbackSymbol: content.symbol ?? "app.fill",
+                    side: Self.flankApplicationIconSide,
+                    tint: tintColor,
+                    increaseContrast: increaseContrast,
+                    applicationIcon: icon
+                )
+                .overlay(alignment: .bottomTrailing) { badge(size: 13) }
+            } else {
+                symbol(size: 13, weight: .semibold, matched: false)
+            }
             if let title = content.title {
                 Text(title)
                     .font(.system(size: Self.flankTitleSize(for: content), weight: .medium))
@@ -225,7 +252,10 @@ public struct ActivityContentView: View {
             if alignment == .leading, !levelFills { Spacer(minLength: 0) }
             if levelFills { Spacer(minLength: 0) }
         }
-        .padding(.horizontal, Self.flankPadding(for: content))
+        .padding(
+            .horizontal,
+            applicationIcon != nil ? Self.flankApplicationIconPadding : Self.flankPadding(for: content)
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -440,6 +470,25 @@ public struct ActivityContentView: View {
         return icons.icon(named: name)
     }
 
+    /// The mark an app icon wears in its corner — the update's download arrow — or nothing.
+    @ViewBuilder
+    private func badge(size: CGFloat) -> some View {
+        if let badge = content.badgeSymbol {
+            // On a black disc so it reads against any icon, and pulled in by the icon's
+            // transparent margin so it sits on the shape rather than in the air beside it.
+            Image(systemName: badge)
+                .font(.system(size: size * 0.5, weight: .bold))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(
+                    ActivityPalette.color(for: .neutral, increaseContrast: increaseContrast),
+                    ActivityPalette.color(for: .accent, increaseContrast: increaseContrast)
+                )
+                .background(Circle().fill(Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)).padding(-1))
+                .offset(x: -size * 0.04, y: -size * 0.04)
+                .accessibilityHidden(true)
+        }
+    }
+
     @ViewBuilder
     private func symbol(size: CGFloat, weight: Font.Weight, matched: Bool) -> some View {
         // One `if`/`else` chain, never two views, because both branches claim
@@ -458,22 +507,7 @@ public struct ActivityContentView: View {
                     height: size * ApplicationIconMetrics.canvasScale
                 )
                 .contentTransition(.opacity)
-                .overlay(alignment: .bottomTrailing) {
-                    if let badge = content.badgeSymbol {
-                        // On a black disc so it reads against any icon, and pulled in by the icon's
-                        // transparent margin so it sits on the shape rather than in the air beside it.
-                        Image(systemName: badge)
-                            .font(.system(size: size * 0.5, weight: .bold))
-                            .symbolRenderingMode(.palette)
-                            .foregroundStyle(
-                                ActivityPalette.color(for: .neutral, increaseContrast: increaseContrast),
-                                ActivityPalette.color(for: .accent, increaseContrast: increaseContrast)
-                            )
-                            .background(Circle().fill(Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)).padding(-1))
-                            .offset(x: -size * 0.04, y: -size * 0.04)
-                            .accessibilityHidden(true)
-                    }
-                }
+                .overlay(alignment: .bottomTrailing) { badge(size: size) }
             if matched, let namespace {
                 image.matchedGeometryEffect(id: Self.symbolGeometryID, in: namespace)
             } else {

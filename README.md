@@ -11,7 +11,7 @@
 [tryisleta.com](https://tryisleta.com) &nbsp;·&nbsp; [What's new](release-notes/) &nbsp;·&nbsp; [Contributing](CONTRIBUTING.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-2.7.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.7.1-blue.svg)
 ![Platform](https://img.shields.io/badge/macOS-26%2B-lightgrey.svg)
 ![Silicon](https://img.shields.io/badge/silicon-Apple-black.svg)
 ![Price](https://img.shields.io/badge/price-free-brightgreen.svg)
@@ -278,8 +278,6 @@ actually pressed.
   can sit over the middle of the space labels.
 - **Today and tomorrow show five entries and then a count.** A busy pair of days says how many it
   couldn't fit rather than scrolling.
-- **Swiping away from a meeting hides its Join button until the island next opens.** The meeting
-  stays in the island's edges, and the button is back the next time you open it.
 - **The equalizer moves in a set pattern rather than to the song.** Its colors come from the cover;
   its motion doesn't come from the audio.
 - **The hover target is the notch itself** — about 185 points wide, and easy to overshoot.

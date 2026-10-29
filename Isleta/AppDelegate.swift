@@ -1012,6 +1012,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.page = pages
         model.nowPlayingContent = nowPlayingContent
         model.onSelectPage = { [weak self] page in self?.goToPage(page) }
+        model.onSelectActivity = { [weak self] in self?.goToCoveredActivity() }
         // The bar in a HUD's sliver, dragged. The island asks for a level to be set; what that
         // costs on this Mac is the source's business — see `SourceHub.setLevel(_:to:)`.
         model.onAdjustLevel = { [weak self] hud, fraction in
@@ -1410,11 +1411,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         !pages.isCoveringActivity && !drawsPages(for: kind)
     }
 
-    /// Where a page drag of `steps` lands from what the body is showing right now.
-    private func pageDragDestination(steppedBy steps: Int, kind: ActivityKind?) -> IslandPage {
-        activityOwnsBody(for: kind)
-            ? pages.roster.stepped(fromActivityBy: steps)
-            : pages.page(steppedBy: steps)
+    /// Where a page drag of `steps` lands from what the body is showing right now, or nil when it
+    /// lands back on the activity the pages are covering — which stands first on the carousel, so a
+    /// call somebody swiped away from is one swipe back from home rather than gone until the island
+    /// closes. See `IslandPageRoster.stepped(from:by:coveringActivity:)`.
+    private func pageDragDestination(steppedBy steps: Int, kind: ActivityKind?) -> IslandPage? {
+        if activityOwnsBody(for: kind) { return pages.roster.stepped(fromActivityBy: steps) }
+        return pages.roster.stepped(
+            from: pages.current,
+            by: steps,
+            coveringActivity: pages.isCoveringActivity && !drawsPages(for: kind)
+        )
     }
 
     /// Opens or closes the Up Next surface on every island, through the same widen-then-tighten
@@ -2565,6 +2572,15 @@ long Isleta has been running, and a typed city always gets its weather.
     private func refreshMusicPage() {
         guard !models.values.contains(where: { $0.swipe.isPaging }) else { return }
         pages.setMusicAvailable(musicPageHasTrack)
+        // **Closed on the player, and then the music stopped.** The close already ran its reset,
+        // and with a track playing that reset rightly stayed on the music page — so without this
+        // the next open landed on a player saying "Not playing", a page that is only on the
+        // carousel because nobody had moved off it. With the island shut nobody is standing on it,
+        // so the same reset a close does runs again and lands on home. It is a no-op whenever the
+        // page is already where a reset would put it.
+        if !models.values.contains(where: \.isExpanded) {
+            resetPageAfterClose()
+        }
     }
 
     // MARK: - Dragging a page
@@ -2611,13 +2627,14 @@ long Isleta has been running, and a typed city always gets its weather.
         pages.holdIndicator()
         let stage = activities.stage
         let destination = pageDragDestination(steppedBy: heading, kind: stage?.primary.kind)
-        // `coveringActivity: true` because the destination is a page whatever the body is showing
-        // now — a swipe from a call is heading for the day's height, not the call's.
+        // Covering whenever the destination is a page, whatever the body is showing now — a swipe
+        // from a call is heading for the day's height, not the call's. A nil destination is the
+        // covered call itself, and that is heading for the call's.
         let height = expandedContentHeightForStage(
             presentations: stage?.primary.presentations,
             kind: stage?.primary.kind,
             page: destination,
-            coveringActivity: true
+            coveringActivity: destination != nil
         )
         let span = IslandLayout.expandedBodySize.width
         for screen in controller.screens {
@@ -2701,7 +2718,7 @@ long Isleta has been running, and a typed city always gets its weather.
             presentations: stage?.primary.presentations,
             kind: stage?.primary.kind,
             page: page,
-            coveringActivity: true
+            coveringActivity: page != nil
         )
         // The page being left, whose shape the outline has to keep lerping *from* while the tail
         // travels. Computed before the swap for the same reason the new one is: both are pure
@@ -2717,15 +2734,26 @@ long Isleta has been running, and a typed city always gets its weather.
         // the page layer a directional slide keyed on its identity, and a swipe has already done
         // all the travelling there is to do.
         withTransaction(Transaction(animation: nil)) {
-            if fromActivity {
-                pages.turnFromActivity(to: page)
+            if let page {
+                if fromActivity {
+                    pages.turnFromActivity(to: page)
+                } else {
+                    _ = pages.go(to: page)
+                }
             } else {
-                _ = pages.go(to: page)
+                // Back onto the call the pages were covering. `current` stays where it was, so the
+                // next swipe forward from the call is home again.
+                pages.uncoverActivity()
+                pages.showIndicator()
             }
         }
-        // The weather poll follows the body, and a swipe from a call has just given it to a page.
+        // The weather poll follows the body: a swipe from a call has just given it to a page, and a
+        // swipe back onto the call has just taken it away.
         if fromActivity {
             coveredActivityID = stage?.primary.id
+            refreshWeatherPolling()
+        } else if page == nil {
+            coveredActivityID = nil
             refreshWeatherPolling()
         }
         expandedContentHeight = height
@@ -2733,7 +2761,7 @@ long Isleta has been running, and a typed city always gets its weather.
         // The dots' direction, kept honest for the *next* turn: a dot tapped straight afterwards
         // must not slide on whatever direction the last tapped dot left behind.
         pages.setTurnDirection(step)
-        IslandLog.panel.debug("page dragged to \(page.rawValue)")
+        IslandLog.panel.debug("page dragged to \(page?.rawValue ?? "activity")")
 
         for screen in controller.screens {
             guard let model = models[screen.id] else { continue }
@@ -2794,6 +2822,20 @@ long Isleta has been running, and a typed city always gets its weather.
         }
         applyPageChange(direction: pages.steps(to: page) >= 0 ? 1 : -1) { [weak self] in
             self?.pages.go(to: page) ?? false
+        }
+    }
+
+    /// Back to the activity the pages are covering — what the activity's dot does. It stands first
+    /// on the carousel, so it slides in from the leading side as a swipe back from home would.
+    private func goToCoveredActivity() {
+        guard pages.canTurn, pages.isCoveringActivity else { return }
+        applyPageChange(direction: -1) { [weak self] in
+            guard let self else { return false }
+            self.pages.uncoverActivity()
+            self.pages.showIndicator()
+            self.coveredActivityID = nil
+            self.refreshWeatherPolling()
+            return true
         }
     }
 
@@ -3094,20 +3136,55 @@ long Isleta has been running, and a typed city always gets its weather.
     /// `.contentChanged` can all leave a greeting on stage, and the question here is only ever what
     /// the island is showing now.
     private func updateAutoOpen(for kind: ActivityKind?) {
-        guard kind?.opensIsland == true else {
+        guard let kind, kind.opensIsland else {
             // Whatever was asking for the island is gone — expired, dismissed, or preempted by
             // something louder. An island still open on it is open on nothing.
             pendingAutoOpen = false
             autoOpenTask?.cancel()
             autoOpenTask = nil
+            autoOpenDwellTask?.cancel()
+            autoOpenDwellTask = nil
+            autoOpenAnnouncedID = nil
             closeAutoOpenedIslands()
             return
         }
+        // **A kind with a dwell opens once per activity.** A call that has already opened the
+        // island and closed it again is still on stage, and every later change to the stage — a
+        // HUD coming and going in front of it — would otherwise open it a second time.
+        let id = activities.stage?.primary.id
+        if kind.autoOpenDwell != nil, let id, id == autoOpenAnnouncedID { return }
         guard !isScreenAway else {
             pendingAutoOpen = true
             return
         }
         openIslandsForActivity()
+        if let dwell = kind.autoOpenDwell {
+            autoOpenAnnouncedID = id
+            scheduleAutoOpenClose(after: dwell)
+        }
+    }
+
+    /// The activity a dwell-limited open has already been spent on. See `ActivityKind.autoOpenDwell`.
+    private var autoOpenAnnouncedID: ActivityID?
+
+    /// The pending close of an island a call opened. At most one, and none at rest (§9).
+    private var autoOpenDwellTask: Task<Void, Never>?
+
+    /// Closes the islands Isleta opened once `dwell` has passed, leaving the activity on stage in
+    /// the flanks. Waits another dwell while the pointer is on an island — closing under somebody
+    /// reading it is the island taking itself away mid-sentence.
+    private func scheduleAutoOpenClose(after dwell: Duration) {
+        autoOpenDwellTask?.cancel()
+        autoOpenDwellTask = Task { [weak self] in
+            try? await Task.sleep(for: dwell)
+            guard !Task.isCancelled, let self else { return }
+            self.autoOpenDwellTask = nil
+            if !self.hoveredScreens.isDisjoint(with: self.autoOpened) {
+                self.scheduleAutoOpenClose(after: dwell)
+                return
+            }
+            self.closeAutoOpenedIslands()
+        }
     }
 
     /// Opens every island that is not already the user's.
@@ -3589,8 +3666,10 @@ long Isleta has been running, and a typed city always gets its weather.
             try? await Task.sleep(for: Self.autoOpenDelay)
             guard !Task.isCancelled, let self else { return }
             self.autoOpenTask = nil
-            guard self.activities.presented?.kind.opensIsland == true else { return }
-            self.openIslandsForActivity()
+            guard let kind = self.activities.presented?.kind, kind.opensIsland else { return }
+            // Through `updateAutoOpen` rather than straight to the open, so a call's dwell is
+            // scheduled here as it is everywhere else.
+            self.updateAutoOpen(for: kind)
         }
     }
 
@@ -3853,6 +3932,7 @@ long Isleta has been running, and a typed city always gets its weather.
         // stage from it a moment later.
         presentActivityDemoIfRequested()
         presentDeviceDemoIfRequested()
+        presentCallDemoIfRequested()
         presentHUDDemoIfRequested()
         presentPowerDemoIfRequested()
         presentGlanceDemoIfRequested()
@@ -4426,6 +4506,29 @@ long Isleta has been running, and a typed city always gets its weather.
                 }
             }
         }
+        #endif
+    }
+
+    /// `--call-demo`: a call in Zoom, two minutes in, so the app icon beside the notch and the swipe
+    /// back onto a call the pages are covering can be looked at without joining a meeting.
+    ///
+    /// Falls back to FaceTime's icon on a Mac without Zoom, and to the phone glyph without either —
+    /// the same lookup `CallSource` makes. Never retracted, like a real call that never ends: quit to
+    /// end it.
+    ///
+    /// Debug only, like the other demos: it announces a call nobody is on.
+    private func presentCallDemoIfRequested() {
+        #if DEBUG
+        guard ProcessInfo.processInfo.arguments.contains("--call-demo") else { return }
+        let name = ["us.zoom.xos", "com.apple.FaceTime"].lazy
+            .compactMap { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) }
+            .map { FileManager.default.displayName(atPath: $0.path).replacingOccurrences(of: ".app", with: "") }
+            .first
+        _ = activities.present(BuiltInActivity.call(
+            id: ActivityID("builtin.call.demo"),
+            applicationName: name,
+            since: Date().addingTimeInterval(-127)
+        ))
         #endif
     }
 

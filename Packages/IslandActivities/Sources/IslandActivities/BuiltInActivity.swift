@@ -377,6 +377,21 @@ public enum ActivityKind: String, CaseIterable, Sendable {
         }
     }
 
+    /// How long an island this kind opened by itself stays open before closing back to the flanks,
+    /// with the activity still on stage — or nil to stay open for as long as the activity does.
+    ///
+    /// **A call opens to say it started, and then gets out of the way.** It used to stay open for
+    /// the length of the call, with `.never` expiry, so a two-hour meeting was a two-hour open
+    /// island over whatever the user was trying to do — reported from use. Everything a call has to
+    /// say while it goes on, which app and how long, fits the two flanks. The others that open have
+    /// a button or a greeting that *is* the open island, and retire with their own expiry.
+    public var autoOpenDwell: Duration? {
+        switch self {
+        case .call: .seconds(4)
+        default: nil
+        }
+    }
+
     public var opensIsland: Bool {
         switch self {
         case .welcomeBack: true

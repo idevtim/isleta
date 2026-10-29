@@ -17,9 +17,9 @@ struct IslandPageIndicatorLayerView: View {
             let origin = IslandLayout.bodyOrigin(for: metrics, in: proxy.size)
 
             IslandPageIndicatorView(
-                pages: model.pageRoster.pages,
-                current: model.currentPage,
-                incoming: model.pageBeingDraggedTo,
+                stops: model.carouselStops,
+                current: model.currentStop,
+                incoming: model.stopBeingDraggedTo,
                 progress: model.pageDragProgress,
                 increaseContrast: model.increaseContrast,
                 // The strip sits at the island's bottom edge, which is where Semi-Liquid Glass has
@@ -29,7 +29,12 @@ struct IslandPageIndicatorLayerView: View {
                 // Lit at a page change and for two seconds after it, and for as long as a finger or
                 // a pointer is on the carousel. See `IslandScreenModel.showsPageDots`.
                 isVisible: model.showsPageDots,
-                onSelect: { model.onSelectPage?($0) },
+                onSelect: { stop in
+                    switch stop {
+                    case .page(let page): model.onSelectPage?(page)
+                    case .activity: model.onSelectActivity?()
+                    }
+                },
                 onPointer: { isOver in
                     // Held while the pointer is on the strip; the dwell restarts when it leaves.
                     // `holdIndicator` is idempotent, which matters — `PointerPresence` re-reads the
@@ -40,7 +45,8 @@ struct IslandPageIndicatorLayerView: View {
                     } else {
                         model.page?.releaseIndicator()
                     }
-                }
+                },
+                activityName: model.presentedKind.map { ActivityKindName.spoken($0) }
             )
             .frame(width: metrics.bodySize.width)
             .offset(

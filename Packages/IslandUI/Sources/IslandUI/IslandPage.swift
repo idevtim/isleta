@@ -64,6 +64,18 @@ public enum IslandPage: String, CaseIterable, Sendable {
     }
 }
 
+/// One stop on the open island's carousel, as the row of dots draws it: a page, or the activity
+/// that arrived with a body of its own.
+///
+/// **The activity gets a dot while it is open or covered**, first in the row, because it is first on
+/// the carousel (`IslandPageRoster.stepped(from:by:coveringActivity:)`). A row of two dots under a
+/// call — Today and Weather — says the call is not somewhere you can go, when one swipe back is
+/// exactly where it is. Reported from use.
+public enum IslandCarouselStop: Hashable, Sendable {
+    case activity
+    case page(IslandPage)
+}
+
 /// The pages the carousel is turning between right now, in order.
 ///
 /// **The list a swipe walks, a dot is drawn for, and the shell steps through** — everything that
@@ -180,6 +192,24 @@ public struct IslandPageRoster: Equatable, Sendable {
     public func stepped(fromActivityBy steps: Int) -> IslandPage {
         guard steps != 0 else { return .home }
         return stepped(from: .home, by: steps > 0 ? steps - 1 : steps)
+    }
+
+    /// The page `steps` along from `page` while the pages are **covering** an activity, or nil when
+    /// the step lands back on that activity.
+    ///
+    /// The other half of `stepped(fromActivityBy:)`. The activity a swipe turned away from still
+    /// stands just before home, so the carousel it is on is `activity → home → music → weather` and
+    /// wraps like any other: one back from home is the call, and one forward from the weather is the
+    /// call too. Without this the swipe was a one-way door — a call somebody swiped away from was
+    /// gone from the open island until it was closed, while it was still the thing happening.
+    public func stepped(from page: IslandPage, by steps: Int, coveringActivity: Bool) -> IslandPage? {
+        guard coveringActivity else { return stepped(from: page, by: steps) }
+        guard let index = pages.firstIndex(of: page) else { return resolved(page) }
+        // The activity is position 0 and the pages follow it, so the arithmetic is the same modular
+        // walk as `stepped(from:by:)` over one more stop.
+        let stops = count + 1
+        let wrapped = ((index + 1 + steps) % stops + stops) % stops
+        return wrapped == 0 ? nil : pages[wrapped - 1]
     }
 }
 
@@ -347,8 +377,10 @@ public final class IslandPageModel {
     /// said its piece: it is still on stage and still in the flanks, so nothing is lost by the body
     /// going to the page they asked for.
     ///
-    /// Cleared when the island closes and when a *different* activity takes the stage, so the next
-    /// thing to arrive is shown rather than covered. Not cleared by the activity updating — a call
+    /// Cleared when the island closes, when a *different* activity takes the stage, so the next
+    /// thing to arrive is shown rather than covered, and when the user swipes back onto it — the
+    /// activity stands first on the carousel while it is covered, see
+    /// `IslandPageRoster.stepped(from:by:coveringActivity:)`. Not cleared by the activity updating — a call
     /// ticks every second, and a timer would otherwise snatch the body back while it is being read.
     public private(set) var isCoveringActivity = false
 
@@ -368,6 +400,10 @@ public final class IslandPageModel {
     }
 
     /// Gives the body back to whatever activity is on stage. See `isCoveringActivity`.
+    ///
+    /// Also what a swipe back onto the activity does — one back from home, or one on from the last
+    /// page — so `current` is left where it was: the next swipe forward from the activity lands on
+    /// home again, through `IslandPageRoster.stepped(fromActivityBy:)`.
     public func uncoverActivity() {
         guard isCoveringActivity else { return }
         isCoveringActivity = false

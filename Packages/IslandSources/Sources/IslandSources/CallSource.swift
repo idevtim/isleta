@@ -66,7 +66,8 @@ public enum CallDetection {
 ///
 /// `ActivityKind.call` is the one 2.0 kind that both **opens the island** and has `.never` expiry —
 /// pinned by a test in `BuiltInActivityTests`, which spells out the price: if the source that raised
-/// a call ever fails to retract it, the island is stuck open. So the retraction is on every path
+/// a call ever fails to retract it, the call is stuck on the island. (The open itself closes after
+/// `ActivityKind.autoOpenDwell`; the flanks are what would stay.) So the retraction is on every path
 /// out of this file — the falling edge, `stop()`, `stopAndWait()`, and the input device going away —
 /// and `live` is the single piece of state all four go through.
 ///

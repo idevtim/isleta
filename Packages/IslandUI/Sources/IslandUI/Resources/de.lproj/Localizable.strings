@@ -136,8 +136,8 @@
 "glance.weather.noPlace" = "Isleta weiß nicht, wo es nachfragen soll. Wähle in den Einstellungen einen Ort, dann erscheint hier die Vorhersage.";
 "glance.weather.openSettings" = "Einstellungen öffnen";
 "glance.weather.openSettings.a11y" = "Isleta-Einstellungen öffnen, um einen Ort zu wählen";
-"glance.schedule.close" = "Den Zeitplan schließen";
-"glance.schedule.close.label" = "Schließen";
+"glance.schedule.back" = "Zurück zu Heute";
+"glance.schedule.back.label" = "Zurück";
 "glance.schedule.emptyToday" = "Heute keine Termine";
 "glance.schedule.emptyTomorrow" = "Morgen keine Termine";
 "glance.schedule.more" = "%1$@ weitere";

@@ -108,6 +108,20 @@ struct ActivityLayerView: View {
                         } else {
                             slot(.compact, of: stage, in: frame, offsetBy: origin, matched: true)
                         }
+                    } else if model.contentPresentation == .expanded,
+                              stage.primary.kind != .meeting, stage.primary.kind != .updateAvailable,
+                              layout.bodySlot(for: .expanded, in: stage.primary.presentations) != nil,
+                              let frame = layout.body {
+                        // **The activity the pages are covering, one page over while a drag heads
+                        // back to it.** It stands first on the carousel, so the call somebody
+                        // swiped away from is really there beside home and arrives with the finger
+                        // rather than being gone until the island closes. Unmatched: the morph's
+                        // geometry belongs to the body at rest, and this is a neighbour. The meeting
+                        // and the update draw their own bodies, in `IslandRootView`.
+                        ForEach(model.coveredActivityNeighbourSides, id: \.self) { side in
+                            slot(.expanded, of: stage, in: frame, offsetBy: origin, matched: false)
+                                .offset(x: side * model.swipe.pageSpan)
+                        }
                     }
                 }
             }

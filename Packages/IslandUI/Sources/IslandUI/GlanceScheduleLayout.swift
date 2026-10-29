@@ -112,6 +112,12 @@ public enum GlanceScheduleLayout {
 
     public static let entryBarSpacing: CGFloat = 8
 
+    /// The card each timed entry sits on: its corner, the margin inside it, and how far the
+    /// calendar's bar stops short of its top and bottom so it reads as inside the card.
+    public static let entryCornerRadius: CGFloat = 8
+    public static let entryInset: CGFloat = 6
+    public static let entryBarInset: CGFloat = 5
+
     /// The "TOMORROW" heading, and the air under it.
     public static let sectionHeaderHeight: CGFloat = 14
 

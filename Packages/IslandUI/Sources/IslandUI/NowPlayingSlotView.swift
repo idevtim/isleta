@@ -152,7 +152,7 @@ struct NowPlayingSlotView: View {
             NowPlayingArtworkView(
                 image: controller.artwork,
                 fallbackSymbol: content.symbol ?? "music.note",
-                side: 24,
+                side: ActivityContentView.flankApplicationIconSide,
                 tint: tint,
                 increaseContrast: increaseContrast,
                 applicationIcon: applicationIcon,
@@ -169,7 +169,7 @@ struct NowPlayingSlotView: View {
             // test can ask about rather than an event a test cannot deliver.
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, ActivityContentView.flankApplicationIconPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityLabel(content.accessibilityLabel ?? islandText("nowPlaying.a11y", "Now playing"))
     }

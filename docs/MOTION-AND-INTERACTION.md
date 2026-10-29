@@ -579,10 +579,19 @@ An activity that brought its own body — a call, a level, a meeting — keeps i
 island is swiped. Then the activity is read as standing just before home: forward lands on home,
 back on the last page, and the neighbours drawn during the drag are those two
 (`IslandPageRoster.stepped(fromActivityBy:)`). Once turned, the pages own the body
-(`IslandPageModel.isCoveringActivity`) until the island closes or a *different* activity takes the
-stage; the activity updating does not take it back. Before this, the swipe turned `current`
-underneath a body the activity kept drawing, so every page looked like a copy of the call. A dot
-tapped over an activity does the same.
+(`IslandPageModel.isCoveringActivity`) until the island closes, a *different* activity takes the
+stage, or the user swipes back onto it; the activity updating does not take it back. Before this,
+the swipe turned `current` underneath a body the activity kept drawing, so every page looked like a
+copy of the call. A dot tapped over an activity does the same.
+
+**While covered, the activity stays the first stop on the carousel** — `activity → home → music →
+weather`, wrapping — so one back from home, or one on from the last page, drags its body back in
+(`IslandPageRoster.stepped(from:by:coveringActivity:)`, drawn one page over through
+`IslandScreenModel.coveredActivityNeighbourSides`). `current` is left where it was, so forward from
+the activity is home again. Changed in 2.7.1 on the report that swiping from a Zoom call lost it
+until the island closed: the swipe had been a one-way door off something still happening. The
+activity has the first dot while it is open or covered (`IslandCarouselStop`), and tapping it
+uncovers it — a row of Today and Weather under a call said the call was nowhere to go.
 
 ## The dots go away, and what keeps them reachable
 

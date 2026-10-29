@@ -170,12 +170,27 @@ public struct IslandRootView: View {
                     // Over an activity's body the neighbours are the pages either side of where the
                     // activity stands — home ahead, the last page behind — so a swipe from a call
                     // arrives at the day rather than at a second copy of the call.
+                    //
+                    // Over pages that are *covering* an activity, a side with no page is the
+                    // activity itself — it stands first on the carousel. A meeting's body is drawn
+                    // here, because it draws through `GlanceLayerView`; every other kind's is drawn
+                    // by `ActivityLayerView` (or the update's own layer) on the same sides.
                     if model.swipe.isPaging, !glance.isShowingSchedule {
                         let neighbours = model.pageNeighbours
-                        page(neighbours.previous, glance: glance)
-                            .offset(x: -model.swipe.pageSpan)
-                        page(neighbours.next, glance: glance)
-                            .offset(x: model.swipe.pageSpan)
+                        if let previous = neighbours.previous {
+                            page(previous, glance: glance)
+                                .offset(x: -model.swipe.pageSpan)
+                        }
+                        if let next = neighbours.next {
+                            page(next, glance: glance)
+                                .offset(x: model.swipe.pageSpan)
+                        }
+                        if model.presentedKind == .meeting {
+                            ForEach(model.coveredActivityNeighbourSides, id: \.self) { side in
+                                GlanceLayerView(model: model, glance: glance)
+                                    .offset(x: side * model.swipe.pageSpan)
+                            }
+                        }
                     }
 
                     Group {
@@ -269,6 +284,16 @@ public struct IslandRootView: View {
                     .modifier(SwipeOffsetEffect(swipe: model.swipe))
                     .mask(islandMask)
                     .transition(.opacity)
+            } else if model.presentedKind == .updateAvailable, let update = model.softwareUpdate,
+                      update.isOffering {
+                // Swiped away from and still first on the carousel: drawn one page over while a
+                // drag is heading back to it. See `IslandScreenModel.coveredActivityNeighbourSides`.
+                ForEach(model.coveredActivityNeighbourSides, id: \.self) { side in
+                    UpdateAvailableLayerView(model: model, update: update)
+                        .offset(x: side * model.swipe.pageSpan)
+                        .modifier(SwipeOffsetEffect(swipe: model.swipe))
+                        .mask(islandMask)
+                }
             }
 
             // The Up Next surface: the playback queue, and where the sound comes out.

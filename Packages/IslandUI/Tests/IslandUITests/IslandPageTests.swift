@@ -1,3 +1,4 @@
+import IslandActivities
 import Testing
 
 @testable import IslandUI
@@ -431,6 +432,66 @@ struct IslandPagesOverActivityTests {
         model.turnFromActivity(to: .weather)
         #expect(model.current == .weather)
         #expect(model.isCoveringActivity)
+    }
+
+    @Test("a covered activity stays first on the carousel, both ways round")
+    func coveredActivityIsTheFirstStop() {
+        // The reported bug: swiping from a Zoom call to the pages lost the call until the island
+        // closed. While covered it stands before home, so the walk is call → home → music → weather.
+        let roster = IslandPageRoster.all
+        #expect(roster.stepped(from: .home, by: -1, coveringActivity: true) == nil)
+        #expect(roster.stepped(from: .weather, by: 1, coveringActivity: true) == nil)
+        #expect(roster.stepped(from: .home, by: 1, coveringActivity: true) == .music)
+        #expect(roster.stepped(from: .music, by: -1, coveringActivity: true) == .home)
+        #expect(roster.stepped(from: .weather, by: -1, coveringActivity: true) == .music)
+        // Not covering, it is the ordinary wrap.
+        #expect(roster.stepped(from: .home, by: -1, coveringActivity: false) == .weather)
+    }
+
+    @Test("with nothing playing, a covered activity sits between the forecast and the day")
+    func coveredActivityWithoutMusic() {
+        let model = IslandPageModel()
+        model.setMusicAvailable(false)
+        #expect(model.roster.stepped(from: .home, by: 1, coveringActivity: true) == .weather)
+        #expect(model.roster.stepped(from: .weather, by: 1, coveringActivity: true) == nil)
+        #expect(model.roster.stepped(from: .home, by: -1, coveringActivity: true) == nil)
+    }
+
+    @Test("swiping back onto the activity keeps the page underneath")
+    func uncoveringKeepsThePage() {
+        let model = IslandPageModel()
+        model.turnFromActivity(to: .home)
+        model.uncoverActivity()
+        #expect(!model.isCoveringActivity)
+        #expect(model.current == .home)
+        #expect(model.roster.stepped(fromActivityBy: 1) == .home)
+    }
+
+    @Test("the dots put the call first, lit while it is showing")
+    func callHasTheFirstDot() {
+        // Reported from use: under an open call the row drew only Today and Weather.
+        let model = IslandScreenModel(metricsByForm: [:], notchKind: .hardware)
+        let pages = IslandPageModel()
+        pages.setMusicAvailable(false)
+        model.page = pages
+        let call = BuiltInActivity(id: "builtin.call.test", kind: .call)
+        model.setActivity(ActivityStage(primary: call, primaryFlank: .leading),
+                          change: .presented(call.id), reduceMotion: true)
+
+        #expect(model.carouselStops == [.activity, .page(.home), .page(.weather)])
+        #expect(model.currentStop == .activity)
+
+        pages.turnFromActivity(to: .home)
+        #expect(model.carouselStops == [.activity, .page(.home), .page(.weather)],
+                "the call keeps its dot while the pages cover it")
+        #expect(model.currentStop == .page(.home))
+    }
+
+    @Test("with nothing on stage the dots are the pages alone")
+    func noActivityNoDot() {
+        let model = IslandScreenModel(metricsByForm: [:], notchKind: .hardware)
+        model.page = IslandPageModel()
+        #expect(model.carouselStops == IslandPage.allCases.map(IslandCarouselStop.page))
     }
 
     @Test("closing the island gives the body back to the activity")

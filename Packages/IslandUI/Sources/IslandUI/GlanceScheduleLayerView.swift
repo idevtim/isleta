@@ -90,23 +90,21 @@ struct GlanceScheduleLayerView: View {
 
     // MARK: - The way out
 
-    /// A strip holding one control, at the trailing edge.
+    /// A strip holding one control, at the **leading** edge: the way back to Today.
     ///
-    /// **The ✕ says what it does.** A bare glyph in a circle is the shape every other dismiss on
-    /// this island wears, and it is right where the surface it closes is obviously modal — the drop
-    /// history covers the island, Up Next replaces the player. This one does neither: it is the
-    /// calendar, opened from the calendar, and the way back was a symbol somebody had to try.
+    /// **A back button, not a close.** The schedule is a drill-down from the home page — the same
+    /// surface answering a longer question — so leaving it is going back a level, and the platform
+    /// says that with a chevron at the leading edge. A ✕ at the trailing edge said "dismiss", which
+    /// is what a modal surface like the drop history does, and this is not one. Reported from use.
     private var header: some View {
         HStack(spacing: 0) {
-            Spacer(minLength: 0)
-
             Button {
                 glance.onCloseSchedule?()
             } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 9, weight: .semibold))
-                    Text(islandText("glance.schedule.close.label", "Close"))
+                HStack(spacing: 3) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 10, weight: .semibold))
+                    Text(islandText("glance.schedule.back.label", "Back"))
                         .font(.system(size: 11, weight: .medium))
                         .lineLimit(1)
                 }
@@ -117,7 +115,9 @@ struct GlanceScheduleLayerView: View {
                 .background(Capsule().fill(.white.opacity(model.increaseContrast ? 0.24 : 0.10)))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(islandText("glance.schedule.close", "Close the schedule"))
+            .accessibilityLabel(islandText("glance.schedule.back", "Back to Today"))
+
+            Spacer(minLength: 0)
         }
         .frame(height: GlanceScheduleLayout.headerHeight)
     }
@@ -346,10 +346,15 @@ struct GlanceScheduleLayerView: View {
     /// something other than the drawn row, and the press target stops matching what is on screen.
     private func entryBody(_ event: GlanceEvent) -> some View {
         let calendar = event.calendarTint ?? .init(red: 0.5, green: 0.5, blue: 0.5)
+        let tint = calendar.color(increaseContrast: model.increaseContrast)
+        let card = RoundedRectangle(
+            cornerRadius: GlanceScheduleLayout.entryCornerRadius, style: .continuous
+        )
         return HStack(spacing: GlanceScheduleLayout.entryBarSpacing) {
             Capsule()
-                .fill(calendar.color(increaseContrast: model.increaseContrast))
+                .fill(tint)
                 .frame(width: GlanceScheduleLayout.entryBarWidth)
+                .padding(.vertical, GlanceScheduleLayout.entryBarInset)
                 .frame(maxHeight: .infinity)
 
             VStack(alignment: .leading, spacing: 1) {
@@ -368,8 +373,15 @@ struct GlanceScheduleLayerView: View {
 
             Spacer(minLength: 0)
         }
+        .padding(.leading, GlanceScheduleLayout.entryInset)
+        .padding(.trailing, GlanceScheduleLayout.entryInset + 2)
         .frame(height: GlanceScheduleLayout.entryHeight)
-        .contentShape(Rectangle())
+        // **The row fills its column**, on a ground of the calendar's colour — the same family as
+        // the all-day pills opposite it. Bare text left the right third of the island empty beside
+        // a left column whose pills ran edge to edge. Reported from use, with a screenshot.
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(card.fill(tint.opacity(model.increaseContrast ? 0.42 : 0.18)))
+        .contentShape(card)
     }
 
     /// Tomorrow's all-day events, as one row.

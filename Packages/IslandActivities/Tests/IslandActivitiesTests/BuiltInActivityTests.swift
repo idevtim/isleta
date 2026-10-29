@@ -161,6 +161,9 @@ struct BuiltInActivityTests {
         guard kind.opensIsland else { return }
         guard kind != .call else {
             #expect(kind.defaultExpiry == .never, "a ringing call is retracted, never timed out")
+            // What keeps a `.never` call from being an island stuck open for the whole call: it
+            // closes back to the flanks on its own and stays on stage there.
+            #expect(kind.autoOpenDwell != nil, "a call closes the island it opened")
             return
         }
         #expect(kind.defaultExpiry != .never)

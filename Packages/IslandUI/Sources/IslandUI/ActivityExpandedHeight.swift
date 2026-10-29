@@ -259,18 +259,21 @@ extension ActivityKind {
         // dependent and adds a level row's height for a bar this kind never draws. The island would
         // open a row taller than its content for a slot that is one row of symbol-well height.
         case .nowPlaying, .shelf, .deviceConnected: false
-        // Three more that own their body. Each draws a *layout* — a month grid, a caller's photo
-        // above two buttons, a scrolling record of what was converted — and the generic measurement
+        // Two more that own their body. Each draws a *layout* — a month grid, a scrolling record of
+        // what was converted — and the generic measurement
         // can only see the title and subtitle in the content, so it would size the island to a
         // caption and clip the thing the caption is about. They arrive here with the same obligation
         // `NowPlayingExpandedLayout` carries: agree a height and hold it, because
         // `IslandController.expandedContentHeight` is read *before* the transition.
-        case .glance, .call, .fileAction: false
+        case .glance, .fileAction: false
         // The release notes and the button under them, sized by `UpdateAvailableLayout`.
         case .updateAvailable: false
         // Everything else is a title, a subtitle and at most a value — which is exactly what the
         // generic measurement was written for.
-        case .systemHUD, .welcomeBack, .timer: true
+        // A call is one of these now: the app's icon, its name, "Call in progress" and the elapsed
+        // time on one row. It sat with the layouts above for a caller's photo and two buttons that
+        // macOS never lets a non-Apple app draw, and opened a 200pt island around a 44pt row.
+        case .systemHUD, .welcomeBack, .timer, .call: true
         case .calendarAlert, .meeting, .power, .focusChanged, .screenSharing: true
         }
     }

@@ -91,9 +91,9 @@ struct IslandPageIndicatorView: View {
     /// The dots to draw, in order. `IslandPageRoster`'s list rather than every case of the enum:
     /// the music page is on the carousel only while something is playing, and a dot for a page a
     /// swipe cannot reach is a signpost to nowhere.
-    let pages: [IslandPage]
+    let stops: [IslandCarouselStop]
 
-    let current: IslandPage
+    let current: IslandCarouselStop
 
     /// The page a live swipe is heading toward, and how far through it the finger is.
     ///
@@ -103,7 +103,7 @@ struct IslandPageIndicatorView: View {
     /// into place. Given the destination and the progress, the two dots cross-fade under the finger
     /// and the eventual change of `current` moves nothing, which is the same trick the pages
     /// themselves land by.
-    var incoming: IslandPage?
+    var incoming: IslandCarouselStop?
 
     var progress: CGFloat = 0
 
@@ -133,7 +133,7 @@ struct IslandPageIndicatorView: View {
     /// is a control a screen reader cannot be given.
     let isVisible: Bool
 
-    let onSelect: (IslandPage) -> Void
+    let onSelect: (IslandCarouselStop) -> Void
 
     /// The pointer arriving on the strip, and leaving it.
     ///
@@ -147,12 +147,15 @@ struct IslandPageIndicatorView: View {
     /// time a press lands the dots have been under the pointer for the length of the journey.
     let onPointer: (Bool) -> Void
 
+    /// The activity's spoken name, for its dot.
+    var activityName: String? = nil
+
     var body: some View {
         HStack(spacing: IslandPageIndicatorLayout.dotSpacing) {
-            ForEach(pages, id: \.self) { page in
-                Button { onSelect(page) } label: {
+            ForEach(stops, id: \.self) { stop in
+                Button { onSelect(stop) } label: {
                     Circle()
-                        .fill(fill(for: page))
+                        .fill(fill(for: stop))
                         .frame(
                             width: IslandPageIndicatorLayout.dotSide,
                             height: IslandPageIndicatorLayout.dotSide
@@ -172,8 +175,8 @@ struct IslandPageIndicatorView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(page.spokenName)
-                .accessibilityAddTraits(page == current ? [.isSelected] : [])
+                .accessibilityLabel(spokenName(for: stop))
+                .accessibilityAddTraits(stop == current ? [.isSelected] : [])
             }
         }
         .frame(height: IslandPageIndicatorLayout.height)
@@ -188,7 +191,7 @@ struct IslandPageIndicatorView: View {
         // reserved either way — so it takes the crossfade rather than a spring, and it takes the
         // same one a track title changing does. No inline duration, §6.1.
         .animation(Motion.contentSwap, value: isVisible)
-        .animation(Motion.contentSwap, value: pages)
+        .animation(Motion.contentSwap, value: stops)
         // Sized to the whole strip, not to the dots: the region that brings them back is the band
         // the pointer would travel into to reach them, and aiming at a 6pt circle that is not drawn
         // yet is not something anyone can do. `PointerPresence` rather than `.onHover` for the
@@ -206,8 +209,17 @@ struct IslandPageIndicatorView: View {
     /// to stop the whole thing shifting sideways. It is also what makes the crossfade below possible
     /// at all: an opacity has somewhere to be half way to, and a diameter does not without moving
     /// everything beside it.
-    private func fill(for page: IslandPage) -> Color {
-        .white.opacity(offOpacity + (onOpacity - offOpacity) * weight(for: page))
+    private func fill(for stop: IslandCarouselStop) -> Color {
+        .white.opacity(offOpacity + (onOpacity - offOpacity) * weight(for: stop))
+    }
+
+    /// What VoiceOver calls a dot. The activity's is the kind's own name — "Call" — rather than a
+    /// title, which may be a person's or a meeting's and is already read from the body.
+    private func spokenName(for stop: IslandCarouselStop) -> String {
+        switch stop {
+        case .page(let page): page.spokenName
+        case .activity: activityName ?? ""
+        }
     }
 
     /// How lit this dot should be: 1 for the page you are on, 0 for the others, and split between
@@ -215,7 +227,7 @@ struct IslandPageIndicatorView: View {
     ///
     /// Clamped rather than trusted. `progress` comes from a gesture that can be dragged past a whole
     /// page, and a weight above 1 would take the fill past white into a colour that does not exist.
-    private func weight(for page: IslandPage) -> CGFloat {
+    private func weight(for page: IslandCarouselStop) -> CGFloat {
         let travelled = max(0, min(1, progress))
         guard let incoming, incoming != current, travelled > 0 else {
             return page == current ? 1 : 0

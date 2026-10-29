@@ -108,7 +108,10 @@ calendar alert on stage and waits out its dwell, to prove the hold reaches the c
 hover callback (both report INCONCLUSIVE rather than a verdict if a hand moves the pointer, so
 run them on an idle machine), `--activity-demo` (Debug only) puts a
 calendar alert and then a greeting on stage so the two content-sized islands can be looked at without
-waiting for a real one, `--device-demo` (Debug only) announces three connecting devices at falling
+waiting for a real one, `--call-demo` (Debug only) puts a two-minute-old call in Zoom (or
+FaceTime) on stage and never ends it, so the app icon beside the notch and the swipe back onto a
+covered call can be seen without a meeting, `--device-demo` (Debug only) announces three connecting
+devices at falling
 battery levels so the flanked island and the ring's green-to-amber threshold can be seen in one run
 without putting AirPods in and out of their case, `--hud-demo` (Debug only) shows five HUDs in turn — volume,
 mute, brightness, then the volume at each end of its range — so the widest island, the volume glyph

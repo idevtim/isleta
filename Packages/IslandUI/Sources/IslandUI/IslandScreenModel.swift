@@ -618,9 +618,15 @@ public final class IslandScreenModel {
     /// and this is false until the island closes or something new arrives.
     public var activityOwnsBody: Bool {
         guard page?.isCoveringActivity != true else { return false }
-        switch presentedKind {
-        case nil, .glance, .nowPlaying: return false
-        default: return true
+        return Self.kindOwnsBody(presentedKind)
+    }
+
+    /// Whether an activity of this kind brings a body of its own, rather than being one the pages
+    /// are about. The kind half of `activityOwnsBody` and `isCoveringBodyOwningActivity`.
+    nonisolated static func kindOwnsBody(_ kind: ActivityKind?) -> Bool {
+        switch kind {
+        case nil, .glance, .nowPlaying: false
+        default: true
         }
     }
 
@@ -634,11 +640,42 @@ public final class IslandScreenModel {
     /// The two pages a live swipe is dragging between: the roster's neighbours of the current page,
     /// or — over an activity's body — the pages either side of where that activity stands, which is
     /// just before home. See `IslandPageRoster.stepped(fromActivityBy:)`.
-    public var pageNeighbours: (previous: IslandPage, next: IslandPage) {
+    ///
+    /// Nil on a side means **the covered activity** is the neighbour there: while the pages stand in
+    /// front of a call it is the first stop on the carousel, so one back from home — or one on from
+    /// the last page — drags the call's own body back in. See `coveredActivityNeighbourSides`.
+    public var pageNeighbours: (previous: IslandPage?, next: IslandPage?) {
         if activityOwnsBody {
             return (pageRoster.stepped(fromActivityBy: -1), pageRoster.stepped(fromActivityBy: 1))
         }
-        return (pageRoster.previous(before: currentPage), pageRoster.next(after: currentPage))
+        let covering = isCoveringBodyOwningActivity
+        return (
+            pageRoster.stepped(from: currentPage, by: -1, coveringActivity: covering),
+            pageRoster.stepped(from: currentPage, by: 1, coveringActivity: covering)
+        )
+    }
+
+    /// Whether the pages are standing in front of an activity that brought a body of its own — the
+    /// activity a swipe can turn back to.
+    var isCoveringBodyOwningActivity: Bool {
+        page?.isCoveringActivity == true && Self.kindOwnsBody(presentedKind)
+    }
+
+    /// Which sides of a live page drag the covered activity's body is drawn on: `-1` one page to the
+    /// left, `+1` one page to the right. Empty unless a swipe is live over pages that are covering an
+    /// activity and that activity is a neighbour of the page showing.
+    ///
+    /// Both sides at once on a one-page roster, which is what a two-stop carousel is.
+    public var coveredActivityNeighbourSides: [CGFloat] {
+        guard contentPresentation == .expanded, !isStowed, swipe.isPaging,
+              isCoveringBodyOwningActivity, !isShowingNowPlayingQueue, !isShowingDropHistory,
+              glance?.isShowingSchedule != true
+        else { return [] }
+        let neighbours = pageNeighbours
+        var sides: [CGFloat] = []
+        if neighbours.previous == nil { sides.append(-1) }
+        if neighbours.next == nil { sides.append(1) }
+        return sides
     }
 
     /// Whether the open island is showing a **page** rather than an activity's own body.
@@ -1155,6 +1192,35 @@ public final class IslandScreenModel {
         guard let page, swipe.isPaging, swipe.progress != 0 else { return nil }
         return page.page(steppedBy: swipe.progress < 0 ? 1 : -1)
     }
+
+    /// The stops the row of dots draws, in carousel order: the activity first when it has a body
+    /// open or covered, then the pages. See `IslandCarouselStop`.
+    public var carouselStops: [IslandCarouselStop] {
+        let pages = pageRoster.pages.map(IslandCarouselStop.page)
+        let hasActivityStop = (activityOwnsBody || isCoveringBodyOwningActivity) && presentedKind != .shelf
+        return hasActivityStop ? [.activity] + pages : pages
+    }
+
+    /// The stop the body is showing — the activity while it owns the body, otherwise the page.
+    public var currentStop: IslandCarouselStop {
+        activityOwnsBody ? .activity : .page(currentPage)
+    }
+
+    /// `pageBeingDraggedTo`, but able to answer "the activity" — the stop a drag back from home, or on
+    /// from the last page, is heading for while the pages cover one. And from the activity's own body,
+    /// the page either side of it rather than the neighbour of the page underneath.
+    public var stopBeingDraggedTo: IslandCarouselStop? {
+        guard swipe.isPaging, swipe.progress != 0 else { return nil }
+        let step = swipe.progress < 0 ? 1 : -1
+        if activityOwnsBody { return .page(pageRoster.stepped(fromActivityBy: step)) }
+        let covering = isCoveringBodyOwningActivity
+        return pageRoster.stepped(from: currentPage, by: step, coveringActivity: covering)
+            .map(IslandCarouselStop.page) ?? .activity
+    }
+
+    /// Go back to the activity the pages are covering. Set by the app shell; the activity's dot
+    /// calls it. See `onSelectPage`, whose reasons for going through the shell are the same.
+    public var onSelectActivity: (() -> Void)?
 
     /// How far through that drag the finger is, `0`…`1`. Unsigned: which page it is going to is
     /// `pageBeingDraggedTo`'s answer, and the indicator needs only the weight.
