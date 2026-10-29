@@ -129,7 +129,8 @@ brightness are separate switches, and both need Accessibility — decline it and
 
 - **Timers** you start in Clock, counting down beside the notch in Clock's own ring
 - **Battery and power** — the charger going in and out, a low battery, Low Power Mode
-- **A call in progress**, and how long it's been going
+- **A call in progress** — the island opens for a few seconds to say so, then closes back to the
+  app's icon and the call's length beside the notch
 - **Welcome back** — a greeting on wake, in the right language for the hour
 - **Screen sharing**, so you know when you're being watched
 - **An update waiting** — Isleta's icon beside the notch with a download mark, even while music
@@ -153,7 +154,7 @@ taps once under your finger.
 |---|---|
 | Move the pointer onto the notch | It peeks — an invitation to click |
 | Click | It opens |
-| **Swipe two fingers sideways** | Turn the page: Today → Music → Weather, and around again. Music is on the carousel only while something is playing |
+| **Swipe two fingers sideways** | Turn the page: Today → Music → Weather, and around again. Music is on the carousel only while something is playing, and a call in progress joins it as a first page with a dot of its own |
 | Press or drag the volume or brightness bar | Sets that level there and then |
 | Drag a file onto it | The shelf opens and takes it |
 | Flick a closed island sideways | Whatever's on stage stows out of the way. Click to bring it back |
