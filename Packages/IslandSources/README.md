@@ -546,6 +546,18 @@ prompt in one and an explanation in the other.
   `DispatchSource` on its pid's exit. Codex is not read here: its rollouts are compressed
   transcripts with no state field, so it reaches the island only through its hooks.
 
+- **`AgentHookScript`, `AgentHookServer` and `AgentHookSettings`** — the opt-in half: answering a
+  permission prompt from the island. One Perl script (`/usr/bin/perl`, core modules only) at a
+  stable path in Application Support, registered for `PermissionRequest` alone — everything else
+  the feature needs is already in the session file. It trims the agent's event to one summary line,
+  sends it down a `0600` Unix socket in a `0700` folder, and for a permission request waits for one
+  line back; it **always exits 0 and prints nothing unless Isleta answered**, so Isleta not running
+  is indistinguishable from the hook not being there. The server checks every peer's uid with
+  `getpeereid`, answers only on the connection that asked, never sends `updatedPermissions`, and
+  closes without answering when the terminal got there first. `AgentHookSettings` adds and removes
+  exactly Isleta's handler — recognised by the script's path — and refuses a settings file that is
+  not a JSON object rather than rewriting it. Not wired to the island yet.
+
 ## Will not own
 
 - **Notifications, in every form.** `NotificationSource` shipped via the Accessibility route —
