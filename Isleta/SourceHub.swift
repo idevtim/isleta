@@ -66,6 +66,10 @@ final class SourceHub {
     private let power: PowerSource
     private let calls: CallSource
 
+    /// Held concretely for the one thing a click needs that `ActivitySource` cannot say: which
+    /// terminal a session's activity belongs to, so the island can bring it forward.
+    let codingAgents: CodingAgentSource
+
     /// Whether `weather` has been started. It is **not in `entries`** — it publishes *into* the
     /// calendar source rather than onto the island — so the loop in `apply(_:)` cannot do this
     /// bookkeeping for it.
@@ -135,6 +139,7 @@ final class SourceHub {
         self.calendar = CalendarSource()
         self.power = PowerSource()
         self.calls = CallSource()
+        self.codingAgents = CodingAgentSource()
         // The provider is chosen here, beside the fallback, for the reason the Bluetooth monitor is:
         // one place reaches for the gated route and one place names what happens without it. **Which
         // of the two you get is decided by the signature, not by a setting**: a Release build signed
@@ -162,6 +167,8 @@ final class SourceHub {
             // Stage 2.
             Entry(kind: .power, source: power),
             Entry(kind: .call, source: calls),
+            // 2.8.
+            Entry(kind: .codingAgent, source: codingAgents),
         ]
 
         // Routed once, at construction, rather than on every `start()`. The callbacks are the
@@ -982,6 +989,20 @@ final class SourceHub {
                 """
             ))
 
+        case .codingAgent:
+            // Not installed is `unavailable`, the battery-less Mac's shape: nothing is refused, there
+            // is nothing on this Mac to watch. Claude Code creates the folder on its first run.
+            guard codingAgents.isAgentInstalled else {
+                return .unavailable(appText(
+                    "sources.codingAgent.status.notInstalled",
+                    "Claude Code isn’t installed on this Mac, so there is nothing to show here."
+                ))
+            }
+            return .working(appText(
+                "sources.codingAgent.status.working",
+                "Working. Reads the session state Claude Code already keeps, and needs no permission."
+            ))
+
         // The 2.0 vocabulary. Each takes a real status when its source lands; until then the same
         // answer the three permission-free kinds already give. Grouped separately rather than
         // folded in, so adding a source is a visible edit rather than a silent omission.
@@ -1097,6 +1118,11 @@ final class SourceHub {
             return "battery \(power.hasBattery ? "present" : "absent"), announced \(power.announcementCount)"
         case .call:
             return "calls shown \(calls.publishedCount)"
+        case .codingAgent:
+            // Whether the folder exists and how many moments were shown. Never a session's name or
+            // folder: both are derived from a path the user chose.
+            return "installed \(codingAgents.isAgentInstalled ? "yes" : "no"), "
+                + "announced \(codingAgents.announcementCount)"
         // The 2.0 vocabulary. Each of these gains a real line when its source lands; until then a
         // nil is the honest answer, and it is written out as a group rather than folded into the
         // line above so that adding a source is a visible edit here rather than a silent omission.
@@ -1122,6 +1148,7 @@ final class SourceHub {
         case .focusChanged: appText("sources.focusChanged.title", "Focus changes")
         case .screenSharing: appText("sources.screenSharing.title", "Screen sharing")
         case .updateAvailable: appText("sources.updateAvailable.title", "Updates")
+        case .codingAgent: appText("sources.codingAgent.title", "Coding agents")
         }
     }
 
@@ -1222,6 +1249,14 @@ final class SourceHub {
             appText(
                 "sources.updateAvailable.summary",
                 "Shows when a new version of Isleta is ready to install."
+            )
+        case .codingAgent:
+            appText(
+                "sources.codingAgent.summary",
+                """
+                Tells you when Claude Code stops to wait for you, or finishes, while you’re in another \
+                app. Click the island to go back to the terminal.
+                """
             )
         }
     }

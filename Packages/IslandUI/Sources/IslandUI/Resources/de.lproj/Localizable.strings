@@ -157,3 +157,6 @@
 "update.install" = "Update installieren …";
 "update.install.a11y" = "Das Update installieren";
 "update.install.help" = "Schließt die Insel und öffnet das Update-Fenster, in dem du es installieren und Isleta neu starten kannst.";
+
+/* Section: a coding agent in a terminal, spoken by VoiceOver */
+"activityKind.codingAgent" = "Coding-Agent";

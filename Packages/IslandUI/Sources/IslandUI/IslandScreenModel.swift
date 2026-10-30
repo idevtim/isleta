@@ -1420,7 +1420,7 @@ public final class IslandScreenModel {
         // the other, both things rather than words.
         case .nowPlaying, .deviceConnected, .updateAvailable: return true
         case .systemHUD, .welcomeBack, .shelf, .timer, .glance, .calendarAlert, .meeting,
-             .power, .call, .fileAction, .focusChanged, .screenSharing:
+             .power, .call, .fileAction, .focusChanged, .screenSharing, .codingAgent:
             return false
         }
     }

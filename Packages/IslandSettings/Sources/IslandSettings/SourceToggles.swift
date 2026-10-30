@@ -111,6 +111,17 @@ public struct SourceToggles: Equatable, Sendable {
     /// A persistent reminder that the screen is being recorded or shared.
     public var screenSharing: Bool
 
+    // MARK: - 2.8
+
+    /// A coding agent in a terminal that has stopped on the user, or has just finished.
+    ///
+    /// **On by default, with the rule above**, and it can afford to be: the route installs nothing
+    /// and edits no file the agent owns — it reads the session files Claude Code already keeps — so
+    /// on a Mac without an agent it watches nothing and on a Mac with one it speaks only when a
+    /// session is waiting on somebody who is looking at another app. Absent from every file written
+    /// before 2.8, which the per-key decoder reads as this default; no migration step.
+    public var codingAgents: Bool
+
     public init(
         nowPlaying: Bool = true,
         systemHUDs: Bool = true,
@@ -126,7 +137,8 @@ public struct SourceToggles: Equatable, Sendable {
         calls: Bool = true,
         dropActions: Bool = true,
         respectsFocus: Bool = true,
-        screenSharing: Bool = true
+        screenSharing: Bool = true,
+        codingAgents: Bool = true
     ) {
         self.nowPlaying = nowPlaying
         self.systemHUDs = systemHUDs
@@ -143,6 +155,7 @@ public struct SourceToggles: Equatable, Sendable {
         self.dropActions = dropActions
         self.respectsFocus = respectsFocus
         self.screenSharing = screenSharing
+        self.codingAgents = codingAgents
     }
 
     /// Whether the source that publishes `kind` may run.
@@ -172,6 +185,7 @@ public struct SourceToggles: Equatable, Sendable {
             // Governed by "Check for updates automatically" in General, which is Sparkle's own
             // setting — a second switch here would be two answers to one question.
             case .updateAvailable: true
+            case .codingAgent: codingAgents
             }
         }
         set {
@@ -191,6 +205,7 @@ public struct SourceToggles: Equatable, Sendable {
             case .screenSharing: screenSharing = newValue
             case .shelf: break
             case .updateAvailable: break
+            case .codingAgent: codingAgents = newValue
             }
         }
     }
@@ -219,6 +234,7 @@ public struct SourceToggles: Equatable, Sendable {
         case .screenSharing: \IsletaConfiguration.sources.screenSharing
         case .shelf: nil
         case .updateAvailable: nil
+        case .codingAgent: \IsletaConfiguration.sources.codingAgents
         }
     }
 
@@ -278,6 +294,7 @@ extension SourceToggles: Codable {
         case dropActions
         case respectsFocus
         case screenSharing
+        case codingAgents
     }
 
     /// Per-key fallback, for the same reason `IsletaConfiguration`'s decoder has it: a record
@@ -308,5 +325,6 @@ extension SourceToggles: Codable {
         dropActions = value(.dropActions, defaults.dropActions)
         respectsFocus = value(.respectsFocus, defaults.respectsFocus)
         screenSharing = value(.screenSharing, defaults.screenSharing)
+        codingAgents = value(.codingAgents, defaults.codingAgents)
     }
 }

@@ -150,6 +150,9 @@ public enum FocusSuppression {
         // A ringing or connected call outranks a Focus, which has its own allow-calls rules that
         // this app cannot see. A dying battery outranks everything.
         case .call, .power: false
+        // The user's own work, stopped on them: a Focus turned on to get that work done is the last
+        // thing that should hide it. The same argument as a timer they set.
+        case .codingAgent: false
         // The one kind that would suppress itself: a Focus turning *on* is announced at the instant
         // a Focus is on. It is also the explanation for the silence everything above causes.
         case .focusChanged: false

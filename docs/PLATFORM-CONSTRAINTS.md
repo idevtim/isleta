@@ -1233,6 +1233,49 @@ notch. The same build retained effective Accessibility across the rebuild. This 
 merely an AX observer registration. App-specific dynamic menu notifications remain a separate
 compatibility question; no polling was added to compensate for unsupported hints.
 
+### Coding agents — Claude Code 2.1.314 and Codex 0.163.0, macOS 27.2, 2026-10-30
+
+- **Claude Code keeps a state file per running session, and its status has four values.**
+  `~/.claude/sessions/<pid>.json` carries `pid`, `sessionId`, `cwd`, `name`, `kind` (`interactive`
+  for a terminal session), `status`, `waitingFor` and `statusUpdatedAt`. Recorded live for ten
+  minutes across seven sessions: `busy` while a turn runs, **`shell` while a Bash tool runs** — not
+  in the list read out of the binary, and the reason a turn ending in a command reads `shell → idle`
+  rather than `busy → idle` — `waiting` with `waitingFor: "permission prompt"` on a permission
+  prompt and `"input needed"` on a question, and `idle` when the turn is over. The binary also names
+  `dialog open`, `sandbox request` and `goal proposal` reasons. It is a private format: decode
+  leniently and treat an unknown status as no evidence.
+- **The file is rewritten when the state changes, not while the session works**, so watching the
+  folder costs nothing during a long turn. `statusUpdatedAt` did not move across several minutes of
+  continuous tool use. An FSEvents stream with `kFSEventStreamCreateFlagFileEvents` delivered an
+  in-place rewrite to the callback about 20 ms after it was written.
+- **The file outlives its process.** The format records no exit, so liveness has to come from the
+  pid — and pids are recycled, so the pid's executable is checked too.
+- **Frontmost is an app, not a window.** With a session in one VS Code window and the person in
+  another, the session's app was frontmost throughout, and a rule of "never while its app is in
+  front" never fired — found on the first hardware run. Which window holds the session would take
+  Accessibility or Screen Recording; the shipped rule waits six seconds instead, which is when
+  Claude Code raises its own notification (below).
+- **The parent chain reaches the terminal without Accessibility.** `claude → zsh → Code Helper →
+  Code` for a session in VS Code's terminal, read with `sysctl(KERN_PROC_PID)`; the first ancestor
+  that is a regular `NSRunningApplication` is the app to raise. Under tmux the chain ends at the tmux
+  server and there is no terminal to find.
+- **A `PermissionRequest` hook does not hold the terminal's prompt back.** Measured with a probe hook
+  that slept 20 s: the terminal showed its own prompt at once, the person answered it 2.4 s in, the
+  tool ran, the turn ended, and the hook kept running until its own sleep ran out — **nothing tells
+  a hook that its question was answered elsewhere.** A hook that answers
+  `{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}`
+  after 8 s with the prompt untouched dismissed the prompt, and the tool ran 0.6 s later. The
+  request carries `session_id`, `tool_name` and `tool_input` (Bash's includes a `description`) but
+  no `tool_use_id`. A `Notification` with `notification_type: permission_prompt` follows about 6 s
+  after an unanswered prompt.
+- **Codex has hooks too, behind a trust step.** The 0.163.0 binary lists `hooks` as a stable feature
+  that is on, with `PermissionRequest`, `PostToolUse`, `UserPromptSubmit`, `Stop` and others, and the
+  same `decision: {behavior: allow | deny, message}` output shape. A hook only runs once the user has
+  trusted it in Codex, recorded as a `trusted_hash`; writing that hash on the user's behalf would be
+  skipping the review Codex exists to make them do. Read from the binary's embedded schemas — **not
+  yet measured in a live Codex session.** Its rollouts are zstd-compressed transcripts with no state
+  field, so there is no passive route.
+
 ### Menu bar icons are out of reach — macOS 27.2, 2026-10-21
 
 Clearance covers the frontmost app's menus only; the island can still sit over other apps' menu

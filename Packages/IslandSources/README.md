@@ -533,6 +533,19 @@ prompt in one and an explanation in the other.
   hover-to-frame budget, so a volume HUD never asks. The answer is reused for one second, which
   covers a burst of notifications and schedules nothing.
 
+- **`CodingAgentSource`** — a coding agent in a terminal that has stopped on the user, or has just
+  finished a turn. Reads `~/.claude/sessions/<pid>.json`, which Claude Code already keeps, through
+  an FSEvents stream on that folder: **nothing is installed and nothing the agent owns is edited.**
+  `CodingAgentAttention` is the pure table — the first sighting is a baseline, a waiting session is
+  shown at once when its app is not frontmost and after a six-second grace when it is (frontmost is
+  an app, not a window), a finished turn only when its app is not frontmost, and whatever is shown
+  leaves when the session moves on or its app is brought forward. `ProcessAncestry` walks the
+  parent chain with `sysctl(KERN_PROC_PID)` to the first regular app, which is both the icon drawn
+  and what a click raises. A file outlives its process, so a record is believed only while its pid
+  is alive and still running something Claude-shaped, and each live session holds a
+  `DispatchSource` on its pid's exit. Codex is not read here: its rollouts are compressed
+  transcripts with no state field, so it reaches the island only through its hooks.
+
 ## Will not own
 
 - **Notifications, in every form.** `NotificationSource` shipped via the Accessibility route —

@@ -97,6 +97,15 @@ public enum ActivityKind: String, CaseIterable, Sendable {
     /// reminder at all.
     case updateAvailable
 
+    /// A coding agent in one of the user's terminals — Claude Code, Codex — that has stopped and
+    /// is waiting on the person, or has just finished a turn. See `CodingAgentMoment` for why there
+    /// is no case for an agent that is merely working.
+    ///
+    /// One kind for every agent rather than a kind per program, for `SourceToggles`' reason: the
+    /// vocabulary names what the island *says*, and "your agent needs you" is one thing to say
+    /// whichever program is saying it. The program is data (`CodingAgent`).
+    case codingAgent
+
     /// Where this kind sits by default. A provider may override it, but starting from the kind is
     /// what stops a volume HUD shipping at `.ambient` and never being seen.
     public var defaultPriority: ActivityPriority {
@@ -119,6 +128,10 @@ public enum ActivityKind: String, CaseIterable, Sendable {
         // A calendar alert and a joinable meeting are `.prominent` on the same argument the
         // greeting is: something happened, it has the user's name on it, and it expires.
         case .calendarAlert, .meeting, .power, .focusChanged: .prominent
+        // `.prominent` and not `.interrupting`: an agent waiting costs the person nothing by the
+        // second the way a ringing phone does, and a volume key pressed while it waits must still
+        // be answered. Above the ambient music, so a stopped session is what the island shows.
+        case .codingAgent: .prominent
         // A ringing phone is the one thing in this vocabulary that outranks a volume key, and it is
         // the only new kind that earns `.interrupting`. Every other candidate was talked out of it:
         // a meeting starting is prominent, a battery at 5% is prominent, a conversion finishing is
@@ -150,6 +163,9 @@ public enum ActivityKind: String, CaseIterable, Sendable {
         // every one of them the source knows, and an expiry would be Isleta guessing over the top
         // of a source that has the answer.
         case .call, .fileAction, .screenSharing: .never
+        // A session needing input ends when the session moves on, which the source sees; the
+        // finished moment carries its own dwell from `BuiltInActivity.codingAgent`.
+        case .codingAgent: .never
         case .updateAvailable: .never
         // Never presented, so never expired. `.never` rather than a duration because a page does
         // not time out — the user turns away from it. See the case's own note.
@@ -189,6 +205,9 @@ public enum ActivityKind: String, CaseIterable, Sendable {
         // would watch one progress bar do the work of two. A calendar can alert on two events
         // starting in the same minute, and a Mac can be in a call while another comes in.
         case .fileAction, .calendarAlert, .call: nil
+        // Two terminals can each be running a session, and each is owed its own island — the id is
+        // the session's (`CodingAgentSession.activityID`).
+        case .codingAgent: nil
         default: ActivityID("builtin.\(rawValue)")
         }
     }
@@ -240,6 +259,7 @@ public enum ActivityKind: String, CaseIterable, Sendable {
         case .focusChanged: "moon.fill"
         case .screenSharing: "record.circle"
         case .updateAvailable: "arrow.down.circle.fill"
+        case .codingAgent: "apple.terminal.fill"
         }
     }
 
@@ -274,6 +294,8 @@ public enum ActivityKind: String, CaseIterable, Sendable {
         // kept is the primary's own flank, so the icon stays, and it wears the download mark on its
         // corner so "update" is still said once the glyph's half has gone to the music.
         case .updateAvailable: .leading
+        // The terminal's icon on the left, reading into what the session needs on the right.
+        case .codingAgent: .leading
         // The first kind to want the other sliver, and the reason the table exists. A timer's
         // content *is* a number, so it belongs where the other kinds put their numbers — which
         // also puts music on the left of the notch and a countdown on the right whichever of the
@@ -349,7 +371,7 @@ public enum ActivityKind: String, CaseIterable, Sendable {
         // to be told apart from.
         case .nowPlaying, .welcomeBack, .shelf, .timer, .deviceConnected, .glance,
              .calendarAlert, .meeting, .call, .fileAction, .focusChanged, .screenSharing,
-             .updateAvailable:
+             .updateAvailable, .codingAgent:
             .standard
         }
     }
@@ -372,7 +394,7 @@ public enum ActivityKind: String, CaseIterable, Sendable {
         case .systemHUD: true
         case .nowPlaying, .welcomeBack, .shelf, .timer, .deviceConnected, .glance,
              .calendarAlert, .meeting, .power, .call, .fileAction, .focusChanged, .screenSharing,
-             .updateAvailable:
+             .updateAvailable, .codingAgent:
             false
         }
     }
@@ -412,6 +434,9 @@ public enum ActivityKind: String, CaseIterable, Sendable {
              .focusChanged, .screenSharing: false
         // A reminder, not an interruption: the flanks say it, and opening is the user's choice.
         case .updateAvailable: false
+        // Says its piece in the flanks, and a click on them goes straight to the terminal rather
+        // than opening anything — the answer is in the terminal, not behind the island.
+        case .codingAgent: false
         // A finished timer does **not** open the island by itself. It arrives `.interrupting`, so
         // it takes the stage and is visible in the flanks with no click — the same way a volume HUD
         // is.
@@ -822,6 +847,60 @@ public struct BuiltInActivity: IslandActivity, Equatable {
                     accessibilityLabel: state.isFinished
                         ? activityText("timer.finished.a11y", "\(name) finished")
                         : name
+                )
+            )
+        )
+    }
+
+    /// A coding agent that has stopped for the person, or has just finished.
+    ///
+    /// The terminal's icon in the leading sliver, because the terminal is where a click goes and
+    /// where the answer is typed — the agent itself has no mark in SF Symbols, and drawing another
+    /// company's logo would be Isleta wearing it. `apple.terminal.fill` stands in until the icon
+    /// resolves, and for a session whose terminal could not be found at all. The corner badge and
+    /// the trailing glyph are the moment: a raised hand for "waiting on you", a check for "done".
+    ///
+    /// Needing input carries no expiry (`ActivityKind.codingAgent.defaultExpiry`) — the source
+    /// retracts it the moment the session moves on, whichever surface answered. Finished is a
+    /// moment with a dwell, the length of a finished timer's, because nothing retracts it.
+    public static func codingAgent(_ session: CodingAgentSession, moment: CodingAgentMoment) -> Self {
+        let agent = session.agent.displayName
+        let title = session.name.flatMap { $0.isEmpty ? nil : $0 } ?? agent
+        let mark = switch moment {
+        case .needsInput: "hand.raised.fill"
+        case .finished: "checkmark.circle.fill"
+        }
+        let tint: ActivityTint = switch moment {
+        case .needsInput: .warning
+        case .finished: .positive
+        }
+        let subtitle = switch moment {
+        case .needsInput: activityText("codingAgent.needsInput", "\(agent) needs your input")
+        case .finished: activityText("codingAgent.finished", "\(agent) finished")
+        }
+        let spoken = activityText("codingAgent.a11y", "\(title): \(subtitle)")
+        return Self(
+            id: session.activityID,
+            kind: .codingAgent,
+            expiry: moment == .finished ? .after(.seconds(6)) : nil,
+            presentations: ActivityPresentations(
+                leading: ActivityContent(
+                    symbol: "apple.terminal.fill",
+                    applicationIconName: session.terminalApplicationName,
+                    tint: .neutral,
+                    accessibilityLabel: spoken,
+                    badgeSymbol: mark
+                ),
+                trailing: ActivityContent(symbol: mark, tint: tint, accessibilityLabel: spoken),
+                compact: ActivityContent(symbol: mark, title: title, tint: tint, accessibilityLabel: spoken),
+                expanded: ActivityContent(
+                    symbol: "apple.terminal.fill",
+                    applicationIconName: session.terminalApplicationName,
+                    title: title,
+                    subtitle: subtitle,
+                    tint: .neutral,
+                    accessibilityLabel: spoken,
+                    badgeSymbol: mark
                 )
             )
         )

@@ -275,6 +275,7 @@ extension ActivityKind {
         // macOS never lets a non-Apple app draw, and opened a 200pt island around a 44pt row.
         case .systemHUD, .welcomeBack, .timer, .call: true
         case .calendarAlert, .meeting, .power, .focusChanged, .screenSharing: true
+        case .codingAgent: true
         }
     }
 }

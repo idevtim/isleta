@@ -96,3 +96,9 @@
 /* An update waiting */
 "sources.updateAvailable.title" = "Actualizaciones";
 "sources.updateAvailable.summary" = "Avisa cuando hay una nueva versión de Isleta lista para instalar.";
+
+/* Section: coding agents in the Sources pane */
+"sources.codingAgent.title" = "Agentes de programación";
+"sources.codingAgent.summary" = "Te avisa cuando Claude Code se detiene a esperarte, o termina, mientras estás en otra app. Haz clic en la isla para volver al terminal.";
+"sources.codingAgent.status.notInstalled" = "Claude Code no está instalado en este Mac, así que aquí no hay nada que mostrar.";
+"sources.codingAgent.status.working" = "Funcionando. Lee el estado de sesión que Claude Code ya guarda, y no necesita ningún permiso.";

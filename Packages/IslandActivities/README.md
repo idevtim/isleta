@@ -38,9 +38,10 @@ Apple-blessed way for a third party to receive another app's Live Activities (§
   somebody muted, and let a drag set a volume nobody can hear.
 - **`ActivityCoordinator`** — the thin shell around one stack: supplies `now`, keeps the single
   scheduled sleep in step with the earliest deadline, and publishes `ActivityChange`.
-- **`ActivityKind` and `BuiltInActivity`** — the closed vocabulary, **fifteen kinds**:
+- **`ActivityKind` and `BuiltInActivity`** — the closed vocabulary, **sixteen kinds**:
   `nowPlaying`, `systemHUD`, `welcomeBack`, `shelf`, `timer`, `deviceConnected`, `glance`,
-  `calendarAlert`, `meeting`, `power`, `call`, `fileAction`, `focusChanged`, `screenSharing` and `updateAvailable`,
+  `calendarAlert`, `meeting`, `power`, `call`, `fileAction`, `focusChanged`, `screenSharing`,
+  `updateAvailable` and `codingAgent`,
   each with the priority and expiry its job implies. Closed on purpose: an open `String` kind, or
   a `case custom(String)`, would let a caller invent a kind the stage has no rule for.
 

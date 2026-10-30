@@ -38,6 +38,10 @@ struct BuiltInActivityTests {
             // answer. The glance is here for the reason the recents list keeps its ground: it is
             // read, not glanced at.
             #expect(activity.expiry == .never)
+        case .codingAgent:
+            // A session waiting on the person ends when the session moves on, which the source
+            // sees. The finished moment carries its own dwell per instance — see `codingAgent`.
+            #expect(activity.expiry == .never)
         case .updateAvailable:
             // Still available tomorrow. Sparkle retracts it once the update has been looked at; a
             // reminder that lapsed on a clock would be no reminder.
@@ -48,6 +52,34 @@ struct BuiltInActivityTests {
             // enough to be read is a lower bar than living long enough to be hit.
             #expect(activity.expiry != .never)
         }
+    }
+
+    @Test("a coding agent is one island per session, and only its finished moment expires")
+    func codingAgentMoments() {
+        let session = CodingAgentSession(
+            agent: .claudeCode, sessionID: "abc", name: "isleta-6a", terminalApplicationName: "Terminal")
+        let waiting = BuiltInActivity.codingAgent(session, moment: .needsInput)
+        let finished = BuiltInActivity.codingAgent(session, moment: .finished)
+
+        // The same id for both moments, so waiting → finished is an update that crossfades rather
+        // than a second island queued behind the first.
+        #expect(waiting.id == finished.id)
+        #expect(waiting.id == ActivityID("builtin.codingAgent.claudeCode.abc"))
+        #expect(waiting.priority == .prominent)
+        #expect(waiting.expiry == .never)
+        #expect(finished.expiry == .after(.seconds(6)))
+
+        // The terminal's icon, which is where a click goes, with the moment on its corner.
+        #expect(waiting.presentations.leading.applicationIconName == "Terminal")
+        #expect(waiting.presentations.leading.badgeSymbol == "hand.raised.fill")
+        #expect(finished.presentations.trailing.symbol == "checkmark.circle.fill")
+        #expect(waiting.presentations.expanded.title == "isleta-6a")
+
+        // A second session is its own island.
+        let other = CodingAgentSession(agent: .claudeCode, sessionID: "def", name: nil, terminalApplicationName: nil)
+        #expect(BuiltInActivity.codingAgent(other, moment: .needsInput).id != waiting.id)
+        // With no name of its own, the session is called by the agent's.
+        #expect(BuiltInActivity.codingAgent(other, moment: .finished).presentations.expanded.title == "Claude Code")
     }
 
     /// The three shapes a Clock timer takes, and the two that must not cost a display link.
@@ -190,6 +222,8 @@ struct BuiltInActivityTests {
             // The 2.0 additions. Two files convert at once, a calendar alerts on two events
             // starting in the same minute, and a second call comes in during a call.
             .fileAction, .calendarAlert, .call,
+            // 2.8: two terminals can each have a session stopped on the person.
+            .codingAgent,
         ]
         if plural.contains(kind) {
             #expect(kind.singletonID == nil)
