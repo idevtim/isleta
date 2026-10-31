@@ -182,3 +182,12 @@
 "sources.systemHUD.replace.caption" = "Isleta beantwortet die Lautstärke- und Stummtasten selbst, sodass macOS seine eigene Anzeige nie zeigt. Benötigt Bedienungshilfen. Beim Beenden von Isleta gehen die Tasten sofort zurück.";
 "sources.systemHUD.replaceBrightness" = "System-Helligkeitsanzeige ersetzen";
 "sources.systemHUD.replaceBrightness.caption" = "Isleta beantwortet die Helligkeitstasten für das eingebaute Display selbst. Benötigt Bedienungshilfen. Beim Beenden von Isleta gehen die Tasten sofort zurück.";
+
+/* Sources ▸ Coding Agents: answering permission prompts from the island. */
+"sources.agents" = "Coding-Agents";
+"sources.agents.answer" = "Berechtigungsanfragen auf der Insel beantworten";
+"sources.agents.summary.off" = "Wenn Claude Code um Erlaubnis bittet, etwas auszuführen, zeigt die Insel das an und du antwortest im Terminal. Schalte das ein, um mit „Erlauben“ oder „Ablehnen“ auf der Insel zu antworten; Isleta fügt dazu einen Hook in ~/.claude/settings.json ein und entfernt ihn wieder, wenn du das ausschaltest.";
+"sources.agents.summary.notInstalled" = "Claude Code wurde auf diesem Mac noch nicht ausgeführt, daher gibt es keinen Ort für den Hook. Starte es einmal und schalte das dann aus und wieder ein.";
+"sources.agents.summary.unreadable" = "~/.claude/settings.json ist kein gültiges JSON, daher hat Isleta die Datei nicht angerührt. Korrigiere sie und schalte das dann aus und wieder ein.";
+"sources.agents.summary.failed" = "Isleta konnte seinen Hook nicht hinzufügen. Anfragen erscheinen weiterhin auf der Insel; beantworte sie im Terminal.";
+"sources.agents.summary.on" = "„Erlauben“ und „Ablehnen“ erscheinen auf der geöffneten Insel, wenn Claude Code um Erlaubnis bittet. „Erlauben“ genehmigt nur diese eine Anfrage und ändert keine deiner Regeln. Die Anfrage im Terminal bleibt bestehen – was du zuerst beantwortest, gilt.";

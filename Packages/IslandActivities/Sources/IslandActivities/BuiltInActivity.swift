@@ -890,8 +890,19 @@ public struct BuiltInActivity: IslandActivity, Equatable {
             action = app.map { activityText("codingAgent.reviewIn", "See what it did in \($0)") }
                 ?? activityText("codingAgent.reviewInTerminal", "See what it did in the terminal")
         }
-        let detail = session.name.flatMap { $0.isEmpty ? nil : $0 }
-            .map { activityText("codingAgent.detail", "\($0) · \(action)") } ?? action
+        let name = session.name.flatMap { $0.isEmpty ? nil : $0 }
+        // **A prompt the island can answer says what is being asked**, because that is what is
+        // being allowed: the command for a shell call, the file or URL otherwise. The session's
+        // name and the tool lead, the request follows on its own line, and "Allow or deny it in…"
+        // goes — the buttons under it are where.
+        let answerable = moment == .needsInput ? session.prompt : nil
+        let detail: String
+        if let answerable {
+            let lead = [name, answerable.toolName].compactMap { $0 }.joined(separator: " · ")
+            detail = [lead.isEmpty ? nil : lead, answerable.detail].compactMap { $0 }.joined(separator: "\n")
+        } else {
+            detail = name.map { activityText("codingAgent.detail", "\($0) · \(action)") } ?? action
+        }
         let spoken = activityText("codingAgent.a11y", "\(headline): \(detail)")
         let mark = session.agent.mark
         return Self(
@@ -914,10 +925,11 @@ public struct BuiltInActivity: IslandActivity, Equatable {
                 expanded: ActivityContent(
                     symbol: "apple.terminal.fill",
                     title: headline,
-                    subtitle: detail,
+                    subtitle: detail.isEmpty ? nil : detail,
                     tint: .neutral,
                     accessibilityLabel: spoken,
-                    mark: mark
+                    mark: mark,
+                    offersAllowDeny: answerable != nil
                 )
             )
         )

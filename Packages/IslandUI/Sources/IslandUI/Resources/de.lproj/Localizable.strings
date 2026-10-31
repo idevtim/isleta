@@ -160,3 +160,7 @@
 
 /* Section: a coding agent in a terminal, spoken by VoiceOver */
 "activityKind.codingAgent" = "Coding-Agent";
+
+/* A coding agent's permission prompt, answered from the open island. */
+"codingAgent.deny" = "Ablehnen";
+"codingAgent.allow" = "Erlauben";

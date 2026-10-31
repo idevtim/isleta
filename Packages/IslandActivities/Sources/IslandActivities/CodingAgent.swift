@@ -53,6 +53,29 @@ public enum CodingAgentWait: Equatable, Sendable {
     case input
 }
 
+/// A permission prompt the island can answer itself, because the agent's hook is holding it open
+/// (`AgentHookServer` in IslandSources). What it shows is **shown and never logged**: a command
+/// line or a file path is the user's own text.
+public struct CodingAgentPrompt: Equatable, Sendable {
+    /// The agent's name for the tool — "Bash", "Write", "WebFetch". Not localized: the agent's word.
+    public let toolName: String?
+    /// The command for a shell call, else the agent's one line for the call — a file, a URL, a
+    /// pattern, or its own description of it.
+    public let detail: String?
+
+    public init(toolName: String?, detail: String?) {
+        self.toolName = toolName
+        self.detail = detail
+    }
+}
+
+/// How the person answered a permission prompt from the island. Allowing allows this one call and
+/// changes no rule — the agent's settings are the place for that.
+public enum CodingAgentAnswer: Equatable, Sendable {
+    case allow
+    case deny
+}
+
 /// One session, as the island needs it: which agent, what it is called, where it lives.
 public struct CodingAgentSession: Equatable, Sendable {
 
@@ -73,15 +96,19 @@ public struct CodingAgentSession: Equatable, Sendable {
     /// What it is waiting for, when it is. Nil for a finished session.
     public let waitingFor: CodingAgentWait?
 
+    /// The prompt the island can answer, when the hook is holding one for this session.
+    public let prompt: CodingAgentPrompt?
+
     public init(
         agent: CodingAgent, sessionID: String, name: String?, terminalApplicationName: String?,
-        waitingFor: CodingAgentWait? = nil
+        waitingFor: CodingAgentWait? = nil, prompt: CodingAgentPrompt? = nil
     ) {
         self.agent = agent
         self.sessionID = sessionID
         self.name = name
         self.terminalApplicationName = terminalApplicationName
         self.waitingFor = waitingFor
+        self.prompt = prompt
     }
 
     /// One island per session, and the same id for both moments of it — so a session that goes

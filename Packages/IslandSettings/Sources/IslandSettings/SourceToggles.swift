@@ -122,6 +122,16 @@ public struct SourceToggles: Equatable, Sendable {
     /// before 2.8, which the per-key decoder reads as this default; no migration step.
     public var codingAgents: Bool
 
+    /// Answering a coding agent's permission prompts from the island — Allow and Deny on the open
+    /// island, through a hook Isleta registers in `~/.claude/settings.json`.
+    ///
+    /// **Off by default**, unlike every switch above, because it is the one that edits a file
+    /// another program owns: the person turns it on, and turning it off takes exactly Isleta's entry
+    /// back out. A behavior of the coding-agents source rather than a source of its own, so
+    /// `subscript(kind:)` does not read it — the hub does (`SourceHub.apply`). Absent from every
+    /// file written before it, which the per-key decoder reads as off; no migration step.
+    public var answersAgentPrompts: Bool
+
     public init(
         nowPlaying: Bool = true,
         systemHUDs: Bool = true,
@@ -138,7 +148,8 @@ public struct SourceToggles: Equatable, Sendable {
         dropActions: Bool = true,
         respectsFocus: Bool = true,
         screenSharing: Bool = true,
-        codingAgents: Bool = true
+        codingAgents: Bool = true,
+        answersAgentPrompts: Bool = false
     ) {
         self.nowPlaying = nowPlaying
         self.systemHUDs = systemHUDs
@@ -156,6 +167,7 @@ public struct SourceToggles: Equatable, Sendable {
         self.respectsFocus = respectsFocus
         self.screenSharing = screenSharing
         self.codingAgents = codingAgents
+        self.answersAgentPrompts = answersAgentPrompts
     }
 
     /// Whether the source that publishes `kind` may run.
@@ -295,6 +307,7 @@ extension SourceToggles: Codable {
         case respectsFocus
         case screenSharing
         case codingAgents
+        case answersAgentPrompts
     }
 
     /// Per-key fallback, for the same reason `IsletaConfiguration`'s decoder has it: a record
@@ -326,5 +339,6 @@ extension SourceToggles: Codable {
         respectsFocus = value(.respectsFocus, defaults.respectsFocus)
         screenSharing = value(.screenSharing, defaults.screenSharing)
         codingAgents = value(.codingAgents, defaults.codingAgents)
+        answersAgentPrompts = value(.answersAgentPrompts, defaults.answersAgentPrompts)
     }
 }

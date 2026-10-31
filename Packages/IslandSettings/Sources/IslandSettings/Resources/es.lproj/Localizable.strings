@@ -182,3 +182,12 @@
 "sources.systemHUD.replace.caption" = "Isleta responde ella misma a las teclas de volumen y silencio, así que macOS nunca muestra el suyo. Necesita Accesibilidad. Al salir de Isleta las teclas vuelven de inmediato.";
 "sources.systemHUD.replaceBrightness" = "Sustituir el indicador de brillo del sistema";
 "sources.systemHUD.replaceBrightness.caption" = "Isleta responde ella misma a las teclas de brillo de la pantalla integrada. Necesita Accesibilidad. Al salir de Isleta las teclas vuelven de inmediato.";
+
+/* Sources ▸ Coding Agents: answering permission prompts from the island. */
+"sources.agents" = "Agentes de código";
+"sources.agents.answer" = "Responder a las solicitudes de permiso desde la isla";
+"sources.agents.summary.off" = "Cuando Claude Code pide permiso para ejecutar algo, la isla lo indica y respondes en el terminal. Activa esta opción para responder con Permitir o Denegar en la isla; Isleta añade un hook a ~/.claude/settings.json y lo quita cuando la desactivas.";
+"sources.agents.summary.notInstalled" = "Claude Code aún no se ha ejecutado en este Mac, así que no hay dónde añadir el hook. Ejecútalo una vez y luego desactiva y vuelve a activar esta opción.";
+"sources.agents.summary.unreadable" = "~/.claude/settings.json no es un JSON válido, así que Isleta no lo ha tocado. Corrige el archivo y luego desactiva y vuelve a activar esta opción.";
+"sources.agents.summary.failed" = "Isleta no ha podido añadir su hook. Las solicitudes siguen apareciendo en la isla; respóndelas en el terminal.";
+"sources.agents.summary.on" = "Permitir y Denegar aparecen en la isla abierta cuando Claude Code pide permiso. Permitir aprueba solo esa solicitud y no cambia ninguna de tus reglas. La solicitud sigue en el terminal, y la primera respuesta es la que cuenta.";

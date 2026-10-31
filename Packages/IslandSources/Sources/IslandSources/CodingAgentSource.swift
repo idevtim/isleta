@@ -33,6 +33,15 @@ import IslandKit
 /// agent said is not needed to say that it stopped. Codex keeps no equivalent file — its rollouts
 /// are compressed transcripts — so it reaches the island only through its hooks, which is a separate
 /// route the user opts into.
+///
+/// # Answering from the island
+///
+/// With `answersPrompts` on, Isleta's hook is registered in `~/.claude/settings.json` and the
+/// island can answer a permission prompt itself (`AgentHookServer`). The session file is still
+/// what says a session is waiting; the hook adds *what* it is asking and a connection to answer
+/// down. A prompt the island is holding is released the moment the session stops waiting —
+/// answered in the terminal, interrupted, or ended — because nothing else tells the hook
+/// (`docs/PLATFORM-CONSTRAINTS.md`), and a hook left holding would wait out its whole timeout.
 @MainActor
 public final class CodingAgentSource: ActivitySource {
 
@@ -55,6 +64,26 @@ public final class CodingAgentSource: ActivitySource {
     private var activationObserver: NSObjectProtocol?
     private var attention = CodingAgentAttention()
 
+    private let settingsURL: URL
+    private let hookServer: AgentHookServer
+
+    /// The prompts the hook is holding, keyed by the agent's session id — which arrives on the hook
+    /// before, or after, the session file says it is waiting.
+    private var prompts: [String: HeldPrompt] = [:]
+
+    private struct HeldPrompt {
+        let request: AgentHookRequest
+        let prompt: CodingAgentPrompt
+    }
+
+    /// Whether the person wants permission prompts answered from the island. The hook's place in
+    /// the agent's settings follows this and nothing else — not launch or quit, which would rewrite
+    /// somebody's settings file twice a day — and the socket follows this *and* `isRunning`.
+    public private(set) var answersPrompts = false
+
+    /// What the last attempt to follow `answersPrompts` found, for the Settings row.
+    public private(set) var promptsState: AgentPromptsState = .off
+
     /// What is known about each live session, keyed by its file's name (`<pid>.json`).
     private var sessions: [String: Tracked] = [:]
 
@@ -67,9 +96,19 @@ public final class CodingAgentSource: ActivitySource {
         var grace: DispatchWorkItem?
     }
 
-    public init(folder: URL = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent(".claude/sessions", isDirectory: true)) {
+    public init(
+        folder: URL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".claude/sessions", isDirectory: true),
+        settingsURL: URL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".claude/settings.json"),
+        hookServer: AgentHookServer = AgentHookServer()
+    ) {
         self.folder = folder
+        self.settingsURL = settingsURL
+        self.hookServer = hookServer
+        hookServer.onEvent = { [weak self] event, request in
+            self?.received(event, request: request)
+        }
     }
 
     /// Whether Claude Code has ever run on this Mac, for the Settings row.
@@ -96,6 +135,7 @@ public final class CodingAgentSource: ActivitySource {
             MainActor.assumeIsolated { self?.frontmostChanged() }
         }
         rescan()
+        updateServer()
         IslandLog.sources.info("coding agents: watching \(self.sessions.count) session(s)")
     }
 
@@ -121,6 +161,7 @@ public final class CodingAgentSource: ActivitySource {
         sessions = [:]
         attention = CodingAgentAttention()
         isRunning = false
+        updateServer()
         IslandLog.sources.info("coding agents: stopped")
     }
 
@@ -147,6 +188,120 @@ public final class CodingAgentSource: ActivitySource {
         return true
     }
 
+    // MARK: - Answering from the island
+
+    /// Follow the person's switch: register the hook in the agent's settings, or take exactly it
+    /// back out, and open or close the socket. Idempotent, and it writes the settings file only
+    /// when what is there disagrees with the switch — so calling it on every settings change costs
+    /// one small read.
+    public func setAnswersPrompts(_ wanted: Bool) {
+        answersPrompts = wanted
+        let manager = FileManager.default
+        let existing = manager.fileExists(atPath: settingsURL.path) ? (try? Data(contentsOf: settingsURL)) : nil
+        let scriptPath = AgentHookScript.installedURL.path
+        do {
+            if wanted {
+                // A Mac that has never run Claude Code has no `~/.claude`, and creating one would be
+                // Isleta inventing the agent's configuration for it.
+                guard manager.fileExists(atPath: settingsURL.deletingLastPathComponent().path) else {
+                    promptsState = .agentNotInstalled
+                    updateServer()
+                    return
+                }
+                // Rewritten every time: the copy on disk is always this build's (`AgentHookScript`).
+                try AgentHookScript.install()
+                if !AgentHookSettings.contains(existing, scriptPath: scriptPath) {
+                    let data = try AgentHookSettings.installing(
+                        into: existing, command: AgentHookScript.command(for: CodingAgent.claudeCode.rawValue),
+                        scriptPath: scriptPath, timeout: AgentHookScript.timeoutSeconds)
+                    try AgentHookSettings.write(data, to: settingsURL)
+                    IslandLog.sources.info("coding agents: hook added to the agent's settings")
+                }
+                promptsState = .on
+            } else {
+                if AgentHookSettings.contains(existing, scriptPath: scriptPath),
+                   let data = try AgentHookSettings.removing(from: existing, scriptPath: scriptPath) {
+                    try AgentHookSettings.write(data, to: settingsURL)
+                    IslandLog.sources.info("coding agents: hook removed from the agent's settings")
+                }
+                try? manager.removeItem(at: AgentHookScript.installedURL)
+                promptsState = .off
+            }
+        } catch AgentHookSettings.Failure.notJSONObject {
+            IslandLog.sources.error("coding agents: the agent's settings file is not a JSON object, left alone")
+            promptsState = .settingsUnreadable
+        } catch {
+            IslandLog.sources.error("coding agents: could not update the hook: \(error.localizedDescription)")
+            promptsState = .failed
+        }
+        updateServer()
+    }
+
+    /// Allow or deny the prompt the island is showing for this activity's session. The decision
+    /// goes back on the connection that asked, and nowhere else.
+    ///
+    /// - Returns: whether there was a held prompt to answer — false when the terminal got there
+    ///   first, which the caller treats the same way.
+    @discardableResult
+    public func answer(_ id: ActivityID, _ answer: CodingAgentAnswer) -> Bool {
+        guard let tracked = sessions.values.first(where: { Self.activityID(for: $0.record) == id }),
+              let held = prompts.removeValue(forKey: tracked.record.sessionID), held.request.isOpen
+        else { return false }
+        held.request.answer(answer == .allow ? .allow : .deny)
+        IslandLog.sources.info("coding agents: prompt \(answer == .allow ? "allowed" : "denied") from the island")
+        return true
+    }
+
+    private func updateServer() {
+        let wanted = isRunning && answersPrompts && promptsState == .on
+        guard wanted != hookServer.isRunning else { return }
+        if wanted {
+            do {
+                try hookServer.start()
+            } catch {
+                IslandLog.sources.error("coding agents: could not open the hook socket: \(String(describing: error))")
+                promptsState = .failed
+            }
+        } else {
+            hookServer.stop()
+            for held in prompts.values { held.request.close() }
+            prompts = [:]
+        }
+    }
+
+    private func received(_ event: AgentHookEvent, request: AgentHookRequest?) {
+        guard let request else { return }
+        guard let sessionID = event.sessionID, answersPrompts else {
+            request.close()
+            return
+        }
+        prompts.removeValue(forKey: sessionID)?.request.close()
+        let detail = (event.toolName == "Bash" ? event.command : nil) ?? event.summary ?? event.command
+        prompts[sessionID] = HeldPrompt(
+            request: request, prompt: CodingAgentPrompt(toolName: event.toolName, detail: detail))
+        request.onPeerClosed = { [weak self, weak request] in
+            guard let self, let request, self.prompts[sessionID]?.request === request else { return }
+            self.prompts[sessionID] = nil
+            self.refresh(sessionID: sessionID)
+        }
+        IslandLog.sources.info("coding agents: holding a permission prompt for the island")
+        refresh(sessionID: sessionID)
+    }
+
+    /// Let go of a held prompt without answering it — the terminal's own prompt stands, or has
+    /// already been answered.
+    private func release(sessionID: String) {
+        prompts.removeValue(forKey: sessionID)?.request.close()
+    }
+
+    /// Re-say what a waiting session's island says, now that a prompt has arrived or gone.
+    private func refresh(sessionID: String) {
+        guard let (name, tracked) = sessions.first(where: { $0.value.record.sessionID == sessionID }),
+              attention.showing(name) == .needsInput
+        else { return }
+        onActivity?(BuiltInActivity.codingAgent(session(for: tracked), moment: .needsInput))
+    }
+
     // MARK: - Reading
 
     private func rescan() {
@@ -171,6 +326,10 @@ public final class CodingAgentSource: ActivitySource {
         }
 
         if var tracked = sessions[name], tracked.record.pid == record.pid {
+            // Out of a wait means whatever the hook is holding was answered somewhere else.
+            if tracked.record.status == .waiting, record.status != .waiting {
+                release(sessionID: record.sessionID)
+            }
             let reasonChanged = tracked.record.wait != record.wait
             tracked.record = record
             sessions[name] = tracked
@@ -178,7 +337,7 @@ public final class CodingAgentSource: ActivitySource {
             // prompt answered straight into a question — which the attention table rightly sees as
             // no change. The island's words are the reason, so they are refreshed in place.
             if reasonChanged, record.wait != nil, attention.showing(name) == .needsInput {
-                onActivity?(BuiltInActivity.codingAgent(Self.session(for: tracked), moment: .needsInput))
+                onActivity?(BuiltInActivity.codingAgent(session(for: tracked), moment: .needsInput))
             }
         } else {
             forget(name)
@@ -201,6 +360,7 @@ public final class CodingAgentSource: ActivitySource {
 
     private func forget(_ name: String) {
         guard let tracked = sessions.removeValue(forKey: name) else { return }
+        release(sessionID: tracked.record.sessionID)
         tracked.exit.cancel()
         tracked.grace?.cancel()
         if attention.update(name, status: nil, isFrontmost: false).contains(.dismiss) {
@@ -224,7 +384,7 @@ public final class CodingAgentSource: ActivitySource {
             case .present(let moment):
                 announcementCount += 1
                 IslandLog.sources.info("coding agents: session \(moment == .needsInput ? "needs input" : "finished")")
-                onActivity?(BuiltInActivity.codingAgent(Self.session(for: tracked), moment: moment))
+                onActivity?(BuiltInActivity.codingAgent(session(for: tracked), moment: moment))
             case .dismiss:
                 onDismiss?(Self.activityID(for: tracked.record))
             case .armGrace:
@@ -239,13 +399,15 @@ public final class CodingAgentSource: ActivitySource {
         }
     }
 
-    private static func session(for tracked: Tracked) -> CodingAgentSession {
-        CodingAgentSession(
+    private func session(for tracked: Tracked) -> CodingAgentSession {
+        let held = tracked.record.status == .waiting ? prompts[tracked.record.sessionID] : nil
+        return CodingAgentSession(
             agent: .claudeCode,
             sessionID: tracked.record.sessionID,
             name: tracked.record.name,
             terminalApplicationName: tracked.terminal.flatMap(Self.applicationName),
-            waitingFor: tracked.record.wait
+            waitingFor: held != nil ? .permission : tracked.record.wait,
+            prompt: held?.prompt
         )
     }
 
@@ -305,4 +467,18 @@ public final class CodingAgentSource: ActivitySource {
         FSEventStreamStart(stream)
         self.stream = stream
     }
+}
+
+/// Where answering from the island stands, for the Settings row.
+public enum AgentPromptsState: Equatable, Sendable {
+    /// The switch is off, and the hook is not in the agent's settings.
+    case off
+    /// The hook is registered and the socket is open while the source runs.
+    case on
+    /// There is no `~/.claude` to register a hook in.
+    case agentNotInstalled
+    /// The agent's settings file is not JSON Isleta can read, so it was not touched.
+    case settingsUnreadable
+    /// Writing the script or the settings, or opening the socket, failed — the log says which.
+    case failed
 }

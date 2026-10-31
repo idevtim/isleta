@@ -182,3 +182,12 @@
 "sources.systemHUD.replace.caption" = "Isleta répond elle-même aux touches de volume et de sourdine, si bien que macOS n’affiche jamais le sien. Nécessite l’Accessibilité. Quitter Isleta rend les touches immédiatement.";
 "sources.systemHUD.replaceBrightness" = "Remplacer l’indicateur de luminosité du système";
 "sources.systemHUD.replaceBrightness.caption" = "Isleta répond elle-même aux touches de luminosité pour l’écran intégré. Nécessite l’Accessibilité. Quitter Isleta rend les touches immédiatement.";
+
+/* Sources ▸ Coding Agents: answering permission prompts from the island. */
+"sources.agents" = "Agents de code";
+"sources.agents.answer" = "Répondre aux demandes d’autorisation depuis l’îlot";
+"sources.agents.summary.off" = "Quand Claude Code demande l’autorisation d’exécuter quelque chose, l’îlot l’indique et vous répondez dans le terminal. Activez cette option pour répondre par Autoriser ou Refuser sur l’îlot ; Isleta ajoute un hook à ~/.claude/settings.json et le retire quand vous la désactivez.";
+"sources.agents.summary.notInstalled" = "Claude Code n’a encore jamais été lancé sur ce Mac, il n’y a donc nulle part où ajouter le hook. Lancez-le une fois, puis désactivez et réactivez cette option.";
+"sources.agents.summary.unreadable" = "~/.claude/settings.json n’est pas un JSON valide, Isleta n’y a donc pas touché. Corrigez le fichier, puis désactivez et réactivez cette option.";
+"sources.agents.summary.failed" = "Isleta n’a pas pu ajouter son hook. Les demandes s’affichent toujours sur l’îlot ; répondez-y dans le terminal.";
+"sources.agents.summary.on" = "Autoriser et Refuser apparaissent sur l’îlot ouvert quand Claude Code demande une autorisation. Autoriser approuve cette seule demande et ne modifie aucune de vos règles. La demande reste dans le terminal, et la première réponse l’emporte.";

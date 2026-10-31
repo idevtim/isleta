@@ -239,6 +239,15 @@ public struct ActivityContent: Equatable, Sendable {
     /// Last, after `badgeSymbol`, for the same layout reason.
     public var mark: ActivityMark?
 
+    /// Whether the open island draws **Allow** and **Deny** under the text — a coding agent's
+    /// permission prompt that the island can answer. Inert like everything else here: what a press
+    /// does is the app shell's (`IslandScreenModel.onAnswerPrompt`), and IslandUI draws the row only
+    /// in the expanded slot. A flag on the content rather than the activity so the open island's
+    /// height, which is computed from the content alone (`ActivityExpandedHeight`), makes room for it.
+    ///
+    /// Last, after `mark`, for the same layout reason.
+    public var offersAllowDeny: Bool
+
     /// `symbolVariableValue` clamped into 0...1, or nil. What the renderer reads.
     public var symbolFill: Double? {
         symbolVariableValue.map { min(max($0, 0), 1) }
@@ -254,7 +263,8 @@ public struct ActivityContent: Equatable, Sendable {
         tint: ActivityTint = .neutral,
         accessibilityLabel: String? = nil,
         badgeSymbol: String? = nil,
-        mark: ActivityMark? = nil
+        mark: ActivityMark? = nil,
+        offersAllowDeny: Bool = false
     ) {
         self.symbol = symbol
         self.symbolVariableValue = symbolVariableValue
@@ -266,6 +276,7 @@ public struct ActivityContent: Equatable, Sendable {
         self.accessibilityLabel = accessibilityLabel
         self.badgeSymbol = badgeSymbol
         self.mark = mark
+        self.offersAllowDeny = offersAllowDeny
     }
 
     /// Nothing to draw. Distinct from "not supplied": an activity that deliberately shows nothing

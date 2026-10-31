@@ -265,6 +265,12 @@ final class SourceHub {
         // that used to be `focusChanges` and could never do anything.
         focus.isEnabled = configuration.sources.respectsFocus
 
+        // Answering coding agents' prompts from the island follows its own switch and nothing
+        // else, so turning the agents' source off does not rewrite their settings file — the hook
+        // stays, finds no socket and does nothing. Read on every apply and written only when the
+        // file disagrees (`CodingAgentSource.setAnswersPrompts`).
+        codingAgents.setAnswersPrompts(configuration.sources.answersAgentPrompts)
+
         for index in entries.indices {
             let wanted = configuration.sources[entries[index].kind]
             guard wanted != entries[index].isRunning else { continue }
@@ -728,8 +734,17 @@ final class SourceHub {
             NSWorkspace.shared.open(url)
         }
 
+        let agentPrompts: SourcesPaneState.AgentPrompts = switch codingAgents.promptsState {
+        case .off: .off
+        case .on: .on
+        case .agentNotInstalled: .agentNotInstalled
+        case .settingsUnreadable: .settingsUnreadable
+        case .failed: .failed
+        }
+
         return SourcesPaneState(
             focusAccess: focusAccess,
+            agentPrompts: agentPrompts,
             requestFocusAccess: askFocus,
             openPrivacySettings: openPrivacy
         )

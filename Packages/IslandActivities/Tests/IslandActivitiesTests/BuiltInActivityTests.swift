@@ -90,6 +90,26 @@ struct BuiltInActivityTests {
         #expect(BuiltInActivity.codingAgent(codex, moment: .finished).presentations.expanded.subtitle
                 == "See what it did in the terminal")
 
+        // Nothing to answer from the island without a held prompt.
+        #expect(permission.offersAllowDeny == false)
+
+        // **A held prompt says what is being allowed**, and offers the buttons — open only.
+        let held = CodingAgentSession(
+            agent: .claudeCode, sessionID: "abc", name: "isleta-6a", terminalApplicationName: "Terminal",
+            waitingFor: .permission, prompt: CodingAgentPrompt(toolName: "Bash", detail: "rm -rf build"))
+        let answerable = BuiltInActivity.codingAgent(held, moment: .needsInput).presentations
+        #expect(answerable.expanded.title == "Claude Code needs your permission")
+        #expect(answerable.expanded.subtitle == "isleta-6a · Bash\nrm -rf build")
+        #expect(answerable.expanded.offersAllowDeny)
+        #expect(answerable.leading.offersAllowDeny == false)
+        #expect(answerable.compact.offersAllowDeny == false)
+        // A finished turn has nothing left to answer, whatever is still held.
+        #expect(BuiltInActivity.codingAgent(held, moment: .finished).presentations.expanded.offersAllowDeny == false)
+        // No name and no tool: the request alone.
+        let bare = CodingAgentSession(agent: .claudeCode, sessionID: "z", name: nil, terminalApplicationName: nil,
+                                      waitingFor: .permission, prompt: CodingAgentPrompt(toolName: nil, detail: "~/notes.md"))
+        #expect(BuiltInActivity.codingAgent(bare, moment: .needsInput).presentations.expanded.subtitle == "~/notes.md")
+
         // A second session is its own island.
         let other = CodingAgentSession(agent: .claudeCode, sessionID: "def", name: nil, terminalApplicationName: nil)
         #expect(BuiltInActivity.codingAgent(other, moment: .needsInput).id != waiting.id)

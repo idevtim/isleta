@@ -560,7 +560,14 @@ prompt in one and an explanation in the other.
   `getpeereid`, answers only on the connection that asked, never sends `updatedPermissions`, and
   closes without answering when the terminal got there first. `AgentHookSettings` adds and removes
   exactly Isleta's handler — recognised by the script's path — and refuses a settings file that is
-  not a JSON object rather than rewriting it. Not wired to the island yet.
+  not a JSON object rather than rewriting it.
+
+  `CodingAgentSource.setAnswersPrompts` follows the Settings switch (`answersAgentPrompts`, off by
+  default) and only the switch: the hook's place in `~/.claude/settings.json` does not change on
+  launch, quit or the source stopping — the socket does. A held prompt is keyed by session id, shown
+  on the open island with the command or file it asks about, and released the moment the session
+  file leaves `waiting`, since nothing else tells the hook its prompt was answered in the terminal.
+  Claude Code only; Codex's hooks need a trust step Isleta does not take for the user.
 
 ## Will not own
 

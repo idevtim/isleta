@@ -784,8 +784,28 @@ public struct SettingsView: View {
             }
 
             focusCard
+            codingAgentsCard
             hiddenApplicationsCard
         }
+    }
+
+    // MARK: - Coding agents
+
+    /// The one switch that edits a file another program owns, on a card of its own so its caption
+    /// can say which file. Live whether or not the coding agents source is on: a statement of what
+    /// the person wants, like the Focus switch above.
+    private var codingAgentsCard: some View {
+        SettingsCard(settingsText("sources.agents", "Coding Agents")) {
+            SettingsRow(caption: sources.agentPromptsSummary(isOn: store.configuration.sources.answersAgentPrompts)) {
+                Toggle(
+                    settingsText("sources.agents.answer", "Answer permission prompts from the island"),
+                    isOn: binding(\.sources.answersAgentPrompts)
+                )
+            }
+        }
+        // The hub follows the switch synchronously; re-reading straight after is what lets the
+        // caption report a settings file it could not read on the same click.
+        .onChange(of: store.configuration.sources.answersAgentPrompts) { refresh() }
     }
 
     // MARK: - Focus

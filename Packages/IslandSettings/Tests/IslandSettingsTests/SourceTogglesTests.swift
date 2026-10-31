@@ -153,6 +153,20 @@ struct SourceTogglesTests {
         #expect(roundTripped.codingAgents == false)
     }
 
+    /// The one switch that edits another program's file is off until the person turns it on —
+    /// including in every record written before it existed.
+    @Test("answering agent prompts from the island starts off, and a stored on stays on")
+    func agentPromptsOffUntilAsked() throws {
+        #expect(SourceToggles().answersAgentPrompts == false)
+        let old = try JSONDecoder().decode(SourceToggles.self, from: Data(#"{"codingAgents":true}"#.utf8))
+        #expect(old.answersAgentPrompts == false)
+
+        var toggles = SourceToggles()
+        toggles.answersAgentPrompts = true
+        let roundTripped = try JSONDecoder().decode(SourceToggles.self, from: JSONEncoder().encode(toggles))
+        #expect(roundTripped.answersAgentPrompts)
+    }
+
     /// One unreadable flag must not take the other three with it. This is the same guarantee
     /// `IsletaConfiguration` makes, one level down — and it only holds because `SourceToggles` has
     /// its own lenient decoder rather than relying on its parent's.

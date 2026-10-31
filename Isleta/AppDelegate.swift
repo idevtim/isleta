@@ -1030,6 +1030,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.activities.noteInteraction()
             self.sources?.setLevel(hud, to: fraction)
         }
+        // Allow or Deny under a coding agent's permission prompt. The answer goes down the hook
+        // that asked; the island then does what a click through to the terminal does — retires
+        // the activity and closes. A press after the terminal already answered finds nothing held
+        // and closes all the same.
+        model.onAnswerPrompt = { [weak self] id, answer in
+            guard let self else { return }
+            self.activities.noteInteraction()
+            self.sources?.codingAgents.answer(id, answer)
+            _ = self.activities.dismiss(id)
+            for screen in self.controller?.screens ?? [] where self.models[screen.id]?.isExpanded == true {
+                self.transition(on: screen) { model, reduceMotion, completion in
+                    model.setExpanded(false, reduceMotion: reduceMotion, completion: completion)
+                }
+            }
+        }
         // The history rides on the screen model the way `nowPlaying` does — one app-wide model,
         // every island reading it.
         model.dropHistory = dropHistoryModel

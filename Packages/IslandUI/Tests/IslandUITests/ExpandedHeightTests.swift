@@ -41,6 +41,18 @@ struct ExpandedHeightTests {
 
     // MARK: - The arithmetic
 
+    @Test("a prompt the island can answer opens tall enough for Allow and Deny")
+    func answerRowAddsItsHeight() throws {
+        var content = ActivityContent(symbol: "apple.terminal.fill", title: "Claude Code needs your permission",
+                                      subtitle: "isleta · Bash\nrm -rf build")
+        let plain = try #require(ActivityExpandedHeight.contentHeight(
+            for: ActivityPresentations(expanded: content), kind: .codingAgent, measure: fake))
+        content.offersAllowDeny = true
+        let answerable = try #require(ActivityExpandedHeight.contentHeight(
+            for: ActivityPresentations(expanded: content), kind: .codingAgent, measure: fake))
+        #expect(answerable - plain == ActivityExpandedHeight.answerRowSpacing + ActivityExpandedHeight.answerRowHeight)
+    }
+
     @Test("a longer message opens a taller island")
     func longerMessageIsTaller() throws {
         let short = ActivityExpandedHeight.contentHeight(
