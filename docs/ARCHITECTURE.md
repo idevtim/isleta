@@ -89,6 +89,9 @@ AX coordinates are global y-down; `NSScreen.screens.first.frame.maxY` supplies t
 reference for conversion to AppKit y-up, including displays above or below it. Display identities
 remain `CGDirectDisplayID` throughout. A conflict is a presentation input, `menuBarNeedsSpace`,
 separate from manual stow: only hardware islands at rest retract, and hover/open always wins.
+An activity that expires on its own — a HUD, power, a device connecting — comes through it for its
+few seconds (`IslandScreenModel.comesThroughClearance`); one that lasts until its source ends it
+stays retracted, since it would sit over the menus for as long as it lasted.
 Changes go through the normal widen/animate/tighten path. Pending or failed reads preserve the
 last confirmed shape; only a successful snapshot changes the clearance decision. At launch the
 ordinary width is retained until an overlap is established. The app does not resize or rewrite menus
