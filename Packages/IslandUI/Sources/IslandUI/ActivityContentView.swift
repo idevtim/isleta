@@ -513,6 +513,22 @@ public struct ActivityContentView: View {
             } else {
                 image
             }
+        } else if let mark = content.mark, let markImage = ActivityMarkImage.image(for: mark) {
+            // A bundled mark sits where the glyph would, at the glyph's point size: a symbol's
+            // 13 pt is roughly its cap height, and the marks are drawn edge to edge in their box.
+            let image = Image(nsImage: markImage)
+                .resizable()
+                .renderingMode(.template)
+                .interpolation(.high)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: size, height: size)
+                .foregroundStyle(tintColor)
+                .contentTransition(.opacity)
+            if matched, let namespace {
+                image.matchedGeometryEffect(id: Self.symbolGeometryID, in: namespace)
+            } else {
+                image
+            }
         } else if let name = content.symbol {
             // `variableValue` lights a glyph's own layers in turn — the volume glyph's two waves,
             // which is what makes the sliver say roughly where in its range the level is without

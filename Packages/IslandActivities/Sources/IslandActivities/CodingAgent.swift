@@ -19,6 +19,14 @@ public enum CodingAgent: String, CaseIterable, Sendable {
         case .codex: "Codex"
         }
     }
+
+    /// The agent's own mark, drawn where the island would otherwise draw a glyph.
+    public var mark: ActivityMark {
+        switch self {
+        case .claudeCode: .claude
+        case .codex: .openAI
+        }
+    }
 }
 
 /// What a session is doing that is worth the island's attention.

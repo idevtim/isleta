@@ -854,11 +854,11 @@ public struct BuiltInActivity: IslandActivity, Equatable {
 
     /// A coding agent that has stopped for the person, or has just finished.
     ///
-    /// The terminal's icon in the leading sliver, because the terminal is where a click goes and
-    /// where the answer is typed — the agent itself has no mark in SF Symbols, and drawing another
-    /// company's logo would be Isleta wearing it. `apple.terminal.fill` stands in until the icon
-    /// resolves, and for a session whose terminal could not be found at all. The corner badge and
-    /// the trailing glyph are the moment: a raised hand for "waiting on you", a check for "done".
+    /// The agent's own mark in the leading sliver and the expanded well (`ActivityContent.mark`) —
+    /// with several agents open, which one stopped is the first thing a person needs, and the owner
+    /// chose the marks over a terminal icon for that. `apple.terminal.fill` is the fallback a
+    /// renderer without the marks draws. The trailing glyph is the moment: an exclamation mark for
+    /// "waiting on you", a check for "done".
     ///
     /// Needing input carries no expiry (`ActivityKind.codingAgent.defaultExpiry`) — the source
     /// retracts it the moment the session moves on, whichever surface answered. Finished is a
@@ -866,8 +866,8 @@ public struct BuiltInActivity: IslandActivity, Equatable {
     public static func codingAgent(_ session: CodingAgentSession, moment: CodingAgentMoment) -> Self {
         let agent = session.agent.displayName
         let title = session.name.flatMap { $0.isEmpty ? nil : $0 } ?? agent
-        let mark = switch moment {
-        case .needsInput: "hand.raised.fill"
+        let state = switch moment {
+        case .needsInput: "exclamationmark.circle.fill"
         case .finished: "checkmark.circle.fill"
         }
         let tint: ActivityTint = switch moment {
@@ -879,28 +879,25 @@ public struct BuiltInActivity: IslandActivity, Equatable {
         case .finished: activityText("codingAgent.finished", "\(agent) finished")
         }
         let spoken = activityText("codingAgent.a11y", "\(title): \(subtitle)")
+        let mark = session.agent.mark
         return Self(
             id: session.activityID,
             kind: .codingAgent,
             expiry: moment == .finished ? .after(.seconds(6)) : nil,
             presentations: ActivityPresentations(
                 leading: ActivityContent(
-                    symbol: "apple.terminal.fill",
-                    applicationIconName: session.terminalApplicationName,
-                    tint: .neutral,
-                    accessibilityLabel: spoken,
-                    badgeSymbol: mark
-                ),
-                trailing: ActivityContent(symbol: mark, tint: tint, accessibilityLabel: spoken),
-                compact: ActivityContent(symbol: mark, title: title, tint: tint, accessibilityLabel: spoken),
+                    symbol: "apple.terminal.fill", tint: .neutral, accessibilityLabel: spoken, mark: mark),
+                trailing: ActivityContent(symbol: state, tint: tint, accessibilityLabel: spoken),
+                compact: ActivityContent(
+                    symbol: "apple.terminal.fill", title: title, tint: .neutral,
+                    accessibilityLabel: spoken, mark: mark),
                 expanded: ActivityContent(
                     symbol: "apple.terminal.fill",
-                    applicationIconName: session.terminalApplicationName,
                     title: title,
                     subtitle: subtitle,
                     tint: .neutral,
                     accessibilityLabel: spoken,
-                    badgeSymbol: mark
+                    mark: mark
                 )
             )
         )

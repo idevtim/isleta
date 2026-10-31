@@ -69,10 +69,14 @@ struct BuiltInActivityTests {
         #expect(waiting.expiry == .never)
         #expect(finished.expiry == .after(.seconds(6)))
 
-        // The terminal's icon, which is where a click goes, with the moment on its corner.
-        #expect(waiting.presentations.leading.applicationIconName == "Terminal")
-        #expect(waiting.presentations.leading.badgeSymbol == "hand.raised.fill")
+        // The agent's mark leads, with a glyph behind it; the moment is the trailing glyph.
+        #expect(waiting.presentations.leading.mark == .claude)
+        #expect(waiting.presentations.leading.symbol != nil)
+        #expect(waiting.presentations.expanded.mark == .claude)
+        #expect(waiting.presentations.trailing.symbol == "exclamationmark.circle.fill")
         #expect(finished.presentations.trailing.symbol == "checkmark.circle.fill")
+        let codex = CodingAgentSession(agent: .codex, sessionID: "x", name: nil, terminalApplicationName: nil)
+        #expect(BuiltInActivity.codingAgent(codex, moment: .finished).presentations.leading.mark == .openAI)
         #expect(waiting.presentations.expanded.title == "isleta-6a")
 
         // A second session is its own island.
