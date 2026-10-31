@@ -1288,13 +1288,26 @@ compatibility question; no polling was added to compensate for unsupported hints
   2026-10-31 with Isleta's own switch: a session started after the hook was written answered from
   the island; one already running never ran it. So the switch's caption says so, rather than the
   first prompt in an open session looking like the feature failing.
-- **Codex has hooks too, behind a trust step.** The 0.163.0 binary lists `hooks` as a stable feature
-  that is on, with `PermissionRequest`, `PostToolUse`, `UserPromptSubmit`, `Stop` and others, and the
-  same `decision: {behavior: allow | deny, message}` output shape. A hook only runs once the user has
-  trusted it in Codex, recorded as a `trusted_hash`; writing that hash on the user's behalf would be
-  skipping the review Codex exists to make them do. Read from the binary's embedded schemas — **not
-  yet measured in a live Codex session.** Its rollouts are zstd-compressed transcripts with no state
-  field, so there is no passive route.
+- **Codex's `PermissionRequest` hook holds the terminal's prompt back — the opposite of Claude
+  Code's.** Measured on Codex 0.166.0, macOS 27.2, 2026-10-31, with a project-scoped
+  `.codex/hooks.json` probe: with the hook sleeping 20 s and printing nothing, Codex showed no
+  approval prompt until the hook exited 20.0 s later, then showed its own; a person who quit
+  before then never saw one. With the hook answering
+  `{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}`
+  after 8 s, no prompt appeared at all and the command ran 0.4 s later. So a Codex prompt held
+  open by the island is a prompt the terminal is not showing, and the hook must let go the moment
+  the person is at the terminal. The request carries `session_id`, `turn_id`, `cwd`, `tool_name`
+  and `tool_input` (`command`, and a `description` that is Codex's own sentence for why).
+- **Codex's hooks run under a shared process, not the session's.** Every hook across three
+  separate `codex` launches had the same parent pid, which was not any of the interactive
+  processes — so the hook's parent does not lead to the terminal the way Claude Code's does.
+- **Codex reports its turn through hooks, since it keeps no state file.** `SessionStart`,
+  `UserPromptSubmit` when a turn starts, `PreToolUse`/`PostToolUse` around every tool call (a
+  sandboxed attempt and its escalated rerun are two calls), `PermissionRequest` before the second,
+  and `Stop` with `last_assistant_message` when the turn ends. Its rollouts are zstd-compressed
+  transcripts with no state field, so there is no passive route. A hook runs only once the user
+  has trusted it in Codex (`/hooks`, recorded as a `trusted_hash`); writing that on the user's
+  behalf would skip the review Codex exists to make them do.
 
 ### Menu bar icons are out of reach — macOS 27.2, 2026-10-21
 
