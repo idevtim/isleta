@@ -157,6 +157,12 @@ public enum ActivityExpandedHeight {
     /// to one, and `IslandLayout.maxExpandedBodySize` would clamp it anyway.
     public static let messageLineLimit = 5
 
+    /// The Allow and Deny row under a permission prompt (`ActivityContent.offersAllowDeny`), and the
+    /// air between it and the block above. Tall enough to aim at from across the island without
+    /// reading as a toolbar.
+    public static let answerRowHeight: CGFloat = 28
+    public static let answerRowSpacing: CGFloat = 12
+
     static let titleStyle = ActivityTextStyle(size: 15, weight: .semibold)
     static let subtitleStyle = ActivityTextStyle(size: 12, weight: .regular)
     static let numeralsStyle = ActivityTextStyle(size: 26, weight: .semibold)
@@ -239,7 +245,8 @@ public enum ActivityExpandedHeight {
             text += value.normalized == nil ? measure.lineHeight(subtitleStyle) : levelHeight
         }
 
-        return max(hasSymbol ? symbolWellSide : 0, max(text, trailing))
+        let block = max(hasSymbol ? symbolWellSide : 0, max(text, trailing))
+        return content.offersAllowDeny ? block + answerRowSpacing + answerRowHeight : block
     }
 }
 
@@ -275,6 +282,7 @@ extension ActivityKind {
         // macOS never lets a non-Apple app draw, and opened a 200pt island around a 44pt row.
         case .systemHUD, .welcomeBack, .timer, .call: true
         case .calendarAlert, .meeting, .power, .focusChanged, .screenSharing: true
+        case .codingAgent: true
         }
     }
 }

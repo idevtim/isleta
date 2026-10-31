@@ -533,6 +533,47 @@ prompt in one and an explanation in the other.
   hover-to-frame budget, so a volume HUD never asks. The answer is reused for one second, which
   covers a burst of notifications and schedules nothing.
 
+- **`CodingAgentSource`** — a coding agent in a terminal that has stopped on the user, or has just
+  finished a turn. Reads `~/.claude/sessions/<pid>.json`, which Claude Code already keeps, through
+  an FSEvents stream on that folder: **nothing is installed and nothing the agent owns is edited.**
+  `CodingAgentAttention` is the pure table — the first sighting is a baseline, a waiting session is
+  shown at once when its app is not frontmost and after a six-second grace when it is (frontmost is
+  an app, not a window), a finished turn only when its app is not frontmost, and whatever is shown
+  leaves when the session moves on or its app is brought forward. `ProcessAncestry` walks the
+  parent chain with `sysctl(KERN_PROC_PID)` to the first regular app, which is both the icon drawn
+  and what a click raises. A file outlives its process, so a record is believed only while its pid
+  is alive and still running something Claude-shaped, and each live session holds a
+  `DispatchSource` on its pid's exit. A click goes through `TerminalWindow`: activate the app,
+  then press the session's window in its Window menu, which is what crosses Spaces — matched by
+  title against the session's folder and name and, for VS Code, the window whose folders hold it
+  (`VSCodeWindows`); with no match, the app's main window. Needs Accessibility; without it the app
+  is activated alone. Codex is not read here: its rollouts are compressed
+  transcripts with no state field, so it reaches the island only through its hooks.
+
+- **`AgentHookScript`, `AgentHookServer` and `AgentHookSettings`** — the opt-in half: answering a
+  permission prompt from the island. One Perl script (`/usr/bin/perl`, core modules only) at a
+  stable path in Application Support, registered for `PermissionRequest` alone — everything else
+  the feature needs is already in the session file. It trims the agent's event to one summary line,
+  sends it down a `0600` Unix socket in a `0700` folder, and for a permission request waits for one
+  line back; it **always exits 0 and prints nothing unless Isleta answered**, so Isleta not running
+  is indistinguishable from the hook not being there. The server checks every peer's uid with
+  `getpeereid`, answers only on the connection that asked, never sends `updatedPermissions`, and
+  closes without answering when the terminal got there first. `AgentHookSettings` adds and removes
+  exactly Isleta's handler — recognised by the script's path — and refuses a settings file that is
+  not a JSON object rather than rewriting it.
+
+  `CodingAgentSource.setAnswersPrompts` follows the Settings switch (`answersAgentPrompts`, off by
+  default) and only the switch: the hook's place in `~/.claude/settings.json` does not change on
+  launch, quit or the source stopping — the socket does. A held prompt is keyed by session id, shown
+  on the open island with the command or file it asks about, and released the moment the session
+  file leaves `waiting`, since nothing else tells the hook its prompt was answered in the terminal.
+  The same switch registers Isleta's hook in `~/.codex/hooks.json` for Codex's whole turn
+  (`AgentHookSettings.codexEvents`), since Codex keeps no state file; the person trusts it once in
+  Codex (`/hooks`), which Isleta never does for them. A Codex session's terminal is the interactive
+  `codex` process in the hook's folder, because its hooks run under a shared process. Codex's prompt
+  waits on the hook, so a Codex prompt is held only while its terminal is not frontmost and is let
+  go when it comes forward or is clicked through to.
+
 ## Will not own
 
 - **Notifications, in every form.** `NotificationSource` shipped via the Accessibility route —

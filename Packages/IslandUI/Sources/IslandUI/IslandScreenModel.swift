@@ -242,7 +242,20 @@ public final class IslandScreenModel {
     public private(set) var menuBarNeedsSpace = false
 
     public var isRetractedForMenuBar: Bool {
-        notchKind == .hardware && menuBarNeedsSpace && !isHovering && !isExpanded
+        notchKind == .hardware && menuBarNeedsSpace && !isHovering && !isExpanded && !Self.comesThroughClearance(stage)
+    }
+
+    /// **An announcement that leaves on its own comes through the menu clearance.** A volume key,
+    /// the charger, a device connecting: each is something the person just did or needs to know
+    /// now, on screen for seconds, and retracted it is simply lost — the owner's report was the
+    /// island showing nothing while they plugged in. What stays retracted is what *stays*: music,
+    /// a running timer, a call, an agent waiting. Those would sit over the app's menus for as long
+    /// as they last, which is the overlap the clearance exists to prevent. The test is the expiry
+    /// rather than a list of kinds, so a kind added later answers by what it is.
+    nonisolated static func comesThroughClearance(_ stage: ActivityStage?) -> Bool {
+        guard let stage else { return false }
+        if case .never = stage.primary.expiry { return false }
+        return true
     }
 
     public func setMenuBarNeedsSpace(
@@ -505,6 +518,10 @@ public final class IslandScreenModel {
     /// Nil in every build with no app shell — a preview, a test — which is what keeps the bar a
     /// picture there rather than a control that silently does nothing.
     public var onAdjustLevel: ((SystemHUD, Double) -> Void)?
+
+    /// Allow or Deny, pressed on the open island under a coding agent's permission prompt, for the
+    /// activity it was pressed on. Nil outside the app shell, where the row draws and does nothing.
+    public var onAnswerPrompt: ((ActivityID, CodingAgentAnswer) -> Void)?
 
     /// Whether the open island wears the page indicator.
     ///
@@ -968,7 +985,8 @@ public final class IslandScreenModel {
     private func resolvedForm(
         hovering: Bool, expanded: Bool, hoveringArtwork: Bool, menuBarNeedsSpace: Bool
     ) -> IslandForm {
-        if notchKind == .hardware && menuBarNeedsSpace && !hovering && !expanded { return .rest }
+        if notchKind == .hardware && menuBarNeedsSpace && !hovering && !expanded
+            && !Self.comesThroughClearance(stage) { return .rest }
         return IslandForm.resolve(
             isHovering: hovering, isExpanded: expanded,
             flanks: isStowed ? .none : Self.flanks(in: stage),
@@ -1420,7 +1438,7 @@ public final class IslandScreenModel {
         // the other, both things rather than words.
         case .nowPlaying, .deviceConnected, .updateAvailable: return true
         case .systemHUD, .welcomeBack, .shelf, .timer, .glance, .calendarAlert, .meeting,
-             .power, .call, .fileAction, .focusChanged, .screenSharing:
+             .power, .call, .fileAction, .focusChanged, .screenSharing, .codingAgent:
             return false
         }
     }

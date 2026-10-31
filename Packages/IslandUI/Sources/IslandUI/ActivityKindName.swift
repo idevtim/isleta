@@ -37,6 +37,7 @@ enum ActivityKindName {
         case .focusChanged: islandText("activityKind.focusChanged", "Focus")
         case .screenSharing: islandText("activityKind.screenSharing", "Screen Sharing")
         case .updateAvailable: islandText("activityKind.updateAvailable", "Update")
+        case .codingAgent: islandText("activityKind.codingAgent", "Coding Agent")
         }
     }
 }

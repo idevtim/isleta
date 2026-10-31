@@ -36,6 +36,26 @@ struct MenuBarRetractionTests {
         #expect(model.form == .flankedRest)
     }
 
+    /// Reported from use: plugging in while an app's menus filled the menu bar showed nothing.
+    @Test("an announcement that leaves on its own comes through, and the retraction resumes after it")
+    func momentaryComesThrough() {
+        let model = model()
+        model.setMenuBarNeedsSpace(true, reduceMotion: true)
+        #expect(model.isRetractedForMenuBar)
+
+        let volume = BuiltInActivity.systemHUD(.volume, level: 0.5)
+        model.setActivity(ActivityStage(primary: volume, primaryFlank: .leading), change: .presented(volume.id), reduceMotion: true)
+        #expect(!model.isRetractedForMenuBar)
+        #expect(model.form != .rest)
+        #expect(model.flanks != .none)
+
+        // Music back on stage: it stays, so it stays out of the menus' way.
+        let music = BuiltInActivity.nowPlaying(title: "Test")
+        model.setActivity(ActivityStage(primary: music, primaryFlank: .leading), change: .presented(music.id), reduceMotion: true)
+        #expect(model.isRetractedForMenuBar)
+        #expect(model.form == .rest)
+    }
+
     @Test("hover reveals the original activity and leaving retracts it again")
     func hover() {
         let model = model()
@@ -73,16 +93,21 @@ struct MenuBarRetractionTests {
         #expect(model.isStowed)
     }
 
-    @Test("an activity arriving during retraction stays narrow and appears on hover")
+    /// A standing activity — one that lasts until its source says otherwise — would sit over the
+    /// menus for as long as it lasts, so it arrives retracted. (A momentary one comes through: see
+    /// `momentaryComesThrough`.)
+    @Test("a standing activity arriving during retraction stays narrow and appears on hover")
     func incomingActivity() {
         let model = model()
         model.setMenuBarNeedsSpace(true, reduceMotion: true)
-        let hud = BuiltInActivity.systemHUD(.volume, level: 0.5)
-        model.setActivity(ActivityStage(primary: hud, primaryFlank: .leading), change: .presented(hud.id), reduceMotion: true)
+        let waiting = BuiltInActivity.codingAgent(
+            CodingAgentSession(agent: .claudeCode, sessionID: "s", name: nil, terminalApplicationName: nil),
+            moment: .needsInput)
+        model.setActivity(ActivityStage(primary: waiting, primaryFlank: .leading), change: .presented(waiting.id), reduceMotion: true)
         #expect(model.form == .rest)
         model.setHovering(true, reduceMotion: true)
-        #expect(model.flanks == .wide)
-        #expect(model.stage?.primary.id == hud.id)
+        #expect(model.flanks != .none)
+        #expect(model.stage?.primary.id == waiting.id)
     }
 
     @Test("rapid animated hover reversals leave content and hit testing at the retracted shape")

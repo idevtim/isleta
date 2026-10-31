@@ -218,7 +218,8 @@ struct ActivityLayerView: View {
                 levelStretchAnchor: model.bounceStretchAnchor,
                 // The bar in a HUD's sliver is a control as well as a picture — see
                 // `levelAdjuster(for:of:)`, and `IslandScreenModel.onAdjustLevel`.
-                onAdjustLevel: levelAdjuster(for: slot, of: stage)
+                onAdjustLevel: levelAdjuster(for: slot, of: stage),
+                onAnswer: answerer(for: slot, of: stage)
             )
         }
     }
@@ -235,6 +236,14 @@ struct ActivityLayerView: View {
     /// only open on a HUD for as long as the user has not clicked — and a click anywhere on a HUD
     /// puts it away (`AppDelegate.onClick`), so a control there would be one the user cannot reach
     /// without first asking for it to go.
+    /// Where Allow and Deny on the open island go: the primary's body is the only slot that draws
+    /// them, and the id travels with the press so the answer reaches the session it was asked for.
+    private func answerer(for slot: ActivitySlot, of stage: ActivityStage) -> ((CodingAgentAnswer) -> Void)? {
+        guard slot == .expanded, let answer = model.onAnswerPrompt else { return nil }
+        let id = stage.primary.id
+        return { answer(id, $0) }
+    }
+
     private func levelAdjuster(for slot: ActivitySlot, of stage: ActivityStage) -> ((Double) -> Void)? {
         guard let flank = slot.flank,
               let level = stage.activity(on: flank).adjustableLevel,

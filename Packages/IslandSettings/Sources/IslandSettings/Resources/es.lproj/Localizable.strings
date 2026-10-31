@@ -182,3 +182,13 @@
 "sources.systemHUD.replace.caption" = "Isleta responde ella misma a las teclas de volumen y silencio, así que macOS nunca muestra el suyo. Necesita Accesibilidad. Al salir de Isleta las teclas vuelven de inmediato.";
 "sources.systemHUD.replaceBrightness" = "Sustituir el indicador de brillo del sistema";
 "sources.systemHUD.replaceBrightness.caption" = "Isleta responde ella misma a las teclas de brillo de la pantalla integrada. Necesita Accesibilidad. Al salir de Isleta las teclas vuelven de inmediato.";
+
+/* Sources ▸ Coding Agents: answering permission prompts from the island. */
+"sources.agents" = "Agentes de código";
+"sources.agents.answer" = "Responder a las solicitudes de permiso desde la isla";
+"sources.agents.summary.off" = "Cuando Claude Code pide permiso para ejecutar algo, la isla lo indica y respondes en el terminal. Activa esta opción para responder con Permitir o Denegar en la isla y para ver también Codex en ella. Isleta añade su hook a ~/.claude/settings.json y a ~/.codex/hooks.json, y lo quita cuando la desactivas.";
+"sources.agents.summary.notInstalled" = "Ni Claude Code ni Codex se han ejecutado aún en este Mac, así que no hay dónde añadir el hook. Ejecuta uno de ellos una vez y luego desactiva y vuelve a activar esta opción.";
+"sources.agents.summary.unreadable" = "Los ajustes de hooks de un agente no son un JSON válido, así que Isleta no ha tocado ese archivo. Corrígelo y luego desactiva y vuelve a activar esta opción.";
+"sources.agents.summary.failed" = "Isleta no ha podido añadir su hook. Las solicitudes siguen apareciendo en la isla; respóndelas en el terminal.";
+"sources.agents.summary.on" = "Permitir y Denegar aparecen en la isla abierta cuando Claude Code pide permiso. Permitir aprueba solo esa solicitud y no cambia ninguna de tus reglas. La solicitud sigue en el terminal, y la primera respuesta es la que cuenta. Las sesiones que ya estaban abiertas al activarla se siguen respondiendo solo en el terminal.";
+"sources.agents.summary.codex" = "Para Codex, escribe /hooks una vez en Codex y confía en los hooks de Isleta. Codex retiene su propia solicitud mientras la isla la tiene, así que la isla la suelta en cuanto estás en el terminal.";

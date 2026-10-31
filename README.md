@@ -11,7 +11,7 @@
 [tryisleta.com](https://tryisleta.com) &nbsp;·&nbsp; [What's new](release-notes/) &nbsp;·&nbsp; [Contributing](CONTRIBUTING.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-2.7.1-blue.svg)
+![Version](https://img.shields.io/badge/version-2.8.0-blue.svg)
 ![Platform](https://img.shields.io/badge/macOS-26%2B-lightgrey.svg)
 ![Silicon](https://img.shields.io/badge/silicon-Apple-black.svg)
 ![Price](https://img.shields.io/badge/price-free-brightgreen.svg)
@@ -125,6 +125,21 @@ Isleta **answers the keys itself** by default and replaces Apple's own HUD entir
 brightness are separate switches, and both need Accessibility — decline it and you get Isleta's HUD
 *and* Apple's, which is why the first run asks.
 
+### ⌨️ Claude Code and Codex — when they need you
+
+Start an agent on something, go do something else, and the island tells you when it stops for
+you: your terminal's icon with a raised hand on one side of the notch, the agent's own mark on the
+other. Click once to read what it needs — permission to run something, an answer to a question, or
+just that it's finished — and again to go straight to its window, even on another desktop.
+
+Turn on **Answer permission prompts from the island** in Settings and the open island shows the
+command or file being asked about, with **Allow** and **Deny** under it. Allow approves that one
+request and changes none of your rules. Isleta adds one hook to the agent's own settings to do it,
+and takes exactly that back out when you turn it off.
+
+Claude Code works with nothing to set up. Codex appears once the switch is on and you've trusted
+Isleta's hooks in Codex with `/hooks`.
+
 ### ⏱ And the small stuff that just shows up
 
 - **Timers** you start in Clock, counting down beside the notch in Clock's own ring
@@ -204,6 +219,9 @@ This is the short version, and it really is the whole version:
 - ❌ Nothing about you, your music, your location or your calendar leaves your Mac
 - ✅ **Transcription runs entirely on your Mac.** Audio never leaves it
 - ✅ Your settings are a small file in your own user library
+- ✅ Isleta changes another app's files in exactly one case: answering coding agents' prompts, a
+  switch that's off until you turn it on. It adds one hook to `~/.claude/settings.json` and
+  `~/.codex/hooks.json`, keeps a backup, and takes exactly that back out when you turn it off
 - ✅ Isleta keeps a log at `~/Library/Logs/Isleta` — events only, never track titles, file names,
   event titles or serial numbers. That's what makes **Export Logs…** safe to email to a stranger
 - ✅ **Exactly two kinds of network request exist**: the weather, and checking for a new version.
@@ -242,7 +260,7 @@ Each one is explained in Settings, right beside the switch it belongs to.
 | Pane | What's on it |
 |---|---|
 | **General** | Launch at login, shortcuts, whether Isleta shows in the menu bar, the lock screen card and its unlock sound, updates |
-| **Sources** | Turn each thing on or off independently — Now Playing, the HUDs, Today, calendar alerts, meetings, timers, Bluetooth, power, calls, the shelf, the wake greeting, screen sharing — plus Focus, and the apps Isleta stays out of |
+| **Sources** | Turn each thing on or off independently — Now Playing, the HUDs, Today, calendar alerts, meetings, timers, Bluetooth, power, calls, the shelf, the wake greeting, screen sharing, coding agents — plus Focus, answering coding agents' prompts from the island, and the apps Isleta stays out of |
 | **Glance** | Which calendars count, and whether weather uses your location or a city you type |
 | **About** | Acknowledgements, Export Logs…, Setup Guide, Quit, reset to defaults |
 
@@ -282,6 +300,14 @@ actually pressed.
 - **The equalizer moves in a set pattern rather than to the song.** Its colors come from the cover;
   its motion doesn't come from the audio.
 - **The hover target is the notch itself** — about 185 points wide, and easy to overshoot.
+- **Clicking through to a coding agent finds its window, not its tab.** Isleta brings the right
+  window forward, on whichever desktop it's on, but can't pick a terminal tab inside it. In VS Code
+  it matches the session's folder to a workspace; a folder no window has open goes to VS Code's
+  main window. A session inside tmux has no window to find.
+- **Agent sessions already running when you turn on Allow and Deny keep answering in the
+  terminal.** The agents read their hooks when a session starts.
+- **Codex waits for the island before showing its own prompt.** So the island only holds a Codex
+  prompt while you're away from its terminal, and lets go the moment you come back.
 - **The island can still cover menu bar icons beside the notch.** It keeps the menus of the app
   you're using clear, but macOS doesn't tell Isleta where other apps' icons are.
 

@@ -38,6 +38,10 @@ struct BuiltInActivityTests {
             // answer. The glance is here for the reason the recents list keeps its ground: it is
             // read, not glanced at.
             #expect(activity.expiry == .never)
+        case .codingAgent:
+            // A session waiting on the person ends when the session moves on, which the source
+            // sees. The finished moment carries its own dwell per instance — see `codingAgent`.
+            #expect(activity.expiry == .never)
         case .updateAvailable:
             // Still available tomorrow. Sparkle retracts it once the update has been looked at; a
             // reminder that lapsed on a clock would be no reminder.
@@ -48,6 +52,70 @@ struct BuiltInActivityTests {
             // enough to be read is a lower bar than living long enough to be hit.
             #expect(activity.expiry != .never)
         }
+    }
+
+    @Test("a coding agent is one island per session, and only its finished moment expires")
+    func codingAgentMoments() {
+        let session = CodingAgentSession(
+            agent: .claudeCode, sessionID: "abc", name: "isleta-6a", terminalApplicationName: "Terminal")
+        let waiting = BuiltInActivity.codingAgent(session, moment: .needsInput)
+        let finished = BuiltInActivity.codingAgent(session, moment: .finished)
+
+        // The same id for both moments, so waiting → finished is an update that crossfades rather
+        // than a second island queued behind the first.
+        #expect(waiting.id == finished.id)
+        #expect(waiting.id == ActivityID("builtin.codingAgent.claudeCode.abc"))
+        #expect(waiting.priority == .prominent)
+        #expect(waiting.expiry == .never)
+        #expect(finished.expiry == .after(.seconds(6)))
+
+        // The terminal's icon leads, wearing the moment on its corner; the agent's mark trails.
+        #expect(waiting.presentations.leading.applicationIconName == "Terminal")
+        #expect(waiting.presentations.leading.badgeSymbol == "hand.raised.fill")
+        #expect(finished.presentations.leading.badgeSymbol == "checkmark")
+        #expect(waiting.presentations.leading.mark == nil)
+        #expect(waiting.presentations.trailing.mark == .claude)
+        #expect(waiting.presentations.trailing.symbol != nil)
+        let codex = CodingAgentSession(agent: .codex, sessionID: "x", name: nil, terminalApplicationName: nil)
+        #expect(BuiltInActivity.codingAgent(codex, moment: .finished).presentations.trailing.mark == .openAI)
+
+        // Open, it says what is asked and where to answer, with the session's name.
+        let asking = CodingAgentSession(agent: .claudeCode, sessionID: "abc", name: "isleta-6a",
+                                        terminalApplicationName: "Terminal", waitingFor: .permission)
+        let permission = BuiltInActivity.codingAgent(asking, moment: .needsInput).presentations.expanded
+        #expect(permission.title == "Claude Code needs your permission")
+        #expect(permission.subtitle == "isleta-6a · Allow or deny it in Terminal")
+        #expect(waiting.presentations.expanded.title == "Claude Code needs your input")
+        #expect(waiting.presentations.expanded.subtitle == "isleta-6a · Reply in Terminal")
+        #expect(BuiltInActivity.codingAgent(codex, moment: .finished).presentations.expanded.subtitle
+                == "See what it did in the terminal")
+
+        // Nothing to answer from the island without a held prompt.
+        #expect(permission.offersAllowDeny == false)
+
+        // **A held prompt says what is being allowed**, and offers the buttons — open only.
+        let held = CodingAgentSession(
+            agent: .claudeCode, sessionID: "abc", name: "isleta-6a", terminalApplicationName: "Terminal",
+            waitingFor: .permission, prompt: CodingAgentPrompt(toolName: "Bash", detail: "rm -rf build"))
+        let answerable = BuiltInActivity.codingAgent(held, moment: .needsInput).presentations
+        #expect(answerable.expanded.title == "Claude Code needs your permission")
+        #expect(answerable.expanded.subtitle == "isleta-6a · Bash\nrm -rf build")
+        #expect(answerable.expanded.offersAllowDeny)
+        #expect(answerable.leading.offersAllowDeny == false)
+        #expect(answerable.compact.offersAllowDeny == false)
+        // A finished turn has nothing left to answer, whatever is still held.
+        #expect(BuiltInActivity.codingAgent(held, moment: .finished).presentations.expanded.offersAllowDeny == false)
+        // No name and no tool: the request alone.
+        let bare = CodingAgentSession(agent: .claudeCode, sessionID: "z", name: nil, terminalApplicationName: nil,
+                                      waitingFor: .permission, prompt: CodingAgentPrompt(toolName: nil, detail: "~/notes.md"))
+        #expect(BuiltInActivity.codingAgent(bare, moment: .needsInput).presentations.expanded.subtitle == "~/notes.md")
+
+        // A second session is its own island.
+        let other = CodingAgentSession(agent: .claudeCode, sessionID: "def", name: nil, terminalApplicationName: nil)
+        #expect(BuiltInActivity.codingAgent(other, moment: .needsInput).id != waiting.id)
+        // With no name of its own, the line is the action alone.
+        #expect(BuiltInActivity.codingAgent(other, moment: .finished).presentations.expanded.subtitle
+                == "See what it did in the terminal")
     }
 
     /// The three shapes a Clock timer takes, and the two that must not cost a display link.
@@ -190,6 +258,8 @@ struct BuiltInActivityTests {
             // The 2.0 additions. Two files convert at once, a calendar alerts on two events
             // starting in the same minute, and a second call comes in during a call.
             .fileAction, .calendarAlert, .call,
+            // 2.8: two terminals can each have a session stopped on the person.
+            .codingAgent,
         ]
         if plural.contains(kind) {
             #expect(kind.singletonID == nil)

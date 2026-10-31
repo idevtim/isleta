@@ -140,6 +140,33 @@ struct SourceTogglesTests {
         #expect(toggles.welcomeBack)
     }
 
+    /// 2.8's switch arrives in files that never had it, and the per-key decoder is the whole of its
+    /// migration: absent reads as on, and a stored off survives the trip back.
+    @Test("a record from before 2.8 turns coding agents on, and a stored off stays off")
+    func codingAgentsAddedWithoutMigration() throws {
+        let old = try JSONDecoder().decode(SourceToggles.self, from: Data(#"{"nowPlaying":true}"#.utf8))
+        #expect(old.codingAgents)
+
+        var toggles = SourceToggles()
+        toggles.codingAgents = false
+        let roundTripped = try JSONDecoder().decode(SourceToggles.self, from: JSONEncoder().encode(toggles))
+        #expect(roundTripped.codingAgents == false)
+    }
+
+    /// The one switch that edits another program's file is off until the person turns it on —
+    /// including in every record written before it existed.
+    @Test("answering agent prompts from the island starts off, and a stored on stays on")
+    func agentPromptsOffUntilAsked() throws {
+        #expect(SourceToggles().answersAgentPrompts == false)
+        let old = try JSONDecoder().decode(SourceToggles.self, from: Data(#"{"codingAgents":true}"#.utf8))
+        #expect(old.answersAgentPrompts == false)
+
+        var toggles = SourceToggles()
+        toggles.answersAgentPrompts = true
+        let roundTripped = try JSONDecoder().decode(SourceToggles.self, from: JSONEncoder().encode(toggles))
+        #expect(roundTripped.answersAgentPrompts)
+    }
+
     /// One unreadable flag must not take the other three with it. This is the same guarantee
     /// `IsletaConfiguration` makes, one level down — and it only holds because `SourceToggles` has
     /// its own lenient decoder rather than relying on its parent's.

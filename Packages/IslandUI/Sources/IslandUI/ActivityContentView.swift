@@ -64,6 +64,11 @@ public struct ActivityContentView: View {
     /// island exactly as a click on any other part of the content does. See `levelGrab`.
     private let onAdjustLevel: ((Double) -> Void)?
 
+    /// Where Allow and Deny go, for a content that offers them (`ActivityContent.offersAllowDeny`)
+    /// in the expanded slot. Nil draws the row inert — a preview — so the island's height, which
+    /// counts the row from the content alone, is the same either way.
+    private let onAnswer: ((CodingAgentAnswer) -> Void)?
+
     /// - Parameters:
     ///   - namespace: the namespace the compact/expanded morph is matched in. `nil` renders the
     ///     content with no matched geometry, which is what a flank wants — a flank and the expanded
@@ -79,7 +84,8 @@ public struct ActivityContentView: View {
         icons: ApplicationIconStore? = nil,
         levelStretch: CGFloat = 0,
         levelStretchAnchor: UnitPoint = .leading,
-        onAdjustLevel: ((Double) -> Void)? = nil
+        onAdjustLevel: ((Double) -> Void)? = nil,
+        onAnswer: ((CodingAgentAnswer) -> Void)? = nil
     ) {
         self.content = content
         self.slot = slot
@@ -91,6 +97,7 @@ public struct ActivityContentView: View {
         self.levelStretch = levelStretch
         self.levelStretchAnchor = levelStretchAnchor
         self.onAdjustLevel = onAdjustLevel
+        self.onAnswer = onAnswer
     }
 
     public var body: some View {
@@ -102,7 +109,9 @@ public struct ActivityContentView: View {
             case .expanded: expanded
             }
         }
-        .accessibilityElement(children: .combine)
+        // A content with buttons keeps them as their own elements: combined, VoiceOver would read
+        // the prompt and offer nothing to press.
+        .accessibilityElement(children: content.offersAllowDeny && slot == .expanded ? .contain : .combine)
         .accessibilityLabel(accessibilityLabel)
     }
 
@@ -393,6 +402,18 @@ public struct ActivityContentView: View {
     /// directions, and a number changed in one of them and not the other is a message clipped by
     /// exactly the difference. `ActivityExpandedHeightTests` pins them together.
     private var expanded: some View {
+        VStack(alignment: .leading, spacing: ActivityExpandedHeight.answerRowSpacing) {
+            expandedBlock
+            if content.offersAllowDeny {
+                answerRow
+            }
+        }
+        .padding(.horizontal, ActivityExpandedHeight.horizontalPadding)
+        .padding(.vertical, ActivityExpandedHeight.verticalPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    }
+
+    private var expandedBlock: some View {
         HStack(spacing: ActivityExpandedHeight.symbolSpacing) {
             symbolWell
             VStack(alignment: .leading, spacing: ActivityExpandedHeight.titleSubtitleSpacing) {
@@ -427,9 +448,39 @@ public struct ActivityContentView: View {
                 valueView(value)
             }
         }
-        .padding(.horizontal, ActivityExpandedHeight.horizontalPadding)
-        .padding(.vertical, ActivityExpandedHeight.verticalPadding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    }
+
+    /// Deny and Allow, side by side and the same width, Allow on the trailing edge where macOS puts
+    /// the default button. SwiftUI `Button`s, so a press reaches SwiftUI rather than the island's
+    /// own click handler — the mechanism the glance's Join button documents.
+    ///
+    /// Allow is the brighter of the two because it is the one being asked for, not because it is
+    /// the safe one: neither is preselected, and Return does nothing — the panel never takes keys.
+    private var answerRow: some View {
+        HStack(spacing: 8) {
+            answerButton(islandText("codingAgent.deny", "Deny"), prominent: false) { onAnswer?(.deny) }
+            answerButton(islandText("codingAgent.allow", "Allow"), prominent: true) { onAnswer?(.allow) }
+        }
+        .frame(height: ActivityExpandedHeight.answerRowHeight)
+    }
+
+    private func answerButton(_ title: String, prominent: Bool, action: @escaping () -> Void) -> some View {
+        let shape = RoundedRectangle(cornerRadius: ActivityExpandedHeight.answerRowHeight / 2, style: .continuous)
+        let fill: Double = prominent
+            ? (increaseContrast ? 0.42 : 0.26)
+            : (increaseContrast ? 0.24 : 0.12)
+        return Button(action: action) {
+            Text(title)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity)
+                .frame(height: ActivityExpandedHeight.answerRowHeight)
+                .contentShape(shape)
+                .background(shape.fill(.white.opacity(fill)))
+        }
+        .buttonStyle(GlanceButtonStyle())
+        .accessibilityLabel(title)
     }
 
     /// The expanded symbol, in a rounded well.
@@ -508,6 +559,25 @@ public struct ActivityContentView: View {
                 )
                 .contentTransition(.opacity)
                 .overlay(alignment: .bottomTrailing) { badge(size: size) }
+            if matched, let namespace {
+                image.matchedGeometryEffect(id: Self.symbolGeometryID, in: namespace)
+            } else {
+                image
+            }
+        } else if let mark = content.mark, let markImage = ActivityMarkImage.image(for: mark) {
+            // A bundled mark sits where the glyph would. In a sliver it is drawn larger than the
+            // glyph's point size — a symbol's 13 pt is roughly its cap height, a mark fills its box
+            // — so it weighs about what the app icon on the other side of the cutout does. In the
+            // expanded well, 22 pt is already the well's glyph size.
+            let side = size < 20 ? (size * 1.4).rounded() : size
+            let image = Image(nsImage: markImage)
+                .resizable()
+                .renderingMode(.template)
+                .interpolation(.high)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: side, height: side)
+                .foregroundStyle(ActivityMarkImage.color(for: mark, increaseContrast: increaseContrast))
+                .contentTransition(.opacity)
             if matched, let namespace {
                 image.matchedGeometryEffect(id: Self.symbolGeometryID, in: namespace)
             } else {

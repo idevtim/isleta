@@ -95,7 +95,7 @@ build and preview with no permission granted.**
 |---|---|
 | `IslandKit` | Panel, screen geometry, hit testing, the shape path, process metrics (AppKit + CoreGraphics) |
 | `IslandUI` | SwiftUI views, motion tokens, debug overlay, per-screen view model, the three pages and the swipe between them, activity slot layout and content views (depends on IslandActivities) |
-| `IslandActivities` | Activity protocol, `ActivityContent`, the pure `ActivityStack`, `ActivityCoordinator`, the fifteen built-in kinds (depends on IslandKit) |
+| `IslandActivities` | Activity protocol, `ActivityContent`, the pure `ActivityStack`, `ActivityCoordinator`, the sixteen built-in kinds (depends on IslandKit) |
 | `IslandSources` | NowPlaying, calendar, weather, system events, Bluetooth device connections — all permission-gated |
 | `IslandSettings` | Config model, `UserDefaults` persistence + migration, settings window, the first-run flow, launch at login, the Sparkle seam |
 | `Isleta/` | App shell: wiring only — controller, one model per screen, hot keys, status item |

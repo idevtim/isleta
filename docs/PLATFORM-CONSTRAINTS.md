@@ -1233,6 +1233,82 @@ notch. The same build retained effective Accessibility across the rebuild. This 
 merely an AX observer registration. App-specific dynamic menu notifications remain a separate
 compatibility question; no polling was added to compensate for unsupported hints.
 
+### Coding agents — Claude Code 2.1.314 and Codex 0.163.0, macOS 27.2, 2026-10-30
+
+- **Claude Code keeps a state file per running session, and its status has four values.**
+  `~/.claude/sessions/<pid>.json` carries `pid`, `sessionId`, `cwd`, `name`, `kind` (`interactive`
+  for a terminal session), `status`, `waitingFor` and `statusUpdatedAt`. Recorded live for ten
+  minutes across seven sessions: `busy` while a turn runs, **`shell` while a Bash tool runs** — not
+  in the list read out of the binary, and the reason a turn ending in a command reads `shell → idle`
+  rather than `busy → idle` — `waiting` with `waitingFor: "permission prompt"` on a permission
+  prompt and `"input needed"` on a question, and `idle` when the turn is over. The binary also names
+  `dialog open`, `sandbox request` and `goal proposal` reasons. It is a private format: decode
+  leniently and treat an unknown status as no evidence.
+- **The file is rewritten when the state changes, not while the session works**, so watching the
+  folder costs nothing during a long turn. `statusUpdatedAt` did not move across several minutes of
+  continuous tool use. An FSEvents stream with `kFSEventStreamCreateFlagFileEvents` delivered an
+  in-place rewrite to the callback about 20 ms after it was written.
+- **The file outlives its process.** The format records no exit, so liveness has to come from the
+  pid — and pids are recycled, so the pid's executable is checked too.
+- **Frontmost is an app, not a window.** With a session in one VS Code window and the person in
+  another, the session's app was frontmost throughout, and a rule of "never while its app is in
+  front" never fired — found on the first hardware run. Which window holds the session would take
+  Accessibility or Screen Recording; the shipped rule waits six seconds instead, which is when
+  Claude Code raises its own notification (below).
+- **The parent chain reaches the terminal without Accessibility.** `claude → zsh → Code Helper →
+  Code` for a session in VS Code's terminal, read with `sysctl(KERN_PROC_PID)`; the first ancestor
+  that is a regular `NSRunningApplication` is the app to raise. Under tmux the chain ends at the tmux
+  server and there is no terminal to find.
+- **Activating an app does not bring its Space; its Window menu does.** With VS Code's two
+  windows on two other desktops, `NSRunningApplication.activate(options: [])` made VS Code
+  frontmost and left the screen where it was. `AXWindows` lists only the current Space's windows
+  (it returned none), so the window cannot be raised directly. Every window on every Space is an
+  item in the app's Window menu, found by its ⌘M Minimize item rather than its localized title;
+  activating the app and then pressing the window's item switched Spaces in about 80 ms, and
+  pressing it without activating first reported success and did nothing. Needs Accessibility.
+- **Which VS Code window holds a session is knowable only by folder.** All of VS Code's
+  integrated terminals run under one shared helper process, so the parent chain stops at the app.
+  `~/Library/Application Support/Code/User/globalStorage/storage.json` lists the open windows as
+  folders or `.code-workspace` files, and a window's title carries the folder's name or
+  `<workspace> (Workspace)`. Its per-window terminal layout (`workspaceStorage/<id>/state.vscdb`)
+  keys terminals by VS Code's own persistent ids, not pids. A session in a folder no window holds
+  falls back to the app's checked Window menu item, its main window. Nothing outside VS Code can
+  select a terminal tab within a window. Verified on hardware: a session in a workspace folder was
+  raised into that workspace's window on another Space.
+- **A `PermissionRequest` hook does not hold the terminal's prompt back.** Measured with a probe hook
+  that slept 20 s: the terminal showed its own prompt at once, the person answered it 2.4 s in, the
+  tool ran, the turn ended, and the hook kept running until its own sleep ran out — **nothing tells
+  a hook that its question was answered elsewhere.** A hook that answers
+  `{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}`
+  after 8 s with the prompt untouched dismissed the prompt, and the tool ran 0.6 s later. The
+  request carries `session_id`, `tool_name` and `tool_input` (Bash's includes a `description`) but
+  no `tool_use_id`. A `Notification` with `notification_type: permission_prompt` follows about 6 s
+  after an unanswered prompt.
+- **A hook added to `~/.claude/settings.json` reaches new sessions only.** Verified on hardware
+  2026-10-31 with Isleta's own switch: a session started after the hook was written answered from
+  the island; one already running never ran it. So the switch's caption says so, rather than the
+  first prompt in an open session looking like the feature failing.
+- **Codex's `PermissionRequest` hook holds the terminal's prompt back — the opposite of Claude
+  Code's.** Measured on Codex 0.166.0, macOS 27.2, 2026-10-31, with a project-scoped
+  `.codex/hooks.json` probe: with the hook sleeping 20 s and printing nothing, Codex showed no
+  approval prompt until the hook exited 20.0 s later, then showed its own; a person who quit
+  before then never saw one. With the hook answering
+  `{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}`
+  after 8 s, no prompt appeared at all and the command ran 0.4 s later. So a Codex prompt held
+  open by the island is a prompt the terminal is not showing, and the hook must let go the moment
+  the person is at the terminal. The request carries `session_id`, `turn_id`, `cwd`, `tool_name`
+  and `tool_input` (`command`, and a `description` that is Codex's own sentence for why).
+- **Codex's hooks run under a shared process, not the session's.** Every hook across three
+  separate `codex` launches had the same parent pid, which was not any of the interactive
+  processes — so the hook's parent does not lead to the terminal the way Claude Code's does.
+- **Codex reports its turn through hooks, since it keeps no state file.** `SessionStart`,
+  `UserPromptSubmit` when a turn starts, `PreToolUse`/`PostToolUse` around every tool call (a
+  sandboxed attempt and its escalated rerun are two calls), `PermissionRequest` before the second,
+  and `Stop` with `last_assistant_message` when the turn ends. Its rollouts are zstd-compressed
+  transcripts with no state field, so there is no passive route. A hook runs only once the user
+  has trusted it in Codex (`/hooks`, recorded as a `trusted_hash`); writing that on the user's
+  behalf would skip the review Codex exists to make them do.
+
 ### Menu bar icons are out of reach — macOS 27.2, 2026-10-21
 
 Clearance covers the frontmost app's menus only; the island can still sit over other apps' menu
