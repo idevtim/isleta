@@ -543,7 +543,11 @@ prompt in one and an explanation in the other.
   parent chain with `sysctl(KERN_PROC_PID)` to the first regular app, which is both the icon drawn
   and what a click raises. A file outlives its process, so a record is believed only while its pid
   is alive and still running something Claude-shaped, and each live session holds a
-  `DispatchSource` on its pid's exit. Codex is not read here: its rollouts are compressed
+  `DispatchSource` on its pid's exit. A click goes through `TerminalWindow`: activate the app,
+  then press the session's window in its Window menu, which is what crosses Spaces — matched by
+  title against the session's folder and name and, for VS Code, the window whose folders hold it
+  (`VSCodeWindows`); with no match, the app's main window. Needs Accessibility; without it the app
+  is activated alone. Codex is not read here: its rollouts are compressed
   transcripts with no state field, so it reaches the island only through its hooks.
 
 - **`AgentHookScript`, `AgentHookServer` and `AgentHookSettings`** — the opt-in half: answering a

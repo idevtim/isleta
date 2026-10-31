@@ -128,10 +128,11 @@ public final class CodingAgentSource: ActivitySource {
     /// synchronously.
     public func stopAndWait() { stop() }
 
-    /// Bring the terminal that owns this activity's session to the front.
+    /// Bring the terminal that owns this activity's session to the front — the window the session
+    /// is in, on whatever Space it is on, when one can be told apart (`TerminalWindow`).
     ///
     /// `NSRunningApplication.activate` raises another app from an accessory one unconditionally —
-    /// measured, and recorded in `docs/TRAPS.md` beside the call that does not.
+    /// measured, and recorded in `docs/TRAPS.md` beside the call that does not — but not its Space.
     ///
     /// - Returns: whether there was a terminal to raise.
     @discardableResult
@@ -139,7 +140,10 @@ public final class CodingAgentSource: ActivitySource {
         guard let tracked = sessions.values.first(where: { Self.activityID(for: $0.record) == id }),
               let terminal = tracked.terminal, !terminal.isTerminated
         else { return false }
-        terminal.activate(options: [])
+        let names = TerminalWindow.names(
+            cwd: tracked.record.cwd, sessionName: tracked.record.name,
+            bundleIdentifier: terminal.bundleIdentifier)
+        TerminalWindow.raise(terminal, names: names)
         return true
     }
 

@@ -1259,6 +1259,22 @@ compatibility question; no polling was added to compensate for unsupported hints
   Code` for a session in VS Code's terminal, read with `sysctl(KERN_PROC_PID)`; the first ancestor
   that is a regular `NSRunningApplication` is the app to raise. Under tmux the chain ends at the tmux
   server and there is no terminal to find.
+- **Activating an app does not bring its Space; its Window menu does.** With VS Code's two
+  windows on two other desktops, `NSRunningApplication.activate(options: [])` made VS Code
+  frontmost and left the screen where it was. `AXWindows` lists only the current Space's windows
+  (it returned none), so the window cannot be raised directly. Every window on every Space is an
+  item in the app's Window menu, found by its ⌘M Minimize item rather than its localized title;
+  activating the app and then pressing the window's item switched Spaces in about 80 ms, and
+  pressing it without activating first reported success and did nothing. Needs Accessibility.
+- **Which VS Code window holds a session is knowable only by folder.** All of VS Code's
+  integrated terminals run under one shared helper process, so the parent chain stops at the app.
+  `~/Library/Application Support/Code/User/globalStorage/storage.json` lists the open windows as
+  folders or `.code-workspace` files, and a window's title carries the folder's name or
+  `<workspace> (Workspace)`. Its per-window terminal layout (`workspaceStorage/<id>/state.vscdb`)
+  keys terminals by VS Code's own persistent ids, not pids. A session in a folder no window holds
+  falls back to the app's checked Window menu item, its main window. Nothing outside VS Code can
+  select a terminal tab within a window. Verified on hardware: a session in a workspace folder was
+  raised into that workspace's window on another Space.
 - **A `PermissionRequest` hook does not hold the terminal's prompt back.** Measured with a probe hook
   that slept 20 s: the terminal showed its own prompt at once, the person answered it 2.4 s in, the
   tool ran, the turn ended, and the hook kept running until its own sleep ran out — **nothing tells
