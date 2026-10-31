@@ -99,6 +99,6 @@
 
 /* Section: coding agents in the Sources pane */
 "sources.codingAgent.title" = "Agents de code";
-"sources.codingAgent.summary" = "Vous prévient quand Claude Code attend votre réponse, ou a terminé, pendant que vous êtes dans une autre app. Cliquez sur l’île pour revenir au terminal.";
-"sources.codingAgent.status.notInstalled" = "Claude Code n’est pas installé sur ce Mac, il n’y a donc rien à afficher ici.";
+"sources.codingAgent.summary" = "Vous prévient quand Claude Code ou Codex attend votre réponse, ou a terminé, pendant que vous êtes dans une autre app. Cliquez sur l’îlot pour voir ce qu’il lui faut, puis encore une fois pour aller à sa fenêtre. Codex apparaît ici une fois « Répondre aux demandes d’autorisation depuis l’îlot » activé.";
+"sources.codingAgent.status.notInstalled" = "Ni Claude Code ni Codex n’est installé sur ce Mac, il n’y a donc rien à afficher ici.";
 "sources.codingAgent.status.working" = "Fonctionne. Lit l’état des sessions que Claude Code enregistre déjà, et ne demande aucune autorisation.";

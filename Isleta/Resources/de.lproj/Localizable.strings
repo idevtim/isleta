@@ -99,6 +99,6 @@
 
 /* Section: coding agents in the Sources pane */
 "sources.codingAgent.title" = "Coding-Agents";
-"sources.codingAgent.summary" = "Sagt dir Bescheid, wenn Claude Code auf dich wartet oder fertig ist, während du in einer anderen App bist. Klicke auf die Insel, um zum Terminal zurückzukehren.";
-"sources.codingAgent.status.notInstalled" = "Claude Code ist auf diesem Mac nicht installiert, daher gibt es hier nichts anzuzeigen.";
+"sources.codingAgent.summary" = "Sagt dir Bescheid, wenn Claude Code oder Codex auf dich wartet oder fertig ist, während du in einer anderen App bist. Klicke auf die Insel, um zu sehen, was gebraucht wird, und noch einmal, um zum Fenster zu wechseln. Codex erscheint hier, sobald „Berechtigungsanfragen auf der Insel beantworten“ eingeschaltet ist.";
+"sources.codingAgent.status.notInstalled" = "Weder Claude Code noch Codex ist auf diesem Mac installiert, daher gibt es hier nichts anzuzeigen.";
 "sources.codingAgent.status.working" = "Funktioniert. Liest den Sitzungsstatus, den Claude Code ohnehin speichert, und braucht keine Berechtigung.";

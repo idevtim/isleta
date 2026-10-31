@@ -149,15 +149,17 @@ public final class CodingAgentSource: ActivitySource {
 
     public func start() {
         guard !isRunning else { return }
-        guard isAgentInstalled else {
-            IslandLog.sources.info("coding agents: no Claude Code sessions folder, source idle")
+        // Codex arrives through the socket alone, so a Mac with Codex and no Claude Code still runs
+        // this source — it just has no folder to watch.
+        guard isAgentInstalled || isCodexInstalled else {
+            IslandLog.sources.info("coding agents: no agent on this Mac, source idle")
             return
         }
         isRunning = true
         // Watch first, then read, so a change landing between the two is seen twice rather than
         // never — reading a file twice is idempotent, and missing one is a session the island never
         // hears about until it changes again.
-        startStream()
+        if isAgentInstalled { startStream() }
         activationObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification,
             object: nil,

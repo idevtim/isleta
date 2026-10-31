@@ -1007,11 +1007,11 @@ final class SourceHub {
 
         case .codingAgent:
             // Not installed is `unavailable`, the battery-less Mac's shape: nothing is refused, there
-            // is nothing on this Mac to watch. Claude Code creates the folder on its first run.
-            guard codingAgents.isAgentInstalled else {
+            // is nothing on this Mac to watch. Each agent creates its folder on its first run.
+            guard codingAgents.isAgentInstalled || codingAgents.isCodexInstalled else {
                 return .unavailable(appText(
                     "sources.codingAgent.status.notInstalled",
-                    "Claude Code isn’t installed on this Mac, so there is nothing to show here."
+                    "Neither Claude Code nor Codex is installed on this Mac, so there is nothing to show here."
                 ))
             }
             return .working(appText(
@@ -1270,8 +1270,9 @@ final class SourceHub {
             appText(
                 "sources.codingAgent.summary",
                 """
-                Tells you when Claude Code stops to wait for you, or finishes, while you’re in another \
-                app. Click the island to go back to the terminal.
+                Tells you when Claude Code or Codex stops to wait for you, or finishes, while you’re \
+                in another app. Click the island to see what it needs, and again to go to its window. \
+                Codex shows here once “Answer permission prompts from the island” is on.
                 """
             )
         }
