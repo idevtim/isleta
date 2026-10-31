@@ -28,6 +28,10 @@ struct ClaudeSessionRecord: Equatable, Sendable, Decodable {
     let name: String?
     let cwd: String?
 
+    /// Why a `waiting` session is waiting, in the file's own words: `permission prompt`,
+    /// `input needed`, and others a later release may add (`docs/PLATFORM-CONSTRAINTS.md`).
+    let waitingFor: String?
+
     /// `interactive` for a session in a terminal. A `claude -p` run, a hook's helper session and an
     /// SDK process are something else, and none of them has a person at a prompt to wait on.
     let kind: String?
@@ -39,15 +43,20 @@ struct ClaudeSessionRecord: Equatable, Sendable, Decodable {
         case name
         case cwd
         case kind
+        case waitingFor
     }
 
-    init(pid: Int32, sessionID: String, status: Status, name: String? = nil, cwd: String? = nil, kind: String? = "interactive") {
+    init(
+        pid: Int32, sessionID: String, status: Status, name: String? = nil, cwd: String? = nil,
+        kind: String? = "interactive", waitingFor: String? = nil
+    ) {
         self.pid = pid
         self.sessionID = sessionID
         self.status = status
         self.name = name
         self.cwd = cwd
         self.kind = kind
+        self.waitingFor = waitingFor
     }
 
     init(from decoder: any Decoder) throws {
@@ -68,6 +77,14 @@ struct ClaudeSessionRecord: Equatable, Sendable, Decodable {
         name = try? container.decodeIfPresent(String.self, forKey: .name)
         cwd = try? container.decodeIfPresent(String.self, forKey: .cwd)
         kind = try? container.decodeIfPresent(String.self, forKey: .kind)
+        waitingFor = try? container.decodeIfPresent(String.self, forKey: .waitingFor)
+    }
+
+    /// What the person is being asked for. A permission prompt is the one reason worth naming;
+    /// every other — a question, a dialog, a reason a later release adds — is "your input".
+    var wait: CodingAgentWait? {
+        guard status == .waiting else { return nil }
+        return waitingFor == "permission prompt" ? .permission : .input
     }
 
     static func decode(_ data: Data) -> ClaudeSessionRecord? {

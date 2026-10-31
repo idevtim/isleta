@@ -92,3 +92,11 @@
 "codingAgent.needsInput" = "%@ wartet auf dich";
 "codingAgent.finished" = "%@ ist fertig";
 "codingAgent.a11y" = "%1$@: %2$@";
+"codingAgent.needsPermission" = "%@ braucht deine Erlaubnis";
+"codingAgent.answerIn" = "Erlaube oder verweigere es in %@";
+"codingAgent.answerInTerminal" = "Erlaube oder verweigere es im Terminal";
+"codingAgent.replyIn" = "Antworte in %@";
+"codingAgent.replyInTerminal" = "Antworte im Terminal";
+"codingAgent.reviewIn" = "Sieh in %@ nach, was es getan hat";
+"codingAgent.reviewInTerminal" = "Sieh im Terminal nach, was es getan hat";
+"codingAgent.detail" = "%1$@ · %2$@";

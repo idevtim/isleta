@@ -171,8 +171,15 @@ public final class CodingAgentSource: ActivitySource {
         }
 
         if var tracked = sessions[name], tracked.record.pid == record.pid {
+            let reasonChanged = tracked.record.wait != record.wait
             tracked.record = record
             sessions[name] = tracked
+            // A session can go from one reason to another without leaving `waiting` — a permission
+            // prompt answered straight into a question — which the attention table rightly sees as
+            // no change. The island's words are the reason, so they are refreshed in place.
+            if reasonChanged, record.wait != nil, attention.showing(name) == .needsInput {
+                onActivity?(BuiltInActivity.codingAgent(Self.session(for: tracked), moment: .needsInput))
+            }
         } else {
             forget(name)
             // A file outlives its process and pids are recycled, so the pid has to be alive *and*
@@ -237,8 +244,18 @@ public final class CodingAgentSource: ActivitySource {
             agent: .claudeCode,
             sessionID: tracked.record.sessionID,
             name: tracked.record.name,
-            terminalApplicationName: tracked.terminal?.localizedName
+            terminalApplicationName: tracked.terminal.flatMap(Self.applicationName),
+            waitingFor: tracked.record.wait
         )
+    }
+
+    /// The name a person knows the app by. A running app's `localizedName` is its process's, which
+    /// for VS Code is "Code"; the bundle's display name is "Visual Studio Code", and it is also a
+    /// name `ApplicationIcons` resolves.
+    private static func applicationName(_ application: NSRunningApplication) -> String? {
+        guard let url = application.bundleURL else { return application.localizedName }
+        let name = FileManager.default.displayName(atPath: url.path)
+        return name.hasSuffix(".app") ? String(name.dropLast(4)) : name
     }
 
     private static func activityID(for record: ClaudeSessionRecord) -> ActivityID {

@@ -854,31 +854,45 @@ public struct BuiltInActivity: IslandActivity, Equatable {
 
     /// A coding agent that has stopped for the person, or has just finished.
     ///
-    /// The agent's own mark in the leading sliver and the expanded well (`ActivityContent.mark`) —
-    /// with several agents open, which one stopped is the first thing a person needs, and the owner
-    /// chose the marks over a terminal icon for that. `apple.terminal.fill` is the fallback a
-    /// renderer without the marks draws. The trailing glyph is the moment: an exclamation mark for
-    /// "waiting on you", a check for "done".
+    /// Closed, the terminal's icon leads, wearing the moment on its corner — a raised hand for
+    /// "waiting on you", a check for "done" — because it is where a click on the open island goes
+    /// and where the answer is typed; the agent's own mark trails, in its own colour
+    /// (`ActivityContent.mark`, the owner's call).
+    /// `apple.terminal.fill` stands in until the icon resolves, and for a session whose terminal
+    /// could not be found.
+    ///
+    /// Open, it says what to do: what the agent is asking for, where to answer, and which session —
+    /// several can be open in one folder.
     ///
     /// Needing input carries no expiry (`ActivityKind.codingAgent.defaultExpiry`) — the source
     /// retracts it the moment the session moves on, whichever surface answered. Finished is a
     /// moment with a dwell, the length of a finished timer's, because nothing retracts it.
     public static func codingAgent(_ session: CodingAgentSession, moment: CodingAgentMoment) -> Self {
         let agent = session.agent.displayName
-        let title = session.name.flatMap { $0.isEmpty ? nil : $0 } ?? agent
-        let state = switch moment {
-        case .needsInput: "exclamationmark.circle.fill"
-        case .finished: "checkmark.circle.fill"
+        let app = session.terminalApplicationName
+        let badge = switch moment {
+        case .needsInput: "hand.raised.fill"
+        case .finished: "checkmark"
         }
-        let tint: ActivityTint = switch moment {
-        case .needsInput: .warning
-        case .finished: .positive
+        let headline: String
+        let action: String
+        switch (moment, session.waitingFor ?? .input) {
+        case (.needsInput, .permission):
+            headline = activityText("codingAgent.needsPermission", "\(agent) needs your permission")
+            action = app.map { activityText("codingAgent.answerIn", "Allow or deny it in \($0)") }
+                ?? activityText("codingAgent.answerInTerminal", "Allow or deny it in the terminal")
+        case (.needsInput, .input):
+            headline = activityText("codingAgent.needsInput", "\(agent) needs your input")
+            action = app.map { activityText("codingAgent.replyIn", "Reply in \($0)") }
+                ?? activityText("codingAgent.replyInTerminal", "Reply in the terminal")
+        case (.finished, _):
+            headline = activityText("codingAgent.finished", "\(agent) finished")
+            action = app.map { activityText("codingAgent.reviewIn", "See what it did in \($0)") }
+                ?? activityText("codingAgent.reviewInTerminal", "See what it did in the terminal")
         }
-        let subtitle = switch moment {
-        case .needsInput: activityText("codingAgent.needsInput", "\(agent) needs your input")
-        case .finished: activityText("codingAgent.finished", "\(agent) finished")
-        }
-        let spoken = activityText("codingAgent.a11y", "\(title): \(subtitle)")
+        let detail = session.name.flatMap { $0.isEmpty ? nil : $0 }
+            .map { activityText("codingAgent.detail", "\($0) · \(action)") } ?? action
+        let spoken = activityText("codingAgent.a11y", "\(headline): \(detail)")
         let mark = session.agent.mark
         return Self(
             id: session.activityID,
@@ -886,15 +900,21 @@ public struct BuiltInActivity: IslandActivity, Equatable {
             expiry: moment == .finished ? .after(.seconds(6)) : nil,
             presentations: ActivityPresentations(
                 leading: ActivityContent(
+                    symbol: "apple.terminal.fill",
+                    applicationIconName: app,
+                    tint: .neutral,
+                    accessibilityLabel: spoken,
+                    badgeSymbol: badge
+                ),
+                trailing: ActivityContent(
                     symbol: "apple.terminal.fill", tint: .neutral, accessibilityLabel: spoken, mark: mark),
-                trailing: ActivityContent(symbol: state, tint: tint, accessibilityLabel: spoken),
                 compact: ActivityContent(
-                    symbol: "apple.terminal.fill", title: title, tint: .neutral,
+                    symbol: "apple.terminal.fill", title: headline, tint: .neutral,
                     accessibilityLabel: spoken, mark: mark),
                 expanded: ActivityContent(
                     symbol: "apple.terminal.fill",
-                    title: title,
-                    subtitle: subtitle,
+                    title: headline,
+                    subtitle: detail,
                     tint: .neutral,
                     accessibilityLabel: spoken,
                     mark: mark

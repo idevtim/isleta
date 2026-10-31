@@ -524,10 +524,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // body and then swap its content underneath, which is two movements for one click.
             self.dismissPresentedHUD()
 
-            // **A click on a coding agent goes to its terminal.** The answer it is waiting for is
-            // typed there, and opening the island first would be a click spent on a body that says
-            // only what the flanks already said. Falls through to opening when there is no terminal
-            // to raise — a session under tmux — so the click is never a dead one.
+            // **A click on an open coding agent goes to its terminal.** The first click opens the
+            // island, which says what the agent is asking for and where to answer (the owner's
+            // call, after the flanks alone proved too little to act on); the second, on that body,
+            // raises the session's window. Falls through to opening when there is no terminal to
+            // raise — a session under tmux — so the click is never a dead one.
             if self.bringCodingAgentForward(on: screen) { return }
 
             // **Every click opens, including on an island with nothing on stage.**
@@ -1757,22 +1758,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = activities.dismiss(primary.id)
     }
 
-    /// Raise the terminal behind the coding agent on stage, retire its activity, and close the
-    /// island if it was open on it. Returns whether there was a terminal to raise.
+    /// Raise the terminal behind the coding agent the open island is showing, retire its activity,
+    /// and close the island. Returns whether there was a terminal to raise.
     ///
-    /// Not while the pages own an open island's body: the click then landed on the calendar or the
-    /// player, and the agent is only in the flanks it no longer draws.
+    /// Only on an open island, and not while the pages own its body: the click then landed on the
+    /// calendar or the player, and the agent is only in the flanks it no longer draws.
     private func bringCodingAgentForward(on screen: IslandScreen) -> Bool {
         guard let primary = activities.stage?.primary, primary.kind == .codingAgent,
               let model = models[screen.id], !model.isStowed,
-              !(model.isExpanded && model.pagesOwnBody),
+              model.isExpanded, !model.pagesOwnBody,
               sources?.codingAgents.bringForward(primary.id) == true
         else { return false }
         _ = activities.dismiss(primary.id)
-        if model.isExpanded {
-            transition(on: screen) { model, reduceMotion, completion in
-                model.setExpanded(false, reduceMotion: reduceMotion, completion: completion)
-            }
+        transition(on: screen) { model, reduceMotion, completion in
+            model.setExpanded(false, reduceMotion: reduceMotion, completion: completion)
         }
         return true
     }

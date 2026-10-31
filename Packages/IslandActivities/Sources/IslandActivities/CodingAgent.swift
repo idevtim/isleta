@@ -45,6 +45,14 @@ public enum CodingAgentMoment: Equatable, Sendable {
     case finished
 }
 
+/// What a waiting session is asking the person for — the line the open island leads with.
+public enum CodingAgentWait: Equatable, Sendable {
+    /// A permission prompt: allow or deny a tool call.
+    case permission
+    /// Anything else it stopped for — a question, a dialog, a reply.
+    case input
+}
+
 /// One session, as the island needs it: which agent, what it is called, where it lives.
 public struct CodingAgentSession: Equatable, Sendable {
 
@@ -62,11 +70,18 @@ public struct CodingAgentSession: Equatable, Sendable {
     /// island draws, since it is the place a click takes the user.
     public let terminalApplicationName: String?
 
-    public init(agent: CodingAgent, sessionID: String, name: String?, terminalApplicationName: String?) {
+    /// What it is waiting for, when it is. Nil for a finished session.
+    public let waitingFor: CodingAgentWait?
+
+    public init(
+        agent: CodingAgent, sessionID: String, name: String?, terminalApplicationName: String?,
+        waitingFor: CodingAgentWait? = nil
+    ) {
         self.agent = agent
         self.sessionID = sessionID
         self.name = name
         self.terminalApplicationName = terminalApplicationName
+        self.waitingFor = waitingFor
     }
 
     /// One island per session, and the same id for both moments of it — so a session that goes

@@ -514,15 +514,18 @@ public struct ActivityContentView: View {
                 image
             }
         } else if let mark = content.mark, let markImage = ActivityMarkImage.image(for: mark) {
-            // A bundled mark sits where the glyph would, at the glyph's point size: a symbol's
-            // 13 pt is roughly its cap height, and the marks are drawn edge to edge in their box.
+            // A bundled mark sits where the glyph would. In a sliver it is drawn larger than the
+            // glyph's point size — a symbol's 13 pt is roughly its cap height, a mark fills its box
+            // — so it weighs about what the app icon on the other side of the cutout does. In the
+            // expanded well, 22 pt is already the well's glyph size.
+            let side = size < 20 ? (size * 1.4).rounded() : size
             let image = Image(nsImage: markImage)
                 .resizable()
                 .renderingMode(.template)
                 .interpolation(.high)
                 .aspectRatio(contentMode: .fit)
-                .frame(width: size, height: size)
-                .foregroundStyle(tintColor)
+                .frame(width: side, height: side)
+                .foregroundStyle(ActivityMarkImage.color(for: mark, increaseContrast: increaseContrast))
                 .contentTransition(.opacity)
             if matched, let namespace {
                 image.matchedGeometryEffect(id: Self.symbolGeometryID, in: namespace)

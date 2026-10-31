@@ -69,21 +69,33 @@ struct BuiltInActivityTests {
         #expect(waiting.expiry == .never)
         #expect(finished.expiry == .after(.seconds(6)))
 
-        // The agent's mark leads, with a glyph behind it; the moment is the trailing glyph.
-        #expect(waiting.presentations.leading.mark == .claude)
-        #expect(waiting.presentations.leading.symbol != nil)
-        #expect(waiting.presentations.expanded.mark == .claude)
-        #expect(waiting.presentations.trailing.symbol == "exclamationmark.circle.fill")
-        #expect(finished.presentations.trailing.symbol == "checkmark.circle.fill")
+        // The terminal's icon leads, wearing the moment on its corner; the agent's mark trails.
+        #expect(waiting.presentations.leading.applicationIconName == "Terminal")
+        #expect(waiting.presentations.leading.badgeSymbol == "hand.raised.fill")
+        #expect(finished.presentations.leading.badgeSymbol == "checkmark")
+        #expect(waiting.presentations.leading.mark == nil)
+        #expect(waiting.presentations.trailing.mark == .claude)
+        #expect(waiting.presentations.trailing.symbol != nil)
         let codex = CodingAgentSession(agent: .codex, sessionID: "x", name: nil, terminalApplicationName: nil)
-        #expect(BuiltInActivity.codingAgent(codex, moment: .finished).presentations.leading.mark == .openAI)
-        #expect(waiting.presentations.expanded.title == "isleta-6a")
+        #expect(BuiltInActivity.codingAgent(codex, moment: .finished).presentations.trailing.mark == .openAI)
+
+        // Open, it says what is asked and where to answer, with the session's name.
+        let asking = CodingAgentSession(agent: .claudeCode, sessionID: "abc", name: "isleta-6a",
+                                        terminalApplicationName: "Terminal", waitingFor: .permission)
+        let permission = BuiltInActivity.codingAgent(asking, moment: .needsInput).presentations.expanded
+        #expect(permission.title == "Claude Code needs your permission")
+        #expect(permission.subtitle == "isleta-6a · Allow or deny it in Terminal")
+        #expect(waiting.presentations.expanded.title == "Claude Code needs your input")
+        #expect(waiting.presentations.expanded.subtitle == "isleta-6a · Reply in Terminal")
+        #expect(BuiltInActivity.codingAgent(codex, moment: .finished).presentations.expanded.subtitle
+                == "See what it did in the terminal")
 
         // A second session is its own island.
         let other = CodingAgentSession(agent: .claudeCode, sessionID: "def", name: nil, terminalApplicationName: nil)
         #expect(BuiltInActivity.codingAgent(other, moment: .needsInput).id != waiting.id)
-        // With no name of its own, the session is called by the agent's.
-        #expect(BuiltInActivity.codingAgent(other, moment: .finished).presentations.expanded.title == "Claude Code")
+        // With no name of its own, the line is the action alone.
+        #expect(BuiltInActivity.codingAgent(other, moment: .finished).presentations.expanded.subtitle
+                == "See what it did in the terminal")
     }
 
     /// The three shapes a Clock timer takes, and the two that must not cost a display link.

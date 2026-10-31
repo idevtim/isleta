@@ -92,3 +92,11 @@
 "codingAgent.needsInput" = "%@ te está esperando";
 "codingAgent.finished" = "%@ ha terminado";
 "codingAgent.a11y" = "%1$@: %2$@";
+"codingAgent.needsPermission" = "%@ necesita tu permiso";
+"codingAgent.answerIn" = "Permítelo o recházalo en %@";
+"codingAgent.answerInTerminal" = "Permítelo o recházalo en el Terminal";
+"codingAgent.replyIn" = "Responde en %@";
+"codingAgent.replyInTerminal" = "Responde en el Terminal";
+"codingAgent.reviewIn" = "Mira lo que hizo en %@";
+"codingAgent.reviewInTerminal" = "Mira lo que hizo en el Terminal";
+"codingAgent.detail" = "%1$@ · %2$@";
