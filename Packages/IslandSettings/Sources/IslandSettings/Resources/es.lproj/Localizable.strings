@@ -190,4 +190,4 @@
 "sources.agents.summary.notInstalled" = "Claude Code aún no se ha ejecutado en este Mac, así que no hay dónde añadir el hook. Ejecútalo una vez y luego desactiva y vuelve a activar esta opción.";
 "sources.agents.summary.unreadable" = "~/.claude/settings.json no es un JSON válido, así que Isleta no lo ha tocado. Corrige el archivo y luego desactiva y vuelve a activar esta opción.";
 "sources.agents.summary.failed" = "Isleta no ha podido añadir su hook. Las solicitudes siguen apareciendo en la isla; respóndelas en el terminal.";
-"sources.agents.summary.on" = "Permitir y Denegar aparecen en la isla abierta cuando Claude Code pide permiso. Permitir aprueba solo esa solicitud y no cambia ninguna de tus reglas. La solicitud sigue en el terminal, y la primera respuesta es la que cuenta.";
+"sources.agents.summary.on" = "Permitir y Denegar aparecen en la isla abierta cuando Claude Code pide permiso. Permitir aprueba solo esa solicitud y no cambia ninguna de tus reglas. La solicitud sigue en el terminal, y la primera respuesta es la que cuenta. Las sesiones que ya estaban abiertas al activarla se siguen respondiendo solo en el terminal.";

@@ -1284,6 +1284,10 @@ compatibility question; no polling was added to compensate for unsupported hints
   request carries `session_id`, `tool_name` and `tool_input` (Bash's includes a `description`) but
   no `tool_use_id`. A `Notification` with `notification_type: permission_prompt` follows about 6 s
   after an unanswered prompt.
+- **A hook added to `~/.claude/settings.json` reaches new sessions only.** Verified on hardware
+  2026-10-31 with Isleta's own switch: a session started after the hook was written answered from
+  the island; one already running never ran it. So the switch's caption says so, rather than the
+  first prompt in an open session looking like the feature failing.
 - **Codex has hooks too, behind a trust step.** The 0.163.0 binary lists `hooks` as a stable feature
   that is on, with `PermissionRequest`, `PostToolUse`, `UserPromptSubmit`, `Stop` and others, and the
   same `decision: {behavior: allow | deny, message}` output shape. A hook only runs once the user has

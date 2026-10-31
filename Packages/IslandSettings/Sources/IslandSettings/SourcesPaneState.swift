@@ -133,7 +133,8 @@ public struct SourcesPaneState {
             return settingsText("sources.agents.summary.on", """
                 Allow and Deny appear on the open island when Claude Code asks permission. Allow \
                 approves that one request and changes none of your rules. The prompt in the terminal \
-                stays, and whichever you answer first wins.
+                stays, and whichever you answer first wins. Sessions that were already running when \
+                you turned this on keep answering in the terminal only.
                 """)
         }
     }
