@@ -54,4 +54,26 @@ enum ProcessAncestry {
     static func isAlive(_ pid: pid_t) -> Bool {
         kill(pid, 0) == 0 || errno == EPERM
     }
+
+    /// Every pid on the system. Called on a coding agent's first event, never on a timer.
+    static func allProcesses() -> [pid_t] {
+        let capacity = proc_listallpids(nil, 0)
+        guard capacity > 0 else { return [] }
+        var pids = [pid_t](repeating: 0, count: Int(capacity) + 64)
+        let count = proc_listallpids(&pids, Int32(pids.count * MemoryLayout<pid_t>.size))
+        guard count > 0 else { return [] }
+        return Array(pids.prefix(Int(count))).filter { $0 > 0 }
+    }
+
+    /// The directory `pid` is running in, or nil if it has gone or is not the user's to ask about.
+    static func workingDirectory(of pid: pid_t) -> String? {
+        var info = proc_vnodepathinfo()
+        let size = Int32(MemoryLayout<proc_vnodepathinfo>.size)
+        guard proc_pidinfo(pid, PROC_PIDVNODEPATHINFO, 0, &info, size) == size else { return nil }
+        return withUnsafeBytes(of: info.pvi_cdir.vip_path) { bytes in
+            let path = bytes.prefix { $0 != 0 }
+            return path.isEmpty ? nil : String(decoding: path, as: UTF8.self)
+        }
+    }
 }
+

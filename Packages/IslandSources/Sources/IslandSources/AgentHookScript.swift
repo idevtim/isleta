@@ -102,6 +102,7 @@ public enum AgentHookScript {
         command => line($input->{command}, 1000),
         notification_type => line($in->{notification_type}, 100),
         agent_pid => getppid(),
+        cwd => line($in->{cwd}, 1000),
     );
 
     my $socket = IO::Socket::UNIX->new(Type => SOCK_STREAM(), Peer => $path) or exit 0;

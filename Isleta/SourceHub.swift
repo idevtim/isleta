@@ -745,6 +745,7 @@ final class SourceHub {
         return SourcesPaneState(
             focusAccess: focusAccess,
             agentPrompts: agentPrompts,
+            codexInstalled: codingAgents.isCodexInstalled,
             requestFocusAccess: askFocus,
             openPrivacySettings: openPrivacy
         )

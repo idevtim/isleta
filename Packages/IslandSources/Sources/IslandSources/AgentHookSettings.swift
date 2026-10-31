@@ -1,6 +1,7 @@
 import Foundation
 
-/// Adding Isleta's hook to Claude Code's `~/.claude/settings.json`, and taking exactly it away again.
+/// Adding Isleta's hook to a coding agent's hook settings — Claude Code's `~/.claude/settings.json`,
+/// Codex's `~/.codex/hooks.json` — and taking exactly it away again.
 ///
 /// Pure over `Data` so the whole matrix — no file, an empty file, a file full of somebody else's
 /// hooks, a file that is not JSON — is testable against fixtures, and so the one function that
@@ -8,9 +9,10 @@ import Foundation
 ///
 /// # The rules
 ///
-/// - **Only `PermissionRequest`.** Everything else this feature needs — that a session is waiting,
-///   that it moved on, that a turn finished — Claude Code already writes to its session file
-///   (`CodingAgentSource`), so the hook does the one thing a file cannot: carry an answer back.
+/// - **Only the events the agent needs.** Claude Code: `PermissionRequest` alone — that a session
+///   is waiting, moved on or finished is already in its session file, so the hook does the one
+///   thing a file cannot: carry an answer back. Codex keeps no such file, so its turn comes
+///   through hooks too (`codexEvents`). The same functions write `~/.codex/hooks.json`.
 /// - **Ours is recognised by the script's path and nothing else**, whatever argument or quoting an
 ///   older build wrote the command with. Removal takes every handler whose command names
 ///   `AgentHookScript.installedURL` and leaves every other hook, matcher and key
@@ -28,15 +30,39 @@ public enum AgentHookSettings {
         case notJSONObject
     }
 
-    static let event = "PermissionRequest"
+    /// One event an agent runs hooks on, and whether its handlers are grouped under a tool matcher.
+    public struct Event: Equatable, Sendable {
+        public let name: String
+        /// True for the tool events. The others take no matcher, and Codex warns on one it cannot use.
+        public let matchesTools: Bool
 
-    /// Whether `data` already carries a handler running the script at `scriptPath`.
-    public static func contains(_ data: Data?, scriptPath: String) -> Bool {
+        public static let permissionRequest = Event(name: "PermissionRequest", matchesTools: true)
+        public static let postToolUse = Event(name: "PostToolUse", matchesTools: true)
+        public static let userPromptSubmit = Event(name: "UserPromptSubmit", matchesTools: false)
+        public static let stop = Event(name: "Stop", matchesTools: false)
+        public static let sessionStart = Event(name: "SessionStart", matchesTools: false)
+        public static let sessionEnd = Event(name: "SessionEnd", matchesTools: false)
+    }
+
+    /// Claude Code: the permission request alone. Everything else is in its session file.
+    public static let claudeCodeEvents: [Event] = [.permissionRequest]
+
+    /// Codex keeps no state file, so its whole turn arrives through hooks
+    /// (`docs/PLATFORM-CONSTRAINTS.md`): a session starting and ending, a turn starting, a tool
+    /// having run — which is also a prompt answered — the permission request, and the turn ending.
+    public static let codexEvents: [Event] = [
+        .sessionStart, .userPromptSubmit, .permissionRequest, .postToolUse, .stop, .sessionEnd,
+    ]
+
+    /// Whether `data` carries a handler running the script at `scriptPath` on every one of `events`.
+    public static func contains(_ data: Data?, scriptPath: String, events: [Event] = claudeCodeEvents) -> Bool {
         guard let data, let root = try? object(from: data),
-              let groups = (root["hooks"] as? [String: Any])?[event] as? [[String: Any]]
+              let hooks = root["hooks"] as? [String: Any]
         else { return false }
-        return groups.contains { group in
-            (group["hooks"] as? [[String: Any]])?.contains { isOurs($0, scriptPath: scriptPath) } ?? false
+        return events.allSatisfy { event in
+            ((hooks[event.name] as? [[String: Any]]) ?? []).contains { group in
+                (group["hooks"] as? [[String: Any]])?.contains { isOurs($0, scriptPath: scriptPath) } ?? false
+            }
         }
     }
 
@@ -45,21 +71,37 @@ public enum AgentHookSettings {
     /// - Parameters:
     ///   - command: the command line to register.
     ///   - scriptPath: what identifies a handler as Isleta's — the path inside `command`.
-    public static func installing(into data: Data?, command: String, scriptPath: String, timeout: Int) throws -> Data {
+    ///
+    /// - Parameters:
+    ///   - timeout: for the permission request, which waits on the person. Every other event only
+    ///     sends and exits, and gets `briefTimeout`.
+    public static func installing(
+        into data: Data?, command: String, scriptPath: String, timeout: Int,
+        events: [Event] = claudeCodeEvents
+    ) throws -> Data {
         var root = try data.map(object(from:)) ?? [:]
         // Removed first, so a stale entry from an older build — a different timeout, a different
         // agent argument — is replaced rather than joined.
         root = removing(scriptPath, from: root)
         var hooks = root["hooks"] as? [String: Any] ?? [:]
-        var groups = hooks[event] as? [[String: Any]] ?? []
-        groups.append([
-            "matcher": "*",
-            "hooks": [["type": "command", "command": command, "timeout": timeout]],
-        ])
-        hooks[event] = groups
+        for event in events {
+            var groups = hooks[event.name] as? [[String: Any]] ?? []
+            let handler: [String: Any] = [
+                "type": "command", "command": command,
+                "timeout": event == .permissionRequest ? timeout : briefTimeout,
+            ]
+            var group: [String: Any] = ["hooks": [handler]]
+            if event.matchesTools { group["matcher"] = "*" }
+            groups.append(group)
+            hooks[event.name] = groups
+        }
         root["hooks"] = hooks
         return try serialized(root)
     }
+
+    /// Seconds an event that only reports is given. The script connects, writes a line and exits in
+    /// milliseconds; this bounds a Mac under load, not the ordinary case.
+    static let briefTimeout = 10
 
     /// `data` with every handler that runs Isleta's script taken out. `nil` stays `nil`.
     public static func removing(from data: Data?, scriptPath: String) throws -> Data? {
@@ -98,20 +140,22 @@ public enum AgentHookSettings {
         return data
     }
 
+    /// Ours out of **every** event, whichever an older build registered.
     private static func removing(_ scriptPath: String, from root: [String: Any]) -> [String: Any] {
-        guard var hooks = root["hooks"] as? [String: Any],
-              let groups = hooks[event] as? [[String: Any]]
-        else { return root }
-        let kept: [[String: Any]] = groups.compactMap { group in
-            guard let handlers = group["hooks"] as? [[String: Any]] else { return group }
-            let remaining = handlers.filter { !isOurs($0, scriptPath: scriptPath) }
-            guard remaining.count != handlers.count else { return group }
-            if remaining.isEmpty { return nil }
-            var group = group
-            group["hooks"] = remaining
-            return group
+        guard var hooks = root["hooks"] as? [String: Any] else { return root }
+        for (name, value) in hooks {
+            guard let groups = value as? [[String: Any]] else { continue }
+            let kept: [[String: Any]] = groups.compactMap { group in
+                guard let handlers = group["hooks"] as? [[String: Any]] else { return group }
+                let remaining = handlers.filter { !isOurs($0, scriptPath: scriptPath) }
+                guard remaining.count != handlers.count else { return group }
+                if remaining.isEmpty { return nil }
+                var group = group
+                group["hooks"] = remaining
+                return group
+            }
+            hooks[name] = kept.isEmpty ? nil : kept
         }
-        hooks[event] = kept.isEmpty ? nil : kept
         var root = root
         root["hooks"] = hooks.isEmpty ? nil : hooks
         return root

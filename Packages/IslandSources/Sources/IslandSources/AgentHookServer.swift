@@ -20,9 +20,12 @@ public struct AgentHookEvent: Equatable, Sendable, Decodable {
     public let notificationType: String?
     /// The script's parent, which is the agent's process — the start of the walk to its terminal.
     public let agentPID: Int32?
+    /// The session's folder — what finds Codex's terminal, since its hooks run under a shared
+    /// process rather than the session's. Shown as the session's name, and **never logged**.
+    public let cwd: String?
 
     enum CodingKeys: String, CodingKey {
-        case agent, event, summary, command
+        case agent, event, summary, command, cwd
         case sessionID = "session_id"
         case toolName = "tool_name"
         case notificationType = "notification_type"
@@ -32,7 +35,7 @@ public struct AgentHookEvent: Equatable, Sendable, Decodable {
     public init(
         agent: String, event: String, sessionID: String? = nil, toolName: String? = nil,
         summary: String? = nil, command: String? = nil, notificationType: String? = nil,
-        agentPID: Int32? = nil
+        agentPID: Int32? = nil, cwd: String? = nil
     ) {
         self.agent = agent
         self.event = event
@@ -42,6 +45,7 @@ public struct AgentHookEvent: Equatable, Sendable, Decodable {
         self.command = command
         self.notificationType = notificationType
         self.agentPID = agentPID
+        self.cwd = cwd
     }
 
     public var isPermissionRequest: Bool { event == "PermissionRequest" }

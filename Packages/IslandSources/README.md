@@ -567,7 +567,12 @@ prompt in one and an explanation in the other.
   launch, quit or the source stopping — the socket does. A held prompt is keyed by session id, shown
   on the open island with the command or file it asks about, and released the moment the session
   file leaves `waiting`, since nothing else tells the hook its prompt was answered in the terminal.
-  Claude Code only; Codex's hooks need a trust step Isleta does not take for the user.
+  The same switch registers Isleta's hook in `~/.codex/hooks.json` for Codex's whole turn
+  (`AgentHookSettings.codexEvents`), since Codex keeps no state file; the person trusts it once in
+  Codex (`/hooks`), which Isleta never does for them. A Codex session's terminal is the interactive
+  `codex` process in the hook's folder, because its hooks run under a shared process. Codex's prompt
+  waits on the hook, so a Codex prompt is held only while its terminal is not frontmost and is let
+  go when it comes forward or is clicked through to.
 
 ## Will not own
 

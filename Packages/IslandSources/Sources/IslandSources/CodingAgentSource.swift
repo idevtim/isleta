@@ -42,6 +42,16 @@ import IslandKit
 /// down. A prompt the island is holding is released the moment the session stops waiting —
 /// answered in the terminal, interrupted, or ended — because nothing else tells the hook
 /// (`docs/PLATFORM-CONSTRAINTS.md`), and a hook left holding would wait out its whole timeout.
+///
+/// # Codex
+///
+/// Codex keeps no state file, so with the switch on its sessions are followed through hooks alone
+/// (`AgentHookSettings.codexEvents`), on the same attention table. Its permission hook differs in
+/// the way that matters: **Codex shows nothing in the terminal while the hook holds the request**
+/// (measured — `docs/PLATFORM-CONSTRAINTS.md`). So a Codex prompt is held only while its terminal
+/// is somewhere the person is not: it is let go at once when the terminal is frontmost, the moment
+/// the terminal comes forward, and on a click through to it — and never held for a session whose
+/// terminal could not be found, which could never come forward.
 @MainActor
 public final class CodingAgentSource: ActivitySource {
 
@@ -84,6 +94,24 @@ public final class CodingAgentSource: ActivitySource {
     /// What the last attempt to follow `answersPrompts` found, for the Settings row.
     public private(set) var promptsState: AgentPromptsState = .off
 
+    private let codexHooksURL: URL
+
+    /// Codex sessions seen through their hooks, keyed by Codex's session id.
+    private var codexSessions: [String: CodexTracked] = [:]
+
+    private struct CodexTracked {
+        var status: ClaudeSessionRecord.Status
+        let cwd: String?
+        let terminal: NSRunningApplication?
+        let exit: (any DispatchSourceProcess)?
+        var grace: DispatchWorkItem?
+    }
+
+    /// Whether Codex has ever run on this Mac, for the Settings caption.
+    public var isCodexInstalled: Bool {
+        FileManager.default.fileExists(atPath: codexHooksURL.deletingLastPathComponent().path)
+    }
+
     /// What is known about each live session, keyed by its file's name (`<pid>.json`).
     private var sessions: [String: Tracked] = [:]
 
@@ -101,10 +129,13 @@ public final class CodingAgentSource: ActivitySource {
             .appendingPathComponent(".claude/sessions", isDirectory: true),
         settingsURL: URL = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".claude/settings.json"),
+        codexHooksURL: URL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".codex/hooks.json"),
         hookServer: AgentHookServer = AgentHookServer()
     ) {
         self.folder = folder
         self.settingsURL = settingsURL
+        self.codexHooksURL = codexHooksURL
         self.hookServer = hookServer
         hookServer.onEvent = { [weak self] event, request in
             self?.received(event, request: request)
@@ -159,6 +190,14 @@ public final class CodingAgentSource: ActivitySource {
             }
         }
         sessions = [:]
+        for (id, codex) in codexSessions {
+            codex.exit?.cancel()
+            codex.grace?.cancel()
+            if attention.showing(Self.codexKey(id)) != nil {
+                onDismiss?(Self.codexSession(id, codex, prompt: nil).activityID)
+            }
+        }
+        codexSessions = [:]
         attention = CodingAgentAttention()
         isRunning = false
         updateServer()
@@ -178,6 +217,18 @@ public final class CodingAgentSource: ActivitySource {
     /// - Returns: whether there was a terminal to raise.
     @discardableResult
     public func bringForward(_ id: ActivityID) -> Bool {
+        if let (sessionID, codex) = codexSessions.first(where: {
+            Self.codexSession($0.key, $0.value, prompt: nil).activityID == id
+        }) {
+            guard let terminal = codex.terminal, !terminal.isTerminated else { return false }
+            // Before the raise: Codex's own prompt appears only once the hook lets go, and the
+            // person is on their way to it.
+            release(sessionID: sessionID)
+            let names = TerminalWindow.names(
+                cwd: codex.cwd, sessionName: nil, bundleIdentifier: terminal.bundleIdentifier)
+            TerminalWindow.raise(terminal, names: names)
+            return true
+        }
         guard let tracked = sessions.values.first(where: { Self.activityID(for: $0.record) == id }),
               let terminal = tracked.terminal, !terminal.isTerminated
         else { return false }
@@ -196,45 +247,60 @@ public final class CodingAgentSource: ActivitySource {
     /// one small read.
     public func setAnswersPrompts(_ wanted: Bool) {
         answersPrompts = wanted
-        let manager = FileManager.default
-        let existing = manager.fileExists(atPath: settingsURL.path) ? (try? Data(contentsOf: settingsURL)) : nil
         let scriptPath = AgentHookScript.installedURL.path
+        let targets: [(agent: CodingAgent, url: URL, events: [AgentHookSettings.Event])] = [
+            (.claudeCode, settingsURL, AgentHookSettings.claudeCodeEvents),
+            (.codex, codexHooksURL, AgentHookSettings.codexEvents),
+        ]
+        var state: AgentPromptsState = wanted ? .agentNotInstalled : .off
         do {
             if wanted {
-                // A Mac that has never run Claude Code has no `~/.claude`, and creating one would be
-                // Isleta inventing the agent's configuration for it.
-                guard manager.fileExists(atPath: settingsURL.deletingLastPathComponent().path) else {
-                    promptsState = .agentNotInstalled
-                    updateServer()
-                    return
-                }
                 // Rewritten every time: the copy on disk is always this build's (`AgentHookScript`).
                 try AgentHookScript.install()
-                if !AgentHookSettings.contains(existing, scriptPath: scriptPath) {
-                    let data = try AgentHookSettings.installing(
-                        into: existing, command: AgentHookScript.command(for: CodingAgent.claudeCode.rawValue),
-                        scriptPath: scriptPath, timeout: AgentHookScript.timeoutSeconds)
-                    try AgentHookSettings.write(data, to: settingsURL)
-                    IslandLog.sources.info("coding agents: hook added to the agent's settings")
-                }
-                promptsState = .on
-            } else {
-                if AgentHookSettings.contains(existing, scriptPath: scriptPath),
-                   let data = try AgentHookSettings.removing(from: existing, scriptPath: scriptPath) {
-                    try AgentHookSettings.write(data, to: settingsURL)
-                    IslandLog.sources.info("coding agents: hook removed from the agent's settings")
-                }
-                try? manager.removeItem(at: AgentHookScript.installedURL)
-                promptsState = .off
             }
-        } catch AgentHookSettings.Failure.notJSONObject {
-            IslandLog.sources.error("coding agents: the agent's settings file is not a JSON object, left alone")
-            promptsState = .settingsUnreadable
+            for target in targets {
+                // A Mac that has never run an agent has no folder for it, and creating one would be
+                // Isleta inventing the agent's configuration for it.
+                guard FileManager.default.fileExists(atPath: target.url.deletingLastPathComponent().path) else {
+                    continue
+                }
+                do {
+                    try follow(target.url, wanted: wanted, agent: target.agent, events: target.events,
+                               scriptPath: scriptPath)
+                    if wanted, state == .agentNotInstalled { state = .on }
+                } catch AgentHookSettings.Failure.notJSONObject {
+                    IslandLog.sources.error("coding agents: \(target.agent.rawValue)'s hook settings are not a JSON object, left alone")
+                    state = .settingsUnreadable
+                }
+            }
+            if !wanted {
+                try? FileManager.default.removeItem(at: AgentHookScript.installedURL)
+            }
         } catch {
             IslandLog.sources.error("coding agents: could not update the hook: \(error.localizedDescription)")
-            promptsState = .failed
+            state = .failed
         }
+        promptsState = state
         updateServer()
+    }
+
+    /// One agent's hook file brought in line with the switch, written only when it disagrees.
+    private func follow(
+        _ url: URL, wanted: Bool, agent: CodingAgent, events: [AgentHookSettings.Event], scriptPath: String
+    ) throws {
+        let existing = FileManager.default.fileExists(atPath: url.path) ? (try? Data(contentsOf: url)) : nil
+        if wanted {
+            guard !AgentHookSettings.contains(existing, scriptPath: scriptPath, events: events) else { return }
+            let data = try AgentHookSettings.installing(
+                into: existing, command: AgentHookScript.command(for: agent.rawValue),
+                scriptPath: scriptPath, timeout: AgentHookScript.timeoutSeconds, events: events)
+            try AgentHookSettings.write(data, to: url)
+            IslandLog.sources.info("coding agents: hook added to \(agent.rawValue)'s settings")
+        } else if AgentHookSettings.contains(existing, scriptPath: scriptPath, events: [.permissionRequest]),
+                  let data = try AgentHookSettings.removing(from: existing, scriptPath: scriptPath) {
+            try AgentHookSettings.write(data, to: url)
+            IslandLog.sources.info("coding agents: hook removed from \(agent.rawValue)'s settings")
+        }
     }
 
     /// Allow or deny the prompt the island is showing for this activity's session. The decision
@@ -244,8 +310,9 @@ public final class CodingAgentSource: ActivitySource {
     ///   first, which the caller treats the same way.
     @discardableResult
     public func answer(_ id: ActivityID, _ answer: CodingAgentAnswer) -> Bool {
-        guard let tracked = sessions.values.first(where: { Self.activityID(for: $0.record) == id }),
-              let held = prompts.removeValue(forKey: tracked.record.sessionID), held.request.isOpen
+        let sessionID = sessions.values.first(where: { Self.activityID(for: $0.record) == id })?.record.sessionID
+            ?? codexSessions.first(where: { Self.codexSession($0.key, $0.value, prompt: nil).activityID == id })?.key
+        guard let sessionID, let held = prompts.removeValue(forKey: sessionID), held.request.isOpen
         else { return false }
         held.request.answer(answer == .allow ? .allow : .deny)
         IslandLog.sources.info("coding agents: prompt \(answer == .allow ? "allowed" : "denied") from the island")
@@ -270,6 +337,10 @@ public final class CodingAgentSource: ActivitySource {
     }
 
     private func received(_ event: AgentHookEvent, request: AgentHookRequest?) {
+        if event.agent == CodingAgent.codex.rawValue {
+            receivedCodex(event, request: request)
+            return
+        }
         guard let request else { return }
         guard let sessionID = event.sessionID, answersPrompts else {
             request.close()
@@ -296,10 +367,157 @@ public final class CodingAgentSource: ActivitySource {
 
     /// Re-say what a waiting session's island says, now that a prompt has arrived or gone.
     private func refresh(sessionID: String) {
+        if let codex = codexSessions[sessionID] {
+            guard attention.showing(Self.codexKey(sessionID)) == .needsInput else { return }
+            onActivity?(BuiltInActivity.codingAgent(
+                Self.codexSession(sessionID, codex, prompt: prompts[sessionID]?.prompt), moment: .needsInput))
+            return
+        }
         guard let (name, tracked) = sessions.first(where: { $0.value.record.sessionID == sessionID }),
               attention.showing(name) == .needsInput
         else { return }
         onActivity?(BuiltInActivity.codingAgent(session(for: tracked), moment: .needsInput))
+    }
+
+    // MARK: - Codex, through its hooks
+
+    private static func codexKey(_ sessionID: String) -> String { "codex:\(sessionID)" }
+
+    private func isFrontmost(_ terminal: NSRunningApplication?) -> Bool {
+        guard let terminal else { return false }
+        return terminal.processIdentifier == NSWorkspace.shared.frontmostApplication?.processIdentifier
+    }
+
+    private func receivedCodex(_ event: AgentHookEvent, request: AgentHookRequest?) {
+        guard answersPrompts, let sessionID = event.sessionID else {
+            request?.close()
+            return
+        }
+        if event.event == "SessionEnd" {
+            request?.close()
+            forgetCodex(sessionID)
+            return
+        }
+        if codexSessions[sessionID] == nil {
+            codexSessions[sessionID] = makeCodex(sessionID, cwd: event.cwd)
+            // A baseline, as a Claude session's first reading is: Isleta launching mid-turn has not
+            // just watched it finish.
+            _ = attention.update(Self.codexKey(sessionID), status: .idle, isFrontmost: false)
+        }
+        let status: ClaudeSessionRecord.Status
+        switch event.event {
+        case "PermissionRequest":
+            status = .waiting
+        case "UserPromptSubmit", "PostToolUse":
+            status = .busy
+        case "Stop":
+            status = .idle
+        default:
+            request?.close()
+            return
+        }
+        // Whatever was held has been answered, whichever surface got there.
+        if status != .waiting { release(sessionID: sessionID) }
+        codexSessions[sessionID]?.status = status
+
+        if let request {
+            let terminal = codexSessions[sessionID]?.terminal
+            if terminal == nil || isFrontmost(terminal) {
+                // Codex's prompt waits on this hook: let go now, so it shows where the person is.
+                request.close()
+            } else {
+                hold(request, for: sessionID, toolName: event.toolName,
+                     detail: (event.toolName == "Bash" ? event.command : nil) ?? event.summary ?? event.command)
+            }
+        }
+        applyCodex(sessionID)
+    }
+
+    private func hold(_ request: AgentHookRequest, for sessionID: String, toolName: String?, detail: String?) {
+        prompts.removeValue(forKey: sessionID)?.request.close()
+        prompts[sessionID] = HeldPrompt(request: request, prompt: CodingAgentPrompt(toolName: toolName, detail: detail))
+        request.onPeerClosed = { [weak self, weak request] in
+            guard let self, let request, self.prompts[sessionID]?.request === request else { return }
+            self.prompts[sessionID] = nil
+            self.refresh(sessionID: sessionID)
+        }
+        IslandLog.sources.info("coding agents: holding a permission prompt for the island")
+    }
+
+    /// A Codex session's terminal: Codex's hooks run under a shared process, so the hook's parent
+    /// leads nowhere, and the session is found instead as the interactive `codex` running in the
+    /// hook's folder. Once per session, on its first event.
+    private func makeCodex(_ sessionID: String, cwd: String?) -> CodexTracked {
+        let pid = cwd.flatMap(Self.codexProcess(in:))
+        var exit: (any DispatchSourceProcess)?
+        if let pid {
+            let source = DispatchSource.makeProcessSource(identifier: pid, eventMask: .exit, queue: .main)
+            source.setEventHandler { [weak self] in
+                MainActor.assumeIsolated { self?.forgetCodex(sessionID) }
+            }
+            source.resume()
+            exit = source
+        }
+        return CodexTracked(
+            status: .idle, cwd: cwd, terminal: pid.flatMap(ProcessAncestry.owningApplication(of:)), exit: exit)
+    }
+
+    private static func codexProcess(in cwd: String) -> pid_t? {
+        let folder = URL(fileURLWithPath: cwd).resolvingSymlinksInPath().path
+        return ProcessAncestry.allProcesses().first { pid in
+            guard let path = ProcessAncestry.executablePath(of: pid),
+                  (path as NSString).lastPathComponent == "codex",
+                  !path.contains("app-server"),
+                  let directory = ProcessAncestry.workingDirectory(of: pid)
+            else { return false }
+            return URL(fileURLWithPath: directory).resolvingSymlinksInPath().path == folder
+        }
+    }
+
+    private func forgetCodex(_ sessionID: String) {
+        guard let codex = codexSessions.removeValue(forKey: sessionID) else { return }
+        release(sessionID: sessionID)
+        codex.exit?.cancel()
+        codex.grace?.cancel()
+        if attention.update(Self.codexKey(sessionID), status: nil, isFrontmost: false).contains(.dismiss) {
+            onDismiss?(Self.codexSession(sessionID, codex, prompt: nil).activityID)
+        }
+    }
+
+    private func applyCodex(_ sessionID: String, cause: CodingAgentAttention.Cause = .stateChanged) {
+        guard let codex = codexSessions[sessionID] else { return }
+        let key = Self.codexKey(sessionID)
+        let effects = attention.update(key, status: codex.status, isFrontmost: isFrontmost(codex.terminal), cause: cause)
+        for effect in effects {
+            switch effect {
+            case .present(let moment):
+                announcementCount += 1
+                IslandLog.sources.info("coding agents: codex session \(moment == .needsInput ? "needs input" : "finished")")
+                onActivity?(BuiltInActivity.codingAgent(
+                    Self.codexSession(sessionID, codex, prompt: prompts[sessionID]?.prompt), moment: moment))
+            case .dismiss:
+                onDismiss?(Self.codexSession(sessionID, codex, prompt: nil).activityID)
+            case .armGrace:
+                let work = DispatchWorkItem { [weak self] in
+                    MainActor.assumeIsolated { self?.applyCodex(sessionID, cause: .graceElapsed) }
+                }
+                codexSessions[sessionID]?.grace?.cancel()
+                codexSessions[sessionID]?.grace = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + CodingAgentAttention.grace, execute: work)
+            }
+        }
+    }
+
+    /// Codex only waits on a permission request, so a waiting Codex session is always asking one.
+    private static func codexSession(_ sessionID: String, _ codex: CodexTracked, prompt: CodingAgentPrompt?) -> CodingAgentSession {
+        CodingAgentSession(
+            agent: .codex,
+            sessionID: sessionID,
+            name: codex.cwd.map { ($0 as NSString).lastPathComponent },
+            terminalApplicationName: codex.terminal.flatMap(Self.applicationName),
+            waitingFor: codex.status == .waiting ? .permission : nil,
+            prompt: prompt
+        )
     }
 
     // MARK: - Reading
@@ -371,6 +589,11 @@ public final class CodingAgentSource: ActivitySource {
     private func frontmostChanged() {
         for name in sessions.keys {
             apply(name, cause: .activated)
+        }
+        for id in codexSessions.keys {
+            // The person is at the terminal: Codex's own prompt can only appear once the hook lets go.
+            if isFrontmost(codexSessions[id]?.terminal) { release(sessionID: id) }
+            applyCodex(id, cause: .activated)
         }
     }
 

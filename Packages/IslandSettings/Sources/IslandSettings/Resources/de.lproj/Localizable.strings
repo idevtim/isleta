@@ -186,8 +186,9 @@
 /* Sources ▸ Coding Agents: answering permission prompts from the island. */
 "sources.agents" = "Coding-Agents";
 "sources.agents.answer" = "Berechtigungsanfragen auf der Insel beantworten";
-"sources.agents.summary.off" = "Wenn Claude Code um Erlaubnis bittet, etwas auszuführen, zeigt die Insel das an und du antwortest im Terminal. Schalte das ein, um mit „Erlauben“ oder „Ablehnen“ auf der Insel zu antworten; Isleta fügt dazu einen Hook in ~/.claude/settings.json ein und entfernt ihn wieder, wenn du das ausschaltest.";
-"sources.agents.summary.notInstalled" = "Claude Code wurde auf diesem Mac noch nicht ausgeführt, daher gibt es keinen Ort für den Hook. Starte es einmal und schalte das dann aus und wieder ein.";
-"sources.agents.summary.unreadable" = "~/.claude/settings.json ist kein gültiges JSON, daher hat Isleta die Datei nicht angerührt. Korrigiere sie und schalte das dann aus und wieder ein.";
+"sources.agents.summary.off" = "Wenn Claude Code um Erlaubnis bittet, etwas auszuführen, zeigt die Insel das an und du antwortest im Terminal. Schalte das ein, um mit „Erlauben“ oder „Ablehnen“ auf der Insel zu antworten und auch Codex dort zu sehen. Isleta fügt dazu seinen Hook in ~/.claude/settings.json und ~/.codex/hooks.json ein und entfernt ihn wieder, wenn du das ausschaltest.";
+"sources.agents.summary.notInstalled" = "Weder Claude Code noch Codex wurde auf diesem Mac schon ausgeführt, daher gibt es keinen Ort für den Hook. Starte eines davon einmal und schalte das dann aus und wieder ein.";
+"sources.agents.summary.unreadable" = "Die Hook-Einstellungen eines Agents sind kein gültiges JSON, daher hat Isleta diese Datei nicht angerührt. Korrigiere sie und schalte das dann aus und wieder ein.";
 "sources.agents.summary.failed" = "Isleta konnte seinen Hook nicht hinzufügen. Anfragen erscheinen weiterhin auf der Insel; beantworte sie im Terminal.";
 "sources.agents.summary.on" = "„Erlauben“ und „Ablehnen“ erscheinen auf der geöffneten Insel, wenn Claude Code um Erlaubnis bittet. „Erlauben“ genehmigt nur diese eine Anfrage und ändert keine deiner Regeln. Die Anfrage im Terminal bleibt bestehen – was du zuerst beantwortest, gilt. Sitzungen, die beim Einschalten schon liefen, beantwortest du weiterhin nur im Terminal.";
+"sources.agents.summary.codex" = "Für Codex gib in Codex einmal /hooks ein und vertraue den Hooks von Isleta. Codex hält seine eigene Anfrage zurück, solange die Insel sie hat – deshalb gibt die Insel sie frei, sobald du im Terminal bist.";

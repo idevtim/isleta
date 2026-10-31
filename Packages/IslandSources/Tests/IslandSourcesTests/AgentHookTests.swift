@@ -96,6 +96,31 @@ struct AgentHookSettingsTests {
         #expect(handlers.map { $0["command"] as? String } == ["~/bin/notify"])
     }
 
+    @Test("Codex gets every event its turn needs, matchers only where a tool is matched")
+    func codexEvents() throws {
+        let events = AgentHookSettings.codexEvents
+        let written = try AgentHookSettings.installing(
+            into: nil, command: "'\(script)' codex", scriptPath: script, timeout: 3600, events: events)
+        let hooks = try #require(try json(written)["hooks"] as? [String: Any])
+        for event in events {
+            let groups = try #require(hooks[event.name] as? [[String: Any]], "\(event.name)")
+            #expect(groups.count == 1)
+            #expect((groups.first?["matcher"] != nil) == event.matchesTools, "\(event.name)")
+            let timeout = (groups.first?["hooks"] as? [[String: Any]])?.first?["timeout"] as? Int
+            // Only the permission request waits on a person.
+            #expect(timeout == (event == .permissionRequest ? 3600 : AgentHookSettings.briefTimeout), "\(event.name)")
+        }
+        #expect(AgentHookSettings.contains(written, scriptPath: script, events: events))
+
+        // An older install missing an event is not "installed", so the next apply completes it.
+        let partial = try AgentHookSettings.installing(into: nil, command: command, scriptPath: script, timeout: 3600)
+        #expect(!AgentHookSettings.contains(partial, scriptPath: script, events: events))
+
+        // Removal takes ours out of every event, and leaves a file with nothing of ours in it.
+        let removed = try AgentHookSettings.removing(from: written, scriptPath: script)
+        #expect(try json(removed)["hooks"] == nil)
+    }
+
     @Test("a file that is not a JSON object is refused, never rewritten", arguments: [
         "{\"hooks\": ", "[1, 2, 3]", "not json at all",
     ])
@@ -165,7 +190,7 @@ struct AgentHookRoundTripTests {
     }
 
     private let permission = #"""
-    {"hook_event_name":"PermissionRequest","session_id":"s1","tool_name":"Bash",
+    {"hook_event_name":"PermissionRequest","session_id":"s1","tool_name":"Bash","cwd":"/Users/someone/site",
      "tool_input":{"command":"rm -rf build","description":"Remove the build folder"}}
     """#
 
@@ -189,6 +214,7 @@ struct AgentHookRoundTripTests {
         #expect(received?.toolName == "Bash")
         #expect(received?.summary == "Remove the build folder")
         #expect(received?.command == "rm -rf build")
+        #expect(received?.cwd == "/Users/someone/site")
         let output = try #require(try JSONSerialization.jsonObject(with: Data(run.stdout.utf8)) as? [String: Any])
         let specific = try #require(output["hookSpecificOutput"] as? [String: Any])
         #expect(specific["hookEventName"] as? String == "PermissionRequest")
