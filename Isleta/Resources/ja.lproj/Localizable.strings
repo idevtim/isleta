@@ -1,0 +1,105 @@
+/* Isleta (app shell) — ja. English lives in the Swift source, as each call site's second argument. */
+
+/* ---- Sources pane: what each source is called ---- */
+"sources.nowPlaying.title" = "再生中";
+"sources.systemHUD.title" = "音量、消音、明るさ";
+"sources.systemHUD.option.volume" = "音量と消音";
+"sources.systemHUD.option.brightness" = "ディスプレイの明るさ";
+"sources.welcomeBack.title" = "おかえりなさい";
+"sources.timer.title" = "タイマー";
+"sources.deviceConnected.title" = "Bluetoothデバイス";
+"sources.shelf.title" = "シェルフ";
+"sources.glance.title" = "カレンダーと天気";
+"sources.calendarAlert.title" = "イベントの通知";
+"sources.meeting.title" = "ミーティング";
+"sources.power.title" = "バッテリーと電源";
+"sources.call.title" = "通話";
+"sources.fileAction.title" = "ドロップ時のアクション";
+"sources.focusChanged.title" = "集中モードの変更";
+"sources.screenSharing.title" = "画面共有";
+
+/* ---- Sources pane: what each source does, whether or not it can ---- */
+"sources.nowPlaying.summary" = "ミュージック、Spotify、またはシステムのプレーヤーで再生中の曲を表示します。";
+"sources.systemHUD.summary" = "音量、消音、ディスプレイの明るさ、キーボードのバックライトの変化を、システム自身の表示と並べてアイランドに表示します。";
+"sources.welcomeBack.summary" = "しばらく離れていたあとMacに戻ってきたときに、あいさつします。";
+"sources.timer.summary" = "Appleの「時計」でカウントダウン中のタイマーをアイランドに表示します。「時計」がこのMacにすでに保存している状態だけを読み取るため、許可は必要ありません。";
+"sources.deviceConnected.summary" = "AirPodsなどのBluetoothオーディオデバイスが接続されたときに、バッテリー残量とともに表示します。接続を検出するにはBluetoothへのアクセスが必要です。デバイスの名前と充電状況がMacの外に送信されることはありません。";
+"sources.shelf.summary" = "アイランドにドラッグしたファイルを保持します。";
+"sources.glance.summary" = "今日の予定（カレンダーの次のイベント）と天気を表示します。カレンダーへのアクセスが必要です。天気を現在地に合わせるには、位置情報サービスも必要です。";
+"sources.calendarAlert.summary" = "イベントがまもなく始まるときに知らせます。";
+"sources.meeting.summary" = "ミーティングが始まると、Zoom、Meet、Teams、FaceTimeの通話に参加するボタンを表示します。";
+"sources.power.summary" = "電源アダプタの接続と取り外し、バッテリー残量の低下、低電力モードを表示します。";
+"sources.call.summary" = "通話中であることと通話時間を表示します。macOSでは、Apple以外のAppが発信者を確認することはできません。";
+"sources.fileAction.summary" = "アイランドにドロップしたファイルを変換、圧縮、文字起こしします。処理はこのMac上で行われ、何もアップロードされません。";
+"sources.focusChanged.summary" = "集中モードがオンまたはオフになったときに知らせます。アイランドが静かになるのもこのためです。";
+"sources.screenSharing.summary" = "画面が収録または共有されている間、そのことを知らせます。";
+
+/* ---- Sources pane: what is true right now ---- */
+"sources.status.working" = "動作しています。";
+"sources.status.workingNoPermission" = "動作しています。許可は必要ありません。";
+"sources.status.notGrantedYet" = "まだ許可されていません。";
+"sources.nowPlaying.status.working" = "動作しています。Isletaは許可なしで再生中の項目を読み取ります。";
+"sources.nowPlaying.status.undetermined" = "次に再生、一時停止、または曲の切り替えを行ったときから、Isletaに再生中の項目が表示されます。ミュージックAppの操作を許可すると、現在の曲がすぐに表示されます。";
+"sources.systemHUD.status.working" = "動作しています。音量、消音、明るさに許可は必要ありません。";
+"sources.systemHUD.status.unavailable" = "このMacは、Isletaが表示できる音量、ディスプレイの明るさ、キーボードのバックライトを報告していません。";
+"sources.deviceConnected.status.noBattery" = "Isletaはデバイスの接続を表示しますが、このバージョンのmacOSではバッテリー残量が報告されなくなったため、充電状況は表示されません。";
+"sources.deviceConnected.status.undetermined" = "Bluetoothへのアクセスを待っています。macOSはIsletaの起動時に一度だけ確認します。ダイアログに応答せずに閉じた場合は、Isletaを終了してからもう一度開いてください。";
+"sources.glance.status.granted" = "許可されています。Isletaに今日の予定と天気が表示されます。";
+"sources.glance.status.grantedNoWeather" = "許可されています。アイランドに今日の予定が表示されます。このビルドでは天気にはまだ対応していません。";
+"sources.power.status.noBattery" = "このMacにはバッテリーがないため、ここに表示するものはありません。";
+"sources.power.status.working" = "動作しています。電源アダプタとバッテリーに許可は必要ありません。";
+"sources.call.status.working" = "動作しています。Isletaは通話中であることと通話時間を表示します。macOSでは、Apple以外のAppが発信者を確認したり、代わりに応答したりすることはできません。";
+
+/* ---- Sources pane: the one place a permission prompt may come from ---- */
+"sources.action.openSystemSettings" = "システム設定を開く…";
+"sources.action.allowCalendar" = "カレンダーへのアクセスを許可…";
+
+/* ---- Export Logs… ---- */
+"logExport.notRunning.title" = "ログの記録が実行されていません。";
+"logExport.notRunning.detail" = "このビルドにはログファイルが添付されていないため、書き出すものはありません。";
+"logExport.noFiles.title" = "ログファイルが見つかりませんでした。";
+"logExport.noFiles.detail" = "次の場所には何も書き込まれていません：\n%@";
+"logExport.panel.title" = "ログを書き出す";
+"logExport.panel.prompt" = "書き出す";
+"logExport.failed.title" = "ログを書き出せませんでした。";
+"logExport.done.title" = "ログを書き出しました。";
+
+/* ---- The shelf's file actions ---- */
+"shelf.fileAway.prompt.move" = "ここに移動";
+"shelf.fileAway.prompt.copy" = "ここにコピー";
+"shelf.fileAway.message.move" = "これらのファイルの移動先を選択してください。";
+"shelf.fileAway.message.copy" = "これらのファイルのコピー先を選択してください。";
+"shelf.action.moveToFolder" = "フォルダに移動";
+"shelf.action.copyToFolder" = "フォルダにコピー";
+"shelf.convert.couldNotStart" = "変換を開始できませんでした";
+"shelf.convert.didNotFinish" = "変換が完了しませんでした";
+"shelf.a11y" = "シェルフ";
+"shelf.dropToAdd" = "ドロップして追加";
+
+/* ---- Small shared words ---- */
+"common.ok" = "OK";
+"common.showInFinder" = "Finderに表示";
+"dropHistory.copyLink" = "リンクをコピー";
+"menuBar.glyph.a11y" = "Isleta";
+
+/* The first-run flow's payoff rows — what each permission is *for*, under its headline. Hardware
+   and capabilities rather than app names, for the three permissions that are not about an app. */
+"onboarding.payoff.here" = "現在地";
+"onboarding.payoff.forecast" = "予報";
+"onboarding.payoff.conditions" = "天候";
+"onboarding.payoff.headphones" = "ヘッドフォン";
+"onboarding.payoff.earbuds" = "イヤフォン";
+"onboarding.payoff.speaker" = "スピーカー";
+"onboarding.payoff.volume" = "音量";
+"onboarding.payoff.brightness" = "明るさ";
+"onboarding.payoff.mediaKeys" = "メディアキー";
+
+/* An update waiting */
+"sources.updateAvailable.title" = "アップデート";
+"sources.updateAvailable.summary" = "Isletaの新しいバージョンをインストールできるようになったときに表示します。";
+
+/* Section: coding agents in the Sources pane */
+"sources.codingAgent.title" = "コーディングエージェント";
+"sources.codingAgent.summary" = "ほかのAppを使っている間に、Claude CodeやCodexが応答を待って止まったときや、作業を終えたときに知らせます。アイランドをクリックすると必要な内容が表示され、もう一度クリックするとそのウインドウに移動します。Codexは「アイランドで要求に応答」をオンにすると、ここに表示されます。";
+"sources.codingAgent.status.notInstalled" = "このMacにはClaude CodeもCodexもインストールされていないため、ここに表示するものはありません。";
+"sources.codingAgent.status.working" = "動作しています。Claude Codeがすでに保存しているセッションの状態を読み取るため、許可は必要ありません。";

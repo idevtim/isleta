@@ -154,9 +154,9 @@ Isleta's hooks in Codex with `/hooks`.
 - **A lock screen card** showing what's playing — glass, so your wallpaper reads through it,
   with previous, play-pause and next that work over the lock (off until you turn it on)
 
-### 🌍 Four languages
+### 🌍 Five languages
 
-English, German, French and Spanish, following whatever your Mac is set to.
+English, German, French, Spanish and Japanese, following whatever your Mac is set to.
 
 ---
 

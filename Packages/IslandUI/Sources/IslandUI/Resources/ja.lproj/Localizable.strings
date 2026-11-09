@@ -1,0 +1,170 @@
+/* IslandUI — ja. English lives in the Swift source, as each call site's second argument. */
+
+/* What a kind of activity is called, when a provider supplied no label of its own */
+"activityKind.nowPlaying" = "再生中";
+"activityKind.systemHUD" = "システム";
+"activityKind.welcomeBack" = "おかえりなさい";
+"activityKind.shelf" = "シェルフ";
+"activityKind.timer" = "タイマー";
+"activityKind.deviceConnected" = "デバイス";
+"activityKind.glance" = "概要";
+"activityKind.calendarAlert" = "イベント";
+"activityKind.meeting" = "ミーティング";
+"activityKind.power" = "バッテリー";
+"activityKind.call" = "通話";
+"activityKind.fileAction" = "ファイル操作";
+"activityKind.focusChanged" = "集中モード";
+"activityKind.screenSharing" = "画面共有";
+
+/* The numerals an activity value resolves to, and what VoiceOver reads instead */
+"value.compactClock.hours" = "%1$@h%2$@";
+"value.a11y.percent" = "%lldパーセント";
+"value.a11y.inProgress" = "進行中";
+"value.a11y.remaining" = "残り%@";
+"value.a11y.elapsed" = "%@経過";
+
+/* The home page */
+"home.notPlaying" = "再生していません";
+"home.previous.a11y" = "前のトラック";
+"home.next.a11y" = "次のトラック";
+"home.play.a11y" = "再生";
+"home.pause.a11y" = "一時停止";
+"home.date.a11y" = "今日と明日を表示";
+"home.moreEvents" = "他%lld件";
+"home.allow" = "許可…";
+"home.openSettings" = "設定を開く";
+"home.openSettings.a11y" = "カレンダーのプライバシー設定を開く";
+"home.openEvent.a11y" = "カレンダーでイベントを開きます。";
+
+/* The pages the open island turns between */
+"page.home" = "今日";
+"page.music" = "ミュージック";
+"page.weather" = "天気";
+
+/* Lists drawn in the island */
+"list.age.now" = "今";
+"list.age.minutes" = "%lld分";
+"list.age.hours" = "%lld時間";
+"list.age.days" = "%lld日";
+
+/* The shelf */
+"shelf.dropTarget" = "ドロップして追加";
+"shelf.searchCount" = "%2$lld件中%1$lld件";
+"shelf.actions.a11y" = "これらのファイルに対する操作";
+"shelf.search.prompt" = "検索";
+"shelf.search.a11y" = "シェルフを検索";
+"shelf.search.end" = "検索を終了";
+"shelf.clearAll" = "すべて消去";
+"shelf.clearAll.a11y" = "シェルフを消去";
+"shelf.tile.remove" = "%@をシェルフから削除";
+"shelf.tile.missing" = "%@、見つかりません";
+"shelf.actions.back" = "シェルフに戻る";
+"shelf.job.progress" = "%1$@ · %2$@";
+
+/* Now Playing */
+"nowPlaying.a11y" = "再生中";
+"nowPlaying.a11y.openPlayer" = "プレーヤーを開く";
+"nowPlaying.a11y.openTrack" = "プレーヤーで%@を開く";
+"nowPlaying.a11y.openTrackByArtist" = "プレーヤーで%2$@の%1$@を開く";
+"nowPlaying.a11y.upNextPeek" = "。次に再生：%@";
+"nowPlaying.upNext" = "次に再生";
+"nowPlaying.scrubber.a11y" = "再生位置";
+"nowPlaying.transport.previous" = "前のトラック";
+"nowPlaying.transport.play" = "再生";
+"nowPlaying.transport.pause" = "一時停止";
+"nowPlaying.transport.next" = "次のトラック";
+"nowPlaying.transport.shuffle" = "シャッフル";
+"nowPlaying.transport.repeat" = "リピート";
+"nowPlaying.transport.favorite" = "お気に入り";
+"nowPlaying.transport.unfavorite" = "お気に入りを解除";
+"nowPlaying.transport.backFifteen" = "15秒戻る";
+"nowPlaying.transport.forwardFifteen" = "15秒進む";
+"nowPlaying.transport.showUpNext" = "「次に再生」を表示";
+"nowPlaying.transport.hideUpNext" = "「次に再生」を非表示";
+"nowPlaying.state.on" = "オン";
+"nowPlaying.state.off" = "オフ";
+"nowPlaying.repeat.all" = "すべて";
+"nowPlaying.repeat.one" = "1曲";
+"nowPlaying.queue.showing" = "表示中";
+"nowPlaying.queue.hidden" = "非表示";
+
+/* The Up Next surface */
+"nowPlaying.queue.output" = "出力";
+"nowPlaying.queue.rate" = "%@×";
+"nowPlaying.queue.rate.a11y" = "再生速度";
+"nowPlaying.queue.close" = "「次に再生」を閉じる";
+"nowPlaying.queue.empty" = "次に再生する項目はありません";
+"nowPlaying.queue.empty.output" = "出力デバイスがありません";
+"nowPlaying.queue.row.current" = "再生中";
+"nowPlaying.queue.row.hint" = "ダブルクリックで再生";
+
+/* The glance */
+"glance.weather.a11y" = "%1$@、%2$@";
+"glance.weather.a11y.place" = "%2$@、%1$@、%3$@";
+"glance.allow" = "許可…";
+"glance.allow.a11y" = "カレンダーへのアクセスを許可";
+"glance.join" = "参加";
+
+/* The drop history */
+"dropHistory.title" = "ドロップ履歴";
+"dropHistory.empty" = "まだ何もドロップされていません";
+"dropHistory.clearAll" = "すべて消去";
+"dropHistory.clearAll.a11y" = "ドロップ履歴を消去";
+"dropHistory.clearAll.help" = "ドロップしたファイルに対してIsletaが行った操作の記録を消去します。ファイルは削除されません。";
+"dropHistory.close" = "閉じる";
+"dropHistory.row.a11y" = "%1$@、%2$@";
+"dropHistory.row.hint" = "Finderに表示します。";
+"dropHistory.copyLink" = "リンクをコピー";
+"dropHistory.runAgain" = "もう一度実行";
+
+/* Shared */
+"list.separator" = "、";
+
+/* The month grid */
+
+/* The weather surface */
+"glance.weather.open.a11y" = "天気を表示";
+"glance.weather.title" = "天気";
+"glance.weather.asOf" = "%1$@時点";
+"glance.weather.today" = "今日";
+"glance.weather.metric.rain" = "降水確率";
+"glance.weather.metric.humidity" = "湿度";
+"glance.weather.metric.feelsLike" = "体感温度";
+"glance.weather.metric.wind" = "風";
+"glance.weather.metric.unknown" = "—";
+"glance.weather.day.chance.a11y" = "降水確率%1$@";
+"glance.weather.unavailable" = "現在、天気を利用できません。";
+"glance.weather.noPlace" = "Isletaは天気を調べる場所がわかりません。設定で場所を選ぶと、ここに予報が表示されます。";
+"glance.weather.openSettings" = "設定を開く";
+"glance.weather.openSettings.a11y" = "Isletaの設定を開いて場所を選択";
+"glance.schedule.back" = "今日に戻る";
+"glance.schedule.back.label" = "戻る";
+"glance.schedule.emptyToday" = "今日の予定はありません";
+"glance.schedule.emptyTomorrow" = "明日の予定はありません";
+"glance.schedule.more" = "他%1$@件";
+"glance.schedule.noMoreToday" = "今日の予定はこれ以上ありません";
+"glance.schedule.open.a11y" = "今日と明日を表示";
+"glance.schedule.openEvent.a11y" = "カレンダーでイベントを開きます。";
+"glance.schedule.tomorrow" = "明日";
+
+"lockScreen.locked" = "ロック";
+"lockScreen.unlocked" = "ロック解除";
+
+/* An update waiting */
+"activityKind.updateAvailable" = "アップデート";
+"update.header" = "Isleta %@を利用できます";
+"update.whatsNew" = "新機能";
+"update.noNotes" = "このアップデートにはリリースノートがありません。";
+"update.install" = "アップデートをインストール…";
+"update.install.a11y" = "アップデートをインストール";
+"update.install.help" = "アイランドを閉じてアップデートのウインドウを開きます。そこでアップデートをインストールしてIsletaを再起動できます。";
+
+/* Section: a coding agent in a terminal, spoken by VoiceOver */
+"activityKind.codingAgent" = "コーディングエージェント";
+
+/* A coding agent's permission prompt, answered from the open island. */
+"codingAgent.deny" = "拒否";
+"codingAgent.allow" = "許可";
+"codingAgent.question.progress" = "%1$lld/%2$lld";
+"codingAgent.question.submit" = "送信";
+"codingAgent.question.next" = "次へ";
