@@ -1,0 +1,194 @@
+/* IslandSettings — ja. English lives in the Swift source, as each call site's second argument. */
+/* The panes, the window, the version */
+"settings.pane.general" = "一般";
+"settings.pane.sources" = "ソース";
+"settings.pane.glance" = "概要";
+"settings.pane.about" = "情報";
+"settings.window.title" = "Isleta設定";
+"about.version" = "バージョン%@";
+"about.version.development" = "開発ビルド";
+
+/* General ▸ Startup */
+"general.startup" = "起動";
+"startup.launchAtLogin" = "ログイン時にIsletaを開く";
+"startup.caption" = "IsletaにはDockアイコンがありません。見えないところで起動し、必要になるまでそのまま待機します。";
+"startup.awaitingApproval" = "「システム設定」で承認されるのを待っています。";
+"startup.openLoginItems" = "ログイン項目を開く";
+"startup.error.unsigned" = "このコピーは署名されていないため、ログイン時にIsletaを開くことができません。tryisleta.comから再インストールしてください。";
+"startup.error.denied" = "macOSに拒否されました。「システム設定」＞「一般」＞「ログイン項目」でIsletaを許可してください。";
+"startup.error.enable" = "「ログイン時に開く」をオンにできませんでした：%@";
+"startup.error.disable" = "「ログイン時に開く」をオフにできませんでした：%@";
+
+/* General ▸ Shortcuts */
+"general.shortcuts" = "ショートカット";
+"general.shortcuts.caption" = "ショートカットをクリックしてから、使いたいキーを押します。フルスクリーンを含むどのAppからでも使えます。Isletaの実行中は、このMac上のほかのAppはこれらのキーを使用できません。";
+"general.shortcuts.recording" = "ショートカットを押してください。escキーでキャンセルします。";
+"general.shortcuts.clear.help" = "このショートカットを消去";
+"general.shortcuts.notSet" = "未設定";
+"general.shortcuts.pressKeys" = "キーを押す…";
+"shortcuts.action.toggleIsland" = "アイランドを開く";
+"shortcuts.action.openGlance" = "概要を表示";
+"shortcuts.key.space" = "スペース";
+"shortcuts.key.unnamed" = "キー%lld";
+
+/* General ▸ Menu bar */
+"general.lockScreen" = "ロック画面";
+"general.lockScreen.caption" = "Macから離れている間、再生中の項目をロック画面に表示します。アートワーク、曲名、再生位置が表示されます。macOSではロック画面でパスワード欄以外を操作できないため、ボタンはありません。Macの前を通りかかった人には、何を聴いているかが見えます。";
+"general.lockScreen.show" = "再生中の項目をロック画面に表示";
+"general.lockScreen.unlockSound" = "Macのロック解除時にサウンドを再生";
+"general.lockScreen.unlockSound.caption" = "戻ってきてMacのロックが解除されたときに短いサウンドを鳴らします。ロック時には何も再生しません。ノッチに入っていく南京錠がそれを伝えますし、そのときにはもう部屋を離れているからです。";
+
+"general.menuBar" = "メニューバー";
+"general.menuBar.show" = "メニューバーにIsletaを表示";
+"general.menuBar.caption.shown" = "IsletaにはDockアイコンがないため、このアイコンから「設定」、「設定ガイド」、「終了」を利用します。オフにすると、代わりに%@でアイランドが開き、同じ項目にワンクリックでアクセスできます。";
+"general.menuBar.caption.hidden" = "アイコンは非表示です。どのAppからでも%@でアイランドが開き、その中から「設定」にワンクリックでアクセスできます。";
+
+/* Island */
+"island.hover.delay.none" = "なし";
+"island.activities.absence.any" = "戻るたび";
+
+/* Appearance ▸ Size */
+"appearance.size.measured" = "実測値";
+
+/* Appearance ▸ Motion, Now Playing, getting out of the way */
+"sources.quiet" = "邪魔をしない";
+"sources.quiet.add" = "Appを追加…";
+"sources.quiet.caption.empty" = "Isletaに邪魔をしてほしくないApp。これらのいずれかが最前面にある間は、アイランドは描画されず、クリックも受け付けません。ほかのAppに切り替えるとすぐに戻ります。";
+"sources.quiet.caption" = "これらのいずれかが最前面にある間は、アイランドは描画されず、クリックも受け付けません。ほかのAppに切り替えるとすぐに戻ります。";
+"sources.quiet.remove.a11y" = "このAppでアイランドを隠すのをやめる";
+"sources.quiet.panel.prompt" = "追加";
+"sources.quiet.panel.message" = "Isletaが邪魔をしないAppを選択してください。";
+"sources.quiet.minimal" = "ノッチのないディスプレイでアイランドを隠す";
+"sources.quiet.minimal.caption" = "ノッチのないMacでは、アイランドは一日中メニューバーの下に浮かぶ小さな楕円になります。この設定では、何かが起きるかポインタが近づくまで隠します。本物のノッチもそう振る舞います。何もしていないときは、ノッチそのものだからです。";
+
+/* Sources ▸ the rows */
+"sources.empty" = "このビルドで実行中のソースはありません。";
+"sources.status.granted" = "許可済み";
+"sources.status.notGranted" = "未許可";
+"sources.status.unavailable" = "このMacでは利用できません";
+"permission.openSystemSettings" = "システム設定を開く…";
+
+/* Sources ▸ Focus */
+"sources.focus" = "集中モード";
+"sources.focus.respect" = "集中モード中は表示を控える";
+"sources.focus.allow" = "集中モードへのアクセスを許可…";
+"sources.focus.summary.granted" = "集中モードがオンの間、Isletaはカレンダーの通知を控えます。音量キー、タイマー、曲の変更など、自分で行った操作はこれまでどおり表示されます。";
+"sources.focus.summary.notDetermined" = "Isletaは集中モードの状態を確認する許可をまだ求めていません。それまでは集中モードによって何も抑えられず、おやすみモード中でもアイランドはカレンダーの通知を表示します。";
+"sources.focus.summary.denied" = "集中モードへのアクセスがオフのため、おやすみモード中でもアイランドはカレンダーの通知を表示します。上のスイッチを機能させるには、「システム設定」でアクセスをオンにしてください。";
+"sources.focus.summary.unavailable" = "このビルドでは集中モードの状態を確認できないため、スイッチの設定にかかわらず、おやすみモード中でもアイランドはカレンダーの通知を表示します。";
+
+/* Glance ▸ Calendars */
+"glance.calendars" = "カレンダー";
+"glance.calendars.allow" = "カレンダーへのアクセスを許可…";
+"glance.calendars.summary.granted" = "アイランドに表示するカレンダーを選択します。何も選択しない場合は、すべてのカレンダーが表示されます。";
+"glance.calendars.summary.granted.empty" = "Isletaはカレンダーにアクセスできますが、このMacにはまだカレンダーがありません。";
+"glance.calendars.summary.notDetermined" = "Isletaはまだカレンダーへのアクセスを求めていません。イベントが保存されたり、どこかに送信されたり、Isletaのログに書き込まれたりすることはありません。";
+"glance.calendars.summary.denied" = "カレンダーへのアクセスがオフのため、アイランドには今日の予定が表示されません。「システム設定」でオンにすると、次の予定が表示されるようになります。";
+"glance.calendars.summary.restricted" = "このMacでは、カレンダーへのアクセスは管理されています。Isletaで何を変更しても、この設定は変わりません。";
+"glance.calendars.summary.writeOnly" = "Isletaのカレンダーへのアクセスは書き込みのみです。イベントの追加はできますが、読み取りはできません。アイランドにはフルアクセスが必要です。";
+
+/* Glance ▸ Weather and Where */
+"glance.weather" = "天気";
+"glance.weather.summary.granted" = "アイランドには、現在地または選択した都市の天気が表示されます。";
+"glance.weather.summary.notDetermined" = "Isletaはまだ位置情報へのアクセスを求めていません。代わりに都市名を入力することもできます。どちらの方法でも天気は表示されます。";
+"glance.weather.summary.denied" = "位置情報がオフのため、都市名を入力してください。天気はまったく同じように表示されます。Isletaは現在地の代わりにその都市の天気を調べます。";
+"glance.where.caption" = "どちらの方法でも天気は表示されます。位置情報がオフの場合、Isletaは現在地の代わりに入力した都市の天気を調べます。それ以外は何も変わりません。";
+"glance.where.useLocation" = "現在地を使用";
+"glance.where.refused" = "macOSがIsletaに位置情報の使用を許可していないため、このスイッチは変更できません。変更するには、位置情報サービスでIsletaをオンにしてください。または、下に都市名を入力しても同じように使えます。";
+"glance.where.city" = "都市";
+"glance.where.city.example" = "東京";
+"glance.where.city.caption" = "入力を始めて、リストから都市を選択してください。一度調べた場所は記憶されます。都市は移動しないので、Isletaが再び調べるのは都市を変更したときだけです。";
+"glance.where.city.suggestions" = "一致する都市";
+
+/* Updates */
+"updates.card" = "ソフトウェアアップデート";
+"updates.caption" = "Isletaはバックグラウンドで静かに確認するため、作業が中断されることはありません。";
+"updates.automatic" = "アップデートを自動的に確認";
+"updates.checkNow" = "今すぐ確認";
+"updates.unavailable" = "このビルドでは利用できません。";
+
+/* About */
+"about.tagline" = "ノッチを、役に立つ場所に。";
+"about.acknowledgements" = "謝辞";
+"about.acknowledgements.showLicense" = "ライセンスを表示";
+"about.acknowledgements.hideLicense" = "ライセンスを隠す";
+"about.acknowledgements.project" = "プロジェクト";
+"about.acknowledgement.mediaRemoteAdapter" = "再生中の項目を読み取ります。AppleはmacOS 15.4で再生中の情報のAPIを自社のプロセスに限定しました。これはそのAPIを再び利用するためのサポートされた方法です。";
+"about.acknowledgement.sparkle" = "Isletaのアップデートを配信します。appcastを確認し、ダウンロードしたものをすべてこのAppのコピーに組み込まれたEdDSA公開鍵で検証して、検証済みのものをインストールします。";
+"about.setupGuide.caption" = "最初に表示された4ページです。アイランドがどこにあるか、何を表示できるか、どの許可で何が使えるようになるかを説明しています。しばらく使ってから見直す価値があります。";
+"about.quit.caption" = "もう一度開くまでIsletaは停止します。Dockアイコンがないため、終了する方法はこのボタンとメニューバー項目の2つです。メニューバー項目はオフにできます。";
+"about.diagnostics" = "診断";
+"about.diagnostics.caption" = "1つのテキストファイルを保存します。内容は、IsletaがこのMacで確認できる情報と最近のログです。通知の本文、曲名、ファイル名は含まれないため、バグレポートに安心して添付できます。";
+"about.reset" = "最初からやり直す";
+"about.reset.caption" = "すべてのパネルのすべての設定を出荷時のデフォルトに戻します。「システム設定」で許可した項目は変更されません。";
+"about.reset.button" = "デフォルトに戻す";
+"about.reset.loadFailure" = "保存された設定を読み込めなかったため、デフォルトの設定になっています。（%@）";
+
+/* The first run */
+"onboarding.welcome.title" = "Isletaへようこそ";
+"onboarding.welcome.body" = "Isletaはノッチを、Macが語りかける場所に変えます。再生中の曲、接続したデバイス、変更したばかりの音量などです。";
+"onboarding.welcome.hover" = "ポインタをノッチの上に移動すると、アイランドが応えます。";
+"onboarding.welcome.menuBar" = "Dockアイコンもウインドウもありません。Isletaはメニューバーにあります。";
+"onboarding.startup.title" = "Macと一緒に起動";
+"onboarding.startup.body" = "IsletaにはDockアイコンがありません。見えないところで起動し、必要になるまでそのまま待機します。";
+"onboarding.startup.caption" = "推奨。オンにしないと、再起動のたびにノッチは空のままになります。";
+"onboarding.ready.title" = "設定が完了しました";
+"onboarding.ready.body" = "アイランドは、伝えることがあるときか、探したときにだけ姿を現します。";
+"onboarding.ready.hover" = "ノッチにポインタを置くと少しだけ開き、クリックすると開きます。";
+"onboarding.ready.shortcut" = "どのAppからでも%@を押すと開きます。";
+"onboarding.ready.menuBar" = "メニューバーのアイコンからIsletaの設定を開けます。";
+"onboarding.continue" = "続ける";
+"onboarding.getStarted" = "始める";
+"onboarding.welcome.permissions" = "次のいくつかのページでは、各機能に必要な許可を求めます。どれもスキップできます。";
+"onboarding.skip" = "スキップ";
+"onboarding.askAgain" = "もう一度確認";
+"onboarding.openSystemSettings" = "システム設定を開く…";
+"onboarding.permission.preview.a11y" = "次に表示されるmacOSの許可ダイアログのプレビューです。";
+"onboarding.permission.automation.headline" = "再生中の音楽を表示するには、Isletaへの許可が必要です。";
+"onboarding.permission.automation.notNeeded.headline" = "Isletaは再生中の音楽を表示します。";
+"onboarding.permission.automation.notNeeded" = "許可は不要です。IsletaはこのMacで何も求めずに再生中の項目を読み取ります。";
+"onboarding.permission.bluetooth.notNeeded.headline" = "Isletaは接続したデバイスを表示します。";
+"onboarding.permission.bluetooth.notNeeded" = "許可は不要です。このMacには、Isletaが監視できるBluetoothがありません。";
+"onboarding.permission.automation.instruction" = "IsletaがミュージックAppを制御してよいかmacOSに尋ねられたら、「OK」を選択してください。";
+"onboarding.permission.automation.granted" = "許可されました。アイランドを開くとすぐに曲名が表示されます。";
+"onboarding.permission.automation.denied" = "問題ありません。代わりに、次に再生、一時停止、曲の変更をしたときから、Isletaが再生中の項目を表示します。";
+"onboarding.permission.calendar.headline" = "今日の次の予定を表示するには、Isletaへの許可が必要です。";
+"onboarding.permission.calendar.instruction" = "macOSにカレンダーについて尋ねられたら、「フルアクセスを許可」を選択してください。";
+"onboarding.permission.calendar.granted" = "許可されました。今日の予定はアイランドの2ページ目にあります。";
+"onboarding.permission.calendar.denied" = "問題ありません。アイランドの2ページ目は空のままですが、それ以外はすべて機能します。";
+"onboarding.permission.location.headline" = "現在地の天気を表示するには、Isletaへの許可が必要です。";
+"onboarding.permission.location.instruction" = "macOSに位置情報について尋ねられたら、「許可」を選択してください。";
+"onboarding.permission.location.granted" = "許可されました。天気はアイランドの3ページ目にあります。";
+"onboarding.permission.location.denied" = "問題ありません。代わりにIsletaの設定で都市を選択できます。";
+"onboarding.permission.bluetooth.headline" = "接続したデバイスを表示するには、Isletaへの許可が必要です。";
+"onboarding.permission.bluetooth.instruction" = "Isletaの起動時に、macOSがBluetoothについて尋ねました。許可すると、デバイスが接続されたことと、バッテリー残量が表示されるようになります。";
+"onboarding.permission.bluetooth.granted" = "許可されました。デバイスが接続されると、ノッチに表示されます。";
+"onboarding.permission.bluetooth.denied" = "問題ありません。デバイスはこれまでどおり接続されます。Isletaがノッチで知らせないだけです。";
+"onboarding.permission.accessibility.headline" = "システムの音量と明るさの表示を置き換えるには、Isletaへの許可が必要です。";
+"onboarding.permission.accessibility.instruction" = "macOSに尋ねられたら「システム設定を開く」を選択し、リストでIsletaをオンにしてください。";
+"onboarding.permission.accessibility.granted" = "許可されました。音量と明るさはノッチに表示されるようになりました。";
+"onboarding.permission.accessibility.denied" = "問題ありません。macOSはこれまでどおり独自の音量と明るさの表示を使用します。";
+
+/* The status menu */
+"menu.showNowPlaying" = "再生中を表示";
+"menu.showNowPlaying.nothing" = "何も再生していません";
+"menu.showGlance" = "概要を表示";
+"menu.showWeather" = "天気を表示";
+"menu.openSettings" = "Isletaの設定を開く";
+"menu.openSetupGuide" = "設定ガイドを開く";
+"menu.exportLogs" = "ログを書き出す…";
+"menu.quit" = "Isletaを終了";
+"sources.systemHUD.replace" = "システムの音量表示を置き換える";
+"sources.systemHUD.replace.caption" = "Isletaが音量キーと消音キーに直接応答するため、macOS独自の表示は出ません。アクセシビリティの許可が必要です。Isletaを終了すると、キーはすぐに元に戻ります。";
+"sources.systemHUD.replaceBrightness" = "システムの明るさ表示を置き換える";
+"sources.systemHUD.replaceBrightness.caption" = "内蔵ディスプレイの明るさキーにIsletaが直接応答します。アクセシビリティの許可が必要です。Isletaを終了すると、キーはすぐに元に戻ります。";
+
+/* Sources ▸ Coding Agents: answering permission prompts from the island. */
+"sources.agents" = "コーディングエージェント";
+"sources.agents.answer" = "アイランドで要求に応答";
+"sources.agents.summary.off" = "Claude Codeが何かを実行する許可を求めると、アイランドにそのことが表示され、ターミナルで応答します。この設定をオンにすると、アイランドで「許可」または「拒否」で応答でき、Codexもアイランドに表示されます。Isletaは~/.claude/settings.jsonと~/.codex/hooks.jsonにフックを追加し、この設定をオフにすると削除します。";
+"sources.agents.summary.notInstalled" = "このMacではまだClaude CodeもCodexも実行されていないため、フックを追加する場所がありません。どちらかを一度実行してから、この設定をオフにしてもう一度オンにしてください。";
+"sources.agents.summary.unreadable" = "エージェントのフック設定が有効なJSONではないため、Isletaはそのファイルを変更しませんでした。ファイルを修正してから、この設定をオフにしてもう一度オンにしてください。";
+"sources.agents.summary.failed" = "Isletaはフックを追加できませんでした。許可の確認はこれまでどおりアイランドに表示されます。ターミナルで応答してください。";
+"sources.agents.summary.on" = "Claude Codeが許可を求めると、開いたアイランドに「許可」と「拒否」が表示されます。「許可」はその1件のリクエストだけを承認し、ルールは変更しません。ターミナルの確認もそのまま残り、先に応答した方が有効になります。この設定をオンにする前から実行中だったセッションには、引き続きターミナルでのみ応答します。";
+"sources.agents.summary.codex" = "Codexの場合は、Codexで/hooksと一度入力し、Isletaのフックを信頼してください。アイランドが確認を表示している間、Codexは自身の確認を保留します。ターミナルに戻るとすぐに、アイランドは確認を手放します。";

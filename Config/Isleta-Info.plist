@@ -16,15 +16,16 @@
 		<string>de</string>
 		<string>fr</string>
 		<string>es</string>
+		<string>ja</string>
 	</array>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.8.0</string>
+	<string>2.9.0</string>
 	<key>CFBundleVersion</key>
-	<string>2.8.0</string>
+	<string>2.9.0</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>

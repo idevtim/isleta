@@ -519,8 +519,9 @@ public final class IslandScreenModel {
     /// picture there rather than a control that silently does nothing.
     public var onAdjustLevel: ((SystemHUD, Double) -> Void)?
 
-    /// Allow or Deny, pressed on the open island under a coding agent's permission prompt, for the
-    /// activity it was pressed on. Nil outside the app shell, where the row draws and does nothing.
+    /// Allow or Deny under a coding agent's permission prompt, or the options chosen for its
+    /// questions, pressed on the open island for the activity it was pressed on. Nil outside the
+    /// app shell, where the buttons draw and do nothing.
     public var onAnswerPrompt: ((ActivityID, CodingAgentAnswer) -> Void)?
 
     /// Whether the open island wears the page indicator.

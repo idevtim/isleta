@@ -1,0 +1,115 @@
+/* IslandSources — ja. English lives in the Swift source, as each call site's second argument. */
+
+/* Bluetooth — the connect permission */
+"bluetooth.authorization.restricted" = "このMacではBluetoothへのアクセスが制限されているため、接続したデバイスを表示できません。";
+"bluetooth.authorization.denied" = "IsletaはBluetoothデバイスの接続を検出できません。「システム設定」▸「プライバシーとセキュリティ」▸「Bluetooth」で、IsletaにBluetoothを許可してください。";
+
+/* The calendar permission */
+"calendar.authorization.denied" = "Isletaはカレンダーにアクセスできないため、アイランドに今日の予定を表示できません。「システム設定」▸「プライバシーとセキュリティ」でIsletaのカレンダーをオンにすると、次の予定が表示されるようになります。予定が保存されたり、どこかに送信されたり、Isletaのログに書き込まれたりすることはありません。";
+"calendar.authorization.restricted" = "このMacではカレンダーへのアクセスが管理されているため、Isletaは予定を読み込めません。Isletaの設定を変更しても、この状態は変わりません。";
+"calendar.authorization.writeOnly" = "Isletaのカレンダーへのアクセスは書き込みのみです。この設定では予定を追加できますが、読み込むことはできません。アイランドにはフルアクセスが必要です。";
+
+/* A call in progress */
+"call.title" = "通話";
+"call.inProgress" = "通話中";
+"call.a11y.inApp" = "%@で通話中";
+
+/* The drop history — a file that has moved out of reach */
+"dropHistory.volumeUnavailable" = "%@は接続されていません";
+"dropHistory.missing" = "このファイルは削除されています";
+
+/* File conversion and its failures — drawn on the island, one line */
+"fileAction.failed.nothingToConvert" = "変換するものがありません";
+"fileAction.failed.generic" = "このファイルを変換できませんでした";
+"fileAction.failed.notStarted" = "変換を開始できませんでした";
+"fileAction.failed.noDestination" = "保存先のフォルダがありません";
+"fileAction.failed.noFreeName" = "使用できる名前が見つかりませんでした";
+"fileAction.failed.folderNotWritable" = "このフォルダには書き込めません";
+"fileAction.failed.imageUnreadable" = "このイメージを読み込めませんでした";
+"fileAction.failed.formatUnwritable" = "このフォーマットでは書き出せません";
+"fileAction.failed.imageUnwritable" = "このイメージを書き出せませんでした";
+"fileAction.failed.pdfNotStarted" = "PDFを作成できませんでした";
+"fileAction.failed.noImagesReadable" = "どのイメージも読み込めませんでした";
+"fileAction.failed.pdfUnwritable" = "このPDFを書き出せませんでした";
+"fileAction.failed.vectorUnreadable" = "このベクター画像を読み込めませんでした";
+"fileAction.failed.thatPdfNotStarted" = "このPDFを作成できませんでした";
+"fileAction.failed.vectorNotRasterised" = "このベクター画像をラスタライズできませんでした";
+"fileAction.failed.fileNotOpenable" = "このファイルを開けません";
+"fileAction.failed.conversionUnavailable" = "この変換はここでは利用できません";
+"fileAction.failed.fileNotConverted" = "このファイルを変換できませんでした";
+"fileAction.failed.audioNotConverted" = "このオーディオを変換できませんでした";
+"fileAction.failed.noText" = "このファイルにはテキストがありませんでした";
+"fileAction.failed.noPreview" = "macOSでこのファイルをプレビューできませんでした";
+"fileAction.failed.nothingToLayOut" = "レイアウトするものがありませんでした";
+
+/* The glance — the day, an alert, a meeting */
+"glance.alert.a11y" = "%1$@、%2$@";
+"glance.meeting.a11y" = "%@、参加できます";
+
+/* The HUDs this Mac cannot produce, and the ones Isleta will not suppress */
+"hud.unavailable.brightness" = "このMacではディスプレイの明るさを読み取れないため、明るさのHUDはシステムに任せます。";
+"hud.unavailable.volume" = "このMacのオーディオ出力は、Isletaで表示できるレベルを報告しません。";
+"hud.suppression.volume" = "Isletaは、システムの音量HUDを置き換えるのではなく、それと並べて独自の音量HUDを表示します。システムのHUDを非表示にするには音量キーを完全に乗っ取る必要があり、見た目のためだけにIsletaがそうすることはありません。";
+"hud.suppression.brightness" = "Isletaは、システムの明るさHUDを置き換えるのではなく、それと並べて独自の明るさHUDを表示します。システムのHUDを非表示にするには明るさキーを完全に乗っ取る必要があります。";
+
+/* Now Playing — the two routes that can be missing */
+"nowPlaying.unavailable.null" = "Isletaは、再生中の音楽をアイランドに表示できます。「システム設定」›「プライバシーとセキュリティ」›「オートメーション」で、ミュージックプレーヤーの読み取りを許可してください。";
+"nowPlaying.unavailable.adapter" = "このバージョンのIsletaは、システム全体の「再生中」の情報を読み取れません。「ミュージック」など、直接問い合わせられるプレーヤーの音楽を表示します。";
+"nowPlaying.scripting.denied" = "次に再生、一時停止、または曲の変更をすると、再生中の曲がIsletaに表示されます。現在の曲をすぐに表示するには、「システム設定」›「プライバシーとセキュリティ」›「オートメーション」で、Isletaに%@の制御を許可してください。";
+
+/* Power — the charger, the charge, Low Power Mode */
+"power.duration.minutes" = "%lld分";
+"power.duration.hours" = "%lld時間";
+"power.duration.hoursMinutes" = "%1$lld時間%2$lld分";
+"power.title.charging" = "充電中";
+"power.title.onBattery" = "バッテリー電源";
+"power.title.charged" = "充電完了";
+"power.title.lowBattery" = "バッテリー残量低下";
+"power.title.lowPowerModeOn" = "低電力モード：オン";
+"power.title.lowPowerModeOff" = "低電力モード：オフ";
+"power.flank.charging" = "充電中";
+"power.flank.onBattery" = "バッテリー電源";
+"power.flank.charged" = "充電完了";
+"power.flank.lowBattery" = "残量低下";
+"power.flank.lowPowerModeOn" = "低電力オン";
+"power.flank.lowPowerModeOff" = "低電力オフ";
+"power.estimate.toFull" = "フル充電まで%@";
+"power.estimate.left" = "残り%@";
+
+/* Transcription failures */
+"transcribe.failed.noAudio" = "このファイルにはオーディオがありません";
+"transcribe.failed.fileUnreadable" = "このファイルを読み込めませんでした";
+"transcribe.failed.noSpeech" = "このファイルに音声が見つかりませんでした";
+"transcribe.failed.noLanguageInstalled" = "書き起こし用の言語がインストールされていません";
+"transcribe.failed.languageNotInstalled" = "この言語はインストールされていません";
+"transcribe.failed.generic" = "このファイルを書き起こせませんでした";
+
+/* Weather, in a build that cannot ask for it */
+"weather.unavailable.default" = "このバージョンのIsletaでは天気を利用できません。";
+"weather.unavailable.notEntitled" = "このバージョンのIsletaには、まだ天気が含まれていません。カレンダーは引き続きアイランドに表示されます。天気には、手動で行う必要がある署名の変更が必要です。";
+
+/* Welcome back — the greeting, and the line under it */
+"welcomeBack.greeting.morning" = "おはようございます";
+"welcomeBack.greeting.afternoon" = "こんにちは";
+"welcomeBack.greeting.evening" = "こんばんは";
+"welcomeBack.greeting.night" = "おかえりなさい";
+"welcomeBack.message.morning.1" = "今日はあなたのための日です。";
+"welcomeBack.message.morning.2" = "よい一日を。";
+"welcomeBack.message.morning.3" = "ひとつずつ進めましょう。";
+"welcomeBack.message.morning.4" = "ちょうどいい時間に、新しいスタート。";
+"welcomeBack.message.morning.5" = "あなたならできます。";
+"welcomeBack.message.afternoon.1" = "一日はまだたっぷりあります。";
+"welcomeBack.message.afternoon.2" = "おかえりなさい。いい調子です。";
+"welcomeBack.message.afternoon.3" = "思っているより、ずっと進んでいます。";
+"welcomeBack.message.afternoon.4" = "その調子で。";
+"welcomeBack.message.afternoon.5" = "準備ができたら、いつでもどうぞ。";
+"welcomeBack.message.evening.1" = "今日は十分がんばりました。";
+"welcomeBack.message.evening.2" = "今日もおつかれさまでした。";
+"welcomeBack.message.evening.3" = "残りはまた今度で大丈夫。";
+"welcomeBack.message.evening.4" = "穏やかに一日を締めくくりましょう。";
+"welcomeBack.message.evening.5" = "また会えてうれしいです。";
+"welcomeBack.message.night.1" = "まだここにいる。それだけで十分です。";
+"welcomeBack.message.night.2" = "今夜は自分をいたわってください。";
+"welcomeBack.message.night.3" = "何であれ、きっと後回しで大丈夫です。";
+"welcomeBack.message.night.4" = "静かな時間がよく似合います。";
+"welcomeBack.message.night.5" = "ゆっくりどうぞ。";

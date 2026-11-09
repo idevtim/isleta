@@ -798,7 +798,7 @@ public struct SettingsView: View {
         SettingsCard(settingsText("sources.agents", "Coding Agents")) {
             SettingsRow(caption: sources.agentPromptsSummary(isOn: store.configuration.sources.answersAgentPrompts)) {
                 Toggle(
-                    settingsText("sources.agents.answer", "Answer permission prompts from the island"),
+                    settingsText("sources.agents.answer", "Answer prompts from the island"),
                     isOn: binding(\.sources.answersAgentPrompts)
                 )
             }

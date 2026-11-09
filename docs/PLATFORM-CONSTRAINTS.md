@@ -1284,6 +1284,18 @@ compatibility question; no polling was added to compensate for unsupported hints
   request carries `session_id`, `tool_name` and `tool_input` (Bash's includes a `description`) but
   no `tool_use_id`. A `Notification` with `notification_type: permission_prompt` follows about 6 s
   after an unanswered prompt.
+- **`AskUserQuestion` comes through `PermissionRequest`, and a hook can answer it, not just allow
+  it.** Measured on Claude Code 2.1.319, macOS 27.2, 2026-11-09, with a project-scoped probe hook in
+  an interactive session: the request's `tool_input` carries `questions` (each with `question`,
+  `header`, `multiSelect` and `options` of `label` and `description`). A plain `allow` only lets the
+  tool run, so the terminal's picker is still waiting for the person, and a `deny` refuses the
+  question. With the picker on screen and untouched, a hook that answered after 8 s with
+  `{"behavior":"allow","updatedInput":{…the original tool_input…,"answers":{"Pick a fruit":"Banana","Pick colors":"Red, Green"}}}`
+  (keyed by each question's text, the second option chosen so a default could not pass for it)
+  dismissed the picker. The transcript read "User answered Claude's questions: Pick a fruit →
+  Banana · Pick colors → Red, Green · Allowed by PermissionRequest hook", and the model repeated
+  both answers back. A multi-select answer is the labels joined with `", "`. `AskUserQuestion` is
+  not offered at all under `claude -p`, so this can only be measured in an interactive session.
 - **A hook added to `~/.claude/settings.json` reaches new sessions only.** Verified on hardware
   2026-10-31 with Isleta's own switch: a session started after the hook was written answered from
   the island; one already running never ran it. So the switch's caption says so, rather than the

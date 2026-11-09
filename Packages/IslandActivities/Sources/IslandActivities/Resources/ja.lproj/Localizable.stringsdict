@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- IslandActivities — ja. The two counted strings, and the only place a plural rule can live:
+     a format string cannot express one. Japanese has one plural form: other. -->
+<plist version="1.0">
+<dict>
+	<key>fileAction.fileCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key><string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key><string>lld</string>
+			<key>other</key><string>%lld個のファイル</string>
+		</dict>
+	</dict>
+	<key>shelf.itemCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key><string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key><string>lld</string>
+			<key>other</key><string>%lld項目</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

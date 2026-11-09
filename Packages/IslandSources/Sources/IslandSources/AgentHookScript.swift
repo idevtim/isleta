@@ -20,6 +20,10 @@ import Foundation
 ///   answered with another's click.
 /// - **It never sends `updatedPermissions`.** Allowing from the island allows this one call; every
 ///   rule change still happens in the agent.
+/// - **It changes a tool's input in one way only:** the `answers` to a question the agent asked
+///   (`AskUserQuestion`), merged into the input the agent sent, one for every question it asked. The
+///   agent reads that as the person having chosen in its own picker (measured — see
+///   `docs/PLATFORM-CONSTRAINTS.md`).
 /// - **It trims before it sends.** A Write tool's input is the whole file; the island needs a line.
 ///   What crosses the socket is the event name, the session id, the tool's name, one summary line
 ///   and the command, cut to length — and it is shown on screen and never logged.
@@ -105,6 +109,22 @@ public enum AgentHookScript {
         cwd => line($in->{cwd}, 1000),
     );
 
+    # A question the agent is asking (`AskUserQuestion`): the questions and their option labels, so
+    # the island can offer them as buttons. The options' descriptions stay behind — they are what
+    # makes the terminal's picker tall, and the island has a line per option. More than the agent's
+    # own limits (four questions, four options) sends none, and the island leaves it to the terminal
+    # rather than answer part of it.
+    my $asked = $input->{questions};
+    if (ref $asked eq 'ARRAY' && @$asked && @$asked <= 4
+        && !grep { ref $_ ne 'HASH' || ref $_->{options} ne 'ARRAY' || !@{$_->{options}} || @{$_->{options}} > 4 } @$asked) {
+        $out{questions} = [map { {
+            question => line($_->{question}, 400),
+            header => line($_->{header}, 40),
+            multi_select => $_->{multiSelect} ? JSON::PP::true : JSON::PP::false,
+            options => [map { ref $_ eq 'HASH' ? line($_->{label}, 100) : undef } @{$_->{options}}],
+        } } @$asked];
+    }
+
     my $socket = IO::Socket::UNIX->new(Type => SOCK_STREAM(), Peer => $path) or exit 0;
     $socket->autoflush(1);
     print {$socket} JSON::PP->new->canonical->encode(\%out), "\n" or exit 0;
@@ -118,11 +138,32 @@ public enum AgentHookScript {
         allow => { behavior => 'allow' },
         deny => { behavior => 'deny', message => 'The person declined this from Isleta.' },
     );
-    exit 0 unless exists $decision{$reply};
+    my $decision = $decision{$reply};
+
+    # Answers to a question: `{"answers":["<label>","<label>, <label>"]}`, one per question in the
+    # order they were asked. Isleta answers by position rather than by the question's text, because
+    # the text it was sent was trimmed and the agent keys its answers by the text it wrote. They go
+    # back as the tool's own input with `answers` filled in, which is what the agent's picker does
+    # itself — so the call runs as if the person had chosen in the terminal. Every question has to
+    # be answered, each with a string, or nothing is sent and the terminal keeps the question.
+    if (!$decision && $reply =~ /^\{/ && ref $asked eq 'ARRAY') {
+        my $parsed = eval { JSON::PP->new->decode($reply) };
+        my $given = ref $parsed eq 'HASH' ? $parsed->{answers} : undef;
+        exit 0 unless ref $given eq 'ARRAY' && @$given == @$asked;
+        my %answers;
+        for my $index (0 .. $#$asked) {
+            my ($question, $value) = ($asked->[$index]{question}, $given->[$index]);
+            exit 0 unless defined $question && !ref $question && defined $value && !ref $value
+                && length $value;
+            $answers{$question} = $value;
+        }
+        $decision = { behavior => 'allow', updatedInput => { %$input, answers => \%answers } };
+    }
+    exit 0 unless $decision;
     print JSON::PP->new->canonical->encode({
         hookSpecificOutput => {
             hookEventName => 'PermissionRequest',
-            decision => $decision{$reply},
+            decision => $decision,
         },
     });
     exit 0;

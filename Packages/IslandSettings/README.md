@@ -139,11 +139,11 @@ hex would be the one thing in this window that ignored the user asking the syste
 
 ## Localization
 
-German, French and Spanish, plus English. English is the source language and lives in the Swift
+German, French, Spanish and Japanese, plus English. English is the source language and lives in the Swift
 files, as the second argument to `settingsText(_:_:)` — there is no `en.lproj`, because a second copy
 of the English would be free to drift from the sentence its doc comment is arguing for. The tables
-are `Sources/IslandSettings/Resources/{de,fr,es}.lproj/Localizable.strings`, grouped by surface in
-the order the panes appear so the three files diff against each other line for line.
+are `Sources/IslandSettings/Resources/{de,fr,es,ja}.lproj/Localizable.strings`, grouped by surface
+in the order the panes appear so the four files diff against each other line for line.
 `LocalizationCoverageTests` fails on a key with no entry in a shipped language, on an entry nothing
 asks for, and on two languages taking different printf arguments for one key.
 

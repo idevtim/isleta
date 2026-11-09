@@ -248,6 +248,14 @@ public struct ActivityContent: Equatable, Sendable {
     /// Last, after `mark`, for the same layout reason.
     public var offersAllowDeny: Bool
 
+    /// Questions the open island offers as buttons, one at a time — a coding agent asking the
+    /// person to choose. Inert like `offersAllowDeny`: the choice goes to the app shell
+    /// (`IslandScreenModel.onAnswerPrompt`), and it is here rather than on the activity so the
+    /// open island's height can make room for the tallest of them (`ActivityExpandedHeight`).
+    ///
+    /// Last, after `offersAllowDeny`, for the same layout reason.
+    public var questions: [ActivityQuestion]
+
     /// `symbolVariableValue` clamped into 0...1, or nil. What the renderer reads.
     public var symbolFill: Double? {
         symbolVariableValue.map { min(max($0, 0), 1) }
@@ -264,7 +272,8 @@ public struct ActivityContent: Equatable, Sendable {
         accessibilityLabel: String? = nil,
         badgeSymbol: String? = nil,
         mark: ActivityMark? = nil,
-        offersAllowDeny: Bool = false
+        offersAllowDeny: Bool = false,
+        questions: [ActivityQuestion] = []
     ) {
         self.symbol = symbol
         self.symbolVariableValue = symbolVariableValue
@@ -277,6 +286,7 @@ public struct ActivityContent: Equatable, Sendable {
         self.badgeSymbol = badgeSymbol
         self.mark = mark
         self.offersAllowDeny = offersAllowDeny
+        self.questions = questions
     }
 
     /// Nothing to draw. Distinct from "not supplied": an activity that deliberately shows nothing
@@ -347,5 +357,25 @@ public struct ActivityPresentations: Equatable, Sendable {
         case .rest, .peek: compact
         case .expanded: expanded
         }
+    }
+}
+
+/// One question with a short list of answers to choose from — the open island draws the options
+/// as buttons. Text only, and all of it someone else's: shown, never logged.
+public struct ActivityQuestion: Hashable, Sendable {
+    /// The question, in full.
+    public let text: String
+    /// A word or two naming it, when the asker gave one — what tells two questions apart.
+    public let header: String?
+    /// Whether more than one option can be chosen before it is answered.
+    public let allowsMultiple: Bool
+    /// The labels to choose from, in the asker's order.
+    public let options: [String]
+
+    public init(text: String, header: String? = nil, allowsMultiple: Bool = false, options: [String]) {
+        self.text = text
+        self.header = header
+        self.allowsMultiple = allowsMultiple
+        self.options = options
     }
 }

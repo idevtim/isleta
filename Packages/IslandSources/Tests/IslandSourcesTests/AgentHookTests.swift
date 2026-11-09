@@ -1,4 +1,5 @@
 import Foundation
+import IslandActivities
 import Testing
 
 @testable import IslandSources
@@ -218,9 +219,93 @@ struct AgentHookRoundTripTests {
         let output = try #require(try JSONSerialization.jsonObject(with: Data(run.stdout.utf8)) as? [String: Any])
         let specific = try #require(output["hookSpecificOutput"] as? [String: Any])
         #expect(specific["hookEventName"] as? String == "PermissionRequest")
-        #expect((specific["decision"] as? [String: Any])?["behavior"] as? String == decision.rawValue)
+        #expect((specific["decision"] as? [String: Any])?["behavior"] as? String == decision.line)
         // Never a rule change: the island allows this one call and nothing more.
         #expect((specific["decision"] as? [String: Any])?["updatedPermissions"] == nil)
+    }
+
+    /// Two questions, the first with whitespace the script collapses on the way to the island — so
+    /// an answer keyed by the text Isleta was sent would miss the agent's own key.
+    private let question = #"""
+    {"hook_event_name":"PermissionRequest","session_id":"s1","tool_name":"AskUserQuestion",
+     "tool_input":{"questions":[
+       {"question":"Which number\ncounts?","header":"Perf metric","multiSelect":false,
+        "options":[{"label":"Received","description":"Offers marked received"},{"label":"Printed","description":"Labels printed"}]},
+       {"question":"Pick colors","header":"Colors","multiSelect":true,
+        "options":[{"label":"Red","description":"r"},{"label":"Green","description":"g"},{"label":"Blue","description":"b"}]}]}}
+    """#
+
+    private func decision(_ run: Run) throws -> [String: Any] {
+        let output = try #require(try JSONSerialization.jsonObject(with: Data(run.stdout.utf8)) as? [String: Any])
+        let specific = try #require(output["hookSpecificOutput"] as? [String: Any])
+        return try #require(specific["decision"] as? [String: Any])
+    }
+
+    @Test("a question reaches the island as its text and option labels, and its answers go back as the tool's own")
+    func question() async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let server = AgentHookServer(socketURL: folder.appendingPathComponent("s"))
+        try server.start()
+        defer { server.stop() }
+
+        var received: AgentHookEvent?
+        server.onEvent = { event, request in
+            received = event
+            request?.answer(.answers(["Printed", "Red, Blue"]))
+        }
+        let run = try await runHook(in: folder, socket: folder.appendingPathComponent("s"), input: question)
+
+        #expect(run.status == 0)
+        let questions = try #require(received?.questions)
+        #expect(questions.count == 2)
+        #expect(questions[0] == AgentHookEvent.Question(
+            question: "Which number counts?", header: "Perf metric", multiSelect: false, options: ["Received", "Printed"]))
+        #expect(questions[1].multiSelect == true)
+        #expect(questions[1].options == ["Red", "Green", "Blue"])
+
+        let decision = try decision(run)
+        #expect(decision["behavior"] as? String == "allow")
+        let input = try #require(decision["updatedInput"] as? [String: Any])
+        // Keyed by the agent's own text, newline and all, and the questions sent back untouched.
+        #expect(input["answers"] as? [String: String] == ["Which number\ncounts?": "Printed", "Pick colors": "Red, Blue"])
+        let original = try #require(input["questions"] as? [[String: Any]])
+        #expect((original.first?["options"] as? [[String: Any]])?.first?["description"] as? String == "Offers marked received")
+        #expect(decision["updatedPermissions"] == nil)
+    }
+
+    @Test("answers that do not cover every question send nothing, and the terminal keeps it",
+          arguments: [[String](), ["Printed"], ["Printed", ""], ["Printed", "Red", "Blue"]])
+    func partialAnswers(_ answers: [String]) async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let server = AgentHookServer(socketURL: folder.appendingPathComponent("s"))
+        try server.start()
+        defer { server.stop() }
+        server.onEvent = { _, request in request?.answer(.answers(answers)) }
+
+        let run = try await runHook(in: folder, socket: folder.appendingPathComponent("s"), input: question)
+        #expect(run.status == 0)
+        #expect(run.stdout.isEmpty)
+    }
+
+    @Test("a question past the agent's own limits is sent without its questions")
+    func tooManyOptions() async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let server = AgentHookServer(socketURL: folder.appendingPathComponent("s"))
+        try server.start()
+        defer { server.stop() }
+        var received: AgentHookEvent?
+        server.onEvent = { event, request in
+            received = event
+            request?.close()
+        }
+        let options = (1...5).map { #"{"label":"\#($0)"}"# }.joined(separator: ",")
+        let input = #"{"hook_event_name":"PermissionRequest","session_id":"s1","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Q","options":["# + options + "]}]}}"
+        _ = try await runHook(in: folder, socket: folder.appendingPathComponent("s"), input: input)
+        #expect(received?.toolName == "AskUserQuestion")
+        #expect(received?.questions == nil)
     }
 
     @Test("closing without an answer leaves the agent's own prompt standing")
@@ -279,5 +364,80 @@ struct AgentHookRoundTripTests {
     func tooLong() {
         let server = AgentHookServer(socketURL: URL(fileURLWithPath: "/tmp/" + String(repeating: "x", count: 120)))
         #expect(throws: AgentHookServer.Failure.pathTooLong) { try server.start() }
+    }
+}
+
+@Suite("Answering a coding agent's prompt")
+@MainActor
+struct CodingAgentAnswerTests {
+
+    private func event(tool: String, questions: [AgentHookEvent.Question]? = nil) -> AgentHookEvent {
+        AgentHookEvent(agent: "claudeCode", event: "PermissionRequest", sessionID: "s1", toolName: tool,
+                       summary: "Remove the build folder", command: "rm -rf build", questions: questions)
+    }
+
+    private let colors = AgentHookEvent.Question(
+        question: "Pick colors", header: "Colors", multiSelect: true, options: ["Red", "Green", "Blue"])
+    private let fruit = AgentHookEvent.Question(question: "Pick a fruit", options: ["Apple", "Banana"])
+
+    @Test("a permission is offered as one, with the command for a shell call")
+    func permission() {
+        let prompt = CodingAgentSource.prompt(for: event(tool: "Bash"))
+        #expect(prompt == CodingAgentPrompt(toolName: "Bash", detail: "rm -rf build"))
+        #expect(prompt?.isQuestion == false)
+    }
+
+    @Test("a question is offered as its options, and never as a permission")
+    func question() throws {
+        let prompt = try #require(CodingAgentSource.prompt(for: event(tool: "AskUserQuestion", questions: [fruit, colors])))
+        #expect(prompt.questions == [
+            ActivityQuestion(text: "Pick a fruit", options: ["Apple", "Banana"]),
+            ActivityQuestion(text: "Pick colors", header: "Colors", allowsMultiple: true, options: ["Red", "Green", "Blue"]),
+        ])
+        // Nothing the island could answer is left to the terminal alone, not put up as Allow/Deny.
+        #expect(CodingAgentSource.prompt(for: event(tool: "AskUserQuestion")) == nil)
+        #expect(CodingAgentSource.prompt(for: event(tool: "AskUserQuestion", questions: [])) == nil)
+        let missing = AgentHookEvent.Question(question: "Q", options: ["A", nil])
+        #expect(CodingAgentSource.prompt(for: event(tool: "AskUserQuestion", questions: [missing])) == nil)
+        let twice = AgentHookEvent.Question(question: "Q", options: ["A", "A"])
+        #expect(CodingAgentSource.prompt(for: event(tool: "AskUserQuestion", questions: [twice])) == nil)
+    }
+
+    @Test("choices go back one per question, a multi-select's in the asker's order")
+    func choices() throws {
+        let prompt = try #require(CodingAgentSource.prompt(for: event(tool: "AskUserQuestion", questions: [fruit, colors])))
+        #expect(CodingAgentSource.decision(for: .choices([["Banana"], ["Blue", "Red"]]), to: prompt)
+                == .answers(["Banana", "Red, Blue"]))
+    }
+
+    @Test("an answer that does not fit what was asked is no answer", arguments: [
+        CodingAgentAnswer.allow, .deny,
+        .choices([["Banana"]]),
+        .choices([["Banana", "Apple"], ["Red"]]),
+        .choices([["Banana"], []]),
+        .choices([["Cherry"], ["Red"]]),
+    ])
+    func misfit(_ answer: CodingAgentAnswer) throws {
+        let prompt = try #require(CodingAgentSource.prompt(for: event(tool: "AskUserQuestion", questions: [fruit, colors])))
+        #expect(CodingAgentSource.decision(for: answer, to: prompt) == nil)
+    }
+
+    @Test("a session is named by its folder and the one it is in", arguments: [
+        ("/Users/someone/Sites/itsworthmore-inventory", "Sites/itsworthmore-inventory"),
+        ("/Users/someone/Sites/itsworthmore-inventory/", "Sites/itsworthmore-inventory"),
+        ("/Users/someone/Projects", "~/Projects"),
+        ("/Users/someone", "~"),
+        ("/tmp", "tmp"),
+    ])
+    func folderLabel(_ cwd: String, _ label: String) {
+        #expect(CodingAgentSource.folderLabel(for: cwd, home: "/Users/someone") == label)
+    }
+
+    @Test("a permission takes Allow or Deny and nothing else")
+    func permissionAnswers() throws {
+        let prompt = try #require(CodingAgentSource.prompt(for: event(tool: "Bash")))
+        #expect(CodingAgentSource.decision(for: .allow, to: prompt) == .allow)
+        #expect(CodingAgentSource.decision(for: .deny, to: prompt) == .deny)
+        #expect(CodingAgentSource.decision(for: .choices([["Yes"]]), to: prompt) == nil)
     }
 }

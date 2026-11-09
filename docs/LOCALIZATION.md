@@ -7,7 +7,7 @@ Extracted from `CLAUDE.md`, which now carries the map rather than the record.
 ---
 
 - **The base language is US English, and it is a rule about the whole tree rather than about the
-  strings.** `de`, `fr` and `es` ship; `en` is the source. Spelling was swept US-wide across roughly
+  strings.** `de`, `fr`, `es` and `ja` ship; `en` is the source. Spelling was swept US-wide across roughly
   1,100 files — `colour` → `color`, `favourite` → `favorite`, `equaliser` → `equalizer`,
   `synthesised` → `synthesized`, `localisation` → `localization` — and that sweep covers doc
   comments, tests and prose as well as user-facing copy, because a codebase with two spellings of

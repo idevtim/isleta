@@ -163,6 +163,18 @@ public enum ActivityExpandedHeight {
     public static let answerRowHeight: CGFloat = 28
     public static let answerRowSpacing: CGFloat = 12
 
+    /// The questions a coding agent asks (`ActivityContent.questions`), drawn under the block one at
+    /// a time. The question is `questionStyle` up to `questionLineLimit` lines, with a one-line
+    /// caption over it naming the question and how far through them the person is; each option is
+    /// a button `answerRowHeight` tall, `optionSpacing` apart, and a question that takes several
+    /// answers has one more button under its options to send them.
+    public static let questionLineLimit = 3
+    public static let captionQuestionSpacing: CGFloat = 2
+    public static let questionOptionsSpacing: CGFloat = 8
+    public static let optionSpacing: CGFloat = 6
+
+    static let captionStyle = ActivityTextStyle(size: 11, weight: .regular)
+    static let questionStyle = ActivityTextStyle(size: 13, weight: .semibold)
     static let titleStyle = ActivityTextStyle(size: 15, weight: .semibold)
     static let subtitleStyle = ActivityTextStyle(size: 12, weight: .regular)
     static let numeralsStyle = ActivityTextStyle(size: 26, weight: .semibold)
@@ -246,7 +258,33 @@ public enum ActivityExpandedHeight {
         }
 
         let block = max(hasSymbol ? symbolWellSide : 0, max(text, trailing))
+        if !content.questions.isEmpty {
+            return block + answerRowSpacing
+                + questionsHeight(content.questions, width: width - 2 * horizontalPadding, measure: measure)
+        }
         return content.offersAllowDeny ? block + answerRowSpacing + answerRowHeight : block
+    }
+
+    /// Whether the questions draw a caption over the question: when there is more than one, so the
+    /// person knows how many are left, or when the asker named it. All of them or none, so the
+    /// question does not move between one step and the next.
+    static func questionsHaveCaption(_ questions: [ActivityQuestion]) -> Bool {
+        questions.count > 1 || questions.contains { !($0.header ?? "").isEmpty }
+    }
+
+    /// The room the question area takes: the **tallest** of the questions, not the first, because
+    /// the island opens once for all of them and the height must not change under the pointer while
+    /// the person steps through (`IslandLayout`'s settled-shape rule).
+    static func questionsHeight(_ questions: [ActivityQuestion], width: CGFloat, measure: ActivityTextMeasure) -> CGFloat {
+        let caption = questionsHaveCaption(questions)
+            ? measure.lineHeight(captionStyle) + captionQuestionSpacing : 0
+        let tallest = questions.map { question -> CGFloat in
+            let buttons = question.options.count + (question.allowsMultiple ? 1 : 0)
+            let text = measure.height(question.text, questionStyle, max(0, width), questionLineLimit)
+            return text + questionOptionsSpacing
+                + CGFloat(buttons) * answerRowHeight + CGFloat(max(0, buttons - 1)) * optionSpacing
+        }.max() ?? 0
+        return caption + tallest
     }
 }
 

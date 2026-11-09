@@ -111,8 +111,12 @@ public struct ActivityContentView: View {
         }
         // A content with buttons keeps them as their own elements: combined, VoiceOver would read
         // the prompt and offer nothing to press.
-        .accessibilityElement(children: content.offersAllowDeny && slot == .expanded ? .contain : .combine)
+        .accessibilityElement(children: offersButtons && slot == .expanded ? .contain : .combine)
         .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var offersButtons: Bool {
+        content.offersAllowDeny || !content.questions.isEmpty
     }
 
     private var tintColor: Color {
@@ -404,13 +408,22 @@ public struct ActivityContentView: View {
     private var expanded: some View {
         VStack(alignment: .leading, spacing: ActivityExpandedHeight.answerRowSpacing) {
             expandedBlock
-            if content.offersAllowDeny {
+            if !content.questions.isEmpty {
+                // Identified by its questions, so a new prompt starts again at the first.
+                ActivityQuestionsView(
+                    questions: content.questions, increaseContrast: increaseContrast,
+                    reduceMotion: reduceMotion, onAnswer: onAnswer)
+                    .id(content.questions)
+            } else if content.offersAllowDeny {
                 answerRow
             }
         }
         .padding(.horizontal, ActivityExpandedHeight.horizontalPadding)
         .padding(.vertical, ActivityExpandedHeight.verticalPadding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        // Questions hang from the top: the island is opened for the tallest of them, and a shorter
+        // one centered in that room would move the block above it between steps.
+        .frame(maxWidth: .infinity, maxHeight: .infinity,
+               alignment: content.questions.isEmpty ? .leading : .topLeading)
     }
 
     private var expandedBlock: some View {
@@ -458,29 +471,14 @@ public struct ActivityContentView: View {
     /// the safe one: neither is preselected, and Return does nothing — the panel never takes keys.
     private var answerRow: some View {
         HStack(spacing: 8) {
-            answerButton(islandText("codingAgent.deny", "Deny"), prominent: false) { onAnswer?(.deny) }
-            answerButton(islandText("codingAgent.allow", "Allow"), prominent: true) { onAnswer?(.allow) }
+            IslandAnswerButton(
+                title: islandText("codingAgent.deny", "Deny"), prominent: false,
+                increaseContrast: increaseContrast) { onAnswer?(.deny) }
+            IslandAnswerButton(
+                title: islandText("codingAgent.allow", "Allow"), prominent: true,
+                increaseContrast: increaseContrast) { onAnswer?(.allow) }
         }
         .frame(height: ActivityExpandedHeight.answerRowHeight)
-    }
-
-    private func answerButton(_ title: String, prominent: Bool, action: @escaping () -> Void) -> some View {
-        let shape = RoundedRectangle(cornerRadius: ActivityExpandedHeight.answerRowHeight / 2, style: .continuous)
-        let fill: Double = prominent
-            ? (increaseContrast ? 0.42 : 0.26)
-            : (increaseContrast ? 0.24 : 0.12)
-        return Button(action: action) {
-            Text(title)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity)
-                .frame(height: ActivityExpandedHeight.answerRowHeight)
-                .contentShape(shape)
-                .background(shape.fill(.white.opacity(fill)))
-        }
-        .buttonStyle(GlanceButtonStyle())
-        .accessibilityLabel(title)
     }
 
     /// The expanded symbol, in a rounded well.
