@@ -1030,8 +1030,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.activities.noteInteraction()
             self.sources?.setLevel(hud, to: fraction)
         }
-        // Allow or Deny under a coding agent's permission prompt. The answer goes down the hook
-        // that asked; the island then does what a click through to the terminal does — retires
+        // Allow or Deny under a coding agent's permission prompt, or the options chosen for its
+        // questions. The answer goes down the hook that asked; the island then does what a click through to the terminal does — retires
         // the activity and closes. A press after the terminal already answered finds nothing held
         // and closes all the same.
         model.onAnswerPrompt = { [weak self] id, answer in

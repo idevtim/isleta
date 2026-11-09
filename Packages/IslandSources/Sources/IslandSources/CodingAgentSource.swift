@@ -316,9 +316,66 @@ public final class CodingAgentSource: ActivitySource {
             ?? codexSessions.first(where: { Self.codexSession($0.key, $0.value, prompt: nil).activityID == id })?.key
         guard let sessionID, let held = prompts.removeValue(forKey: sessionID), held.request.isOpen
         else { return false }
-        held.request.answer(answer == .allow ? .allow : .deny)
-        IslandLog.sources.info("coding agents: prompt \(answer == .allow ? "allowed" : "denied") from the island")
+        guard let decision = Self.decision(for: answer, to: held.prompt) else {
+            // An answer that does not fit what was asked leaves the question with the terminal.
+            held.request.close()
+            return false
+        }
+        held.request.answer(decision)
+        let verb = switch answer {
+        case .allow: "allowed"
+        case .deny: "denied"
+        case .choices: "answered"
+        }
+        IslandLog.sources.info("coding agents: prompt \(verb) from the island")
         return true
+    }
+
+    /// What goes back down the hook for an answer, or nil when the answer does not fit the prompt:
+    /// a choice for a permission, Allow or Deny for a question, or choices that are not one or more
+    /// of each question's own options. A multi-select's labels go back joined by ", ", which is how
+    /// the agent's own picker reports them (measured — see `docs/PLATFORM-CONSTRAINTS.md`).
+    static func decision(for answer: CodingAgentAnswer, to prompt: CodingAgentPrompt) -> AgentHookDecision? {
+        switch answer {
+        case .allow: return prompt.isQuestion ? nil : .allow
+        case .deny: return prompt.isQuestion ? nil : .deny
+        case .choices(let choices):
+            guard prompt.isQuestion, choices.count == prompt.questions.count else { return nil }
+            var answers: [String] = []
+            for (question, chosen) in zip(prompt.questions, choices) {
+                guard !chosen.isEmpty, question.allowsMultiple || chosen.count == 1,
+                      chosen.allSatisfy(question.options.contains)
+                else { return nil }
+                // In the asker's order, whatever order they were pressed in.
+                answers.append(question.options.filter(chosen.contains).joined(separator: ", "))
+            }
+            return .answers(answers)
+        }
+    }
+
+    /// The prompt a held request puts on the island, or nil when the island cannot answer it and
+    /// the terminal should have it alone. A question is answerable when every one of its options
+    /// arrived — the script sends no questions at all past the agent's own limits — and a
+    /// question the island cannot answer must not be offered Allow and Deny instead: allowing one
+    /// only lets the agent show its own picker, and denying one refuses to be asked.
+    static func prompt(for event: AgentHookEvent) -> CodingAgentPrompt? {
+        guard event.toolName == "AskUserQuestion" else {
+            let detail = (event.toolName == "Bash" ? event.command : nil) ?? event.summary ?? event.command
+            return CodingAgentPrompt(toolName: event.toolName, detail: detail)
+        }
+        guard let asked = event.questions, !asked.isEmpty else { return nil }
+        var questions: [ActivityQuestion] = []
+        for question in asked {
+            let options = question.options.compactMap { $0 }
+            guard let text = question.question, !text.isEmpty, !options.isEmpty,
+                  options.count == question.options.count,
+                  Set(options).count == options.count
+            else { return nil }
+            questions.append(ActivityQuestion(
+                text: text, header: question.header, allowsMultiple: question.multiSelect ?? false,
+                options: options))
+        }
+        return CodingAgentPrompt(toolName: event.toolName, detail: nil, questions: questions)
     }
 
     private func updateServer() {
@@ -349,9 +406,14 @@ public final class CodingAgentSource: ActivitySource {
             return
         }
         prompts.removeValue(forKey: sessionID)?.request.close()
-        let detail = (event.toolName == "Bash" ? event.command : nil) ?? event.summary ?? event.command
-        prompts[sessionID] = HeldPrompt(
-            request: request, prompt: CodingAgentPrompt(toolName: event.toolName, detail: detail))
+        guard let prompt = Self.prompt(for: event) else {
+            // The terminal's picker is already up (Claude Code does not wait on this hook), and
+            // the session's own state says it is waiting.
+            request.close()
+            refresh(sessionID: sessionID)
+            return
+        }
+        prompts[sessionID] = HeldPrompt(request: request, prompt: prompt)
         request.onPeerClosed = { [weak self, weak request] in
             guard let self, let request, self.prompts[sessionID]?.request === request else { return }
             self.prompts[sessionID] = nil

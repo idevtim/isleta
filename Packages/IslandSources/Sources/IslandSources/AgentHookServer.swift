@@ -23,9 +23,33 @@ public struct AgentHookEvent: Equatable, Sendable, Decodable {
     /// The session's folder — what finds Codex's terminal, since its hooks run under a shared
     /// process rather than the session's. Shown as the session's name, and **never logged**.
     public let cwd: String?
+    /// What the agent is asking, when the request is a question (`AskUserQuestion`) the island can
+    /// offer as buttons. Nil for every other tool, and for a question past the agent's own limits.
+    /// Shown on screen and **never logged**.
+    public let questions: [Question]?
+
+    /// One question, trimmed by the script to its text, its short header and its option labels.
+    public struct Question: Equatable, Sendable, Decodable {
+        public let question: String?
+        public let header: String?
+        public let multiSelect: Bool?
+        public let options: [String?]
+
+        enum CodingKeys: String, CodingKey {
+            case question, header, options
+            case multiSelect = "multi_select"
+        }
+
+        public init(question: String?, header: String? = nil, multiSelect: Bool? = false, options: [String?]) {
+            self.question = question
+            self.header = header
+            self.multiSelect = multiSelect
+            self.options = options
+        }
+    }
 
     enum CodingKeys: String, CodingKey {
-        case agent, event, summary, command, cwd
+        case agent, event, summary, command, cwd, questions
         case sessionID = "session_id"
         case toolName = "tool_name"
         case notificationType = "notification_type"
@@ -35,7 +59,7 @@ public struct AgentHookEvent: Equatable, Sendable, Decodable {
     public init(
         agent: String, event: String, sessionID: String? = nil, toolName: String? = nil,
         summary: String? = nil, command: String? = nil, notificationType: String? = nil,
-        agentPID: Int32? = nil, cwd: String? = nil
+        agentPID: Int32? = nil, cwd: String? = nil, questions: [Question]? = nil
     ) {
         self.agent = agent
         self.event = event
@@ -46,6 +70,7 @@ public struct AgentHookEvent: Equatable, Sendable, Decodable {
         self.notificationType = notificationType
         self.agentPID = agentPID
         self.cwd = cwd
+        self.questions = questions
     }
 
     public var isPermissionRequest: Bool { event == "PermissionRequest" }
@@ -56,9 +81,23 @@ public struct AgentHookEvent: Equatable, Sendable, Decodable {
 }
 
 /// The answer a held permission request is waiting for.
-public enum AgentHookDecision: String, Sendable {
+public enum AgentHookDecision: Equatable, Sendable {
     case allow
     case deny
+    /// The chosen answer to each question the request asked, in the order it asked them — a
+    /// multi-select's labels already joined. The script turns these into the tool's own `answers`.
+    case answers([String])
+
+    /// The one line the script reads.
+    var line: String {
+        switch self {
+        case .allow: return "allow"
+        case .deny: return "deny"
+        case .answers(let answers):
+            let data = (try? JSONSerialization.data(withJSONObject: ["answers": answers])) ?? Data()
+            return String(decoding: data, as: UTF8.self)
+        }
+    }
 }
 
 /// A permission request whose hook is still connected and waiting for one line back.
@@ -95,7 +134,7 @@ public final class AgentHookRequest {
     /// Send the decision and close. A no-op once closed.
     public func answer(_ decision: AgentHookDecision) {
         guard isOpen else { return }
-        let line = decision.rawValue + "\n"
+        let line = decision.line + "\n"
         _ = line.withCString { write(descriptor, $0, strlen($0)) }
         close()
     }

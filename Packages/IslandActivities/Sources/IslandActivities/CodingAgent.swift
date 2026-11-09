@@ -53,27 +53,38 @@ public enum CodingAgentWait: Equatable, Sendable {
     case input
 }
 
-/// A permission prompt the island can answer itself, because the agent's hook is holding it open
-/// (`AgentHookServer` in IslandSources). What it shows is **shown and never logged**: a command
-/// line or a file path is the user's own text.
+/// A prompt the island can answer itself, because the agent's hook is holding it open
+/// (`AgentHookServer` in IslandSources): a permission to allow or deny, or questions to choose
+/// answers to. What it shows is **shown and never logged**: a command line, a file path or a
+/// question is the user's own text, or the agent's about the user's work.
 public struct CodingAgentPrompt: Equatable, Sendable {
     /// The agent's name for the tool — "Bash", "Write", "WebFetch". Not localized: the agent's word.
     public let toolName: String?
     /// The command for a shell call, else the agent's one line for the call — a file, a URL, a
     /// pattern, or its own description of it.
     public let detail: String?
+    /// What the agent is asking, when the prompt is a question rather than a permission. A
+    /// question is answered with a choice, never allowed or denied: allowing one only lets the
+    /// agent show its own picker, and denying one refuses to be asked.
+    public let questions: [ActivityQuestion]
 
-    public init(toolName: String?, detail: String?) {
+    public init(toolName: String?, detail: String?, questions: [ActivityQuestion] = []) {
         self.toolName = toolName
         self.detail = detail
+        self.questions = questions
     }
+
+    public var isQuestion: Bool { !questions.isEmpty }
 }
 
-/// How the person answered a permission prompt from the island. Allowing allows this one call and
-/// changes no rule — the agent's settings are the place for that.
+/// How the person answered a prompt from the island. Allowing allows this one call and changes no
+/// rule — the agent's settings are the place for that.
 public enum CodingAgentAnswer: Equatable, Sendable {
     case allow
     case deny
+    /// The options chosen for each question, in the order they were asked — one label for a
+    /// single choice, one or more for a question that takes several.
+    case choices([[String]])
 }
 
 /// One session, as the island needs it: which agent, what it is called, where it lives.

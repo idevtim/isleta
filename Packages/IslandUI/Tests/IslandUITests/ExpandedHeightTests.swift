@@ -53,6 +53,33 @@ struct ExpandedHeightTests {
         #expect(answerable - plain == ActivityExpandedHeight.answerRowSpacing + ActivityExpandedHeight.answerRowHeight)
     }
 
+    @Test("questions open the island for the tallest of them, so it holds still between steps")
+    func questionsTakeTheTallest() throws {
+        let short = ActivityQuestion(text: "Pick a fruit", options: ["Apple", "Banana"])
+        let tall = ActivityQuestion(text: "Pick colors", allowsMultiple: true, options: ["Red", "Green", "Blue"])
+        func height(_ questions: [ActivityQuestion]) throws -> CGFloat {
+            try #require(ActivityExpandedHeight.contentHeight(
+                for: ActivityPresentations(expanded: ActivityContent(
+                    symbol: "apple.terminal.fill", title: "Claude Code has a question", questions: questions)),
+                kind: .codingAgent, measure: fake))
+        }
+        let row = ActivityExpandedHeight.answerRowHeight
+        let gap = ActivityExpandedHeight.optionSpacing
+        // One line of question, then two options.
+        let one = try height([short])
+        let bare = try #require(ActivityExpandedHeight.contentHeight(
+            for: ActivityPresentations(expanded: ActivityContent(
+                symbol: "apple.terminal.fill", title: "Claude Code has a question")),
+            kind: .codingAgent, measure: fake))
+        #expect(one - bare == ActivityExpandedHeight.answerRowSpacing + 20
+                + ActivityExpandedHeight.questionOptionsSpacing + 2 * row + gap)
+        // Two questions add a caption, and take the room of the one with three options and a
+        // button to send them — whichever order they come in.
+        let both = try height([short, tall])
+        #expect(both == (try height([tall, short])))
+        #expect(both - one == 20 + ActivityExpandedHeight.captionQuestionSpacing + 2 * (row + gap))
+    }
+
     @Test("a longer message opens a taller island")
     func longerMessageIsTaller() throws {
         let short = ActivityExpandedHeight.contentHeight(

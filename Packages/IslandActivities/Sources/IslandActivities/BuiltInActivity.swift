@@ -874,7 +874,7 @@ public struct BuiltInActivity: IslandActivity, Equatable {
         case .needsInput: "hand.raised.fill"
         case .finished: "checkmark"
         }
-        let headline: String
+        var headline: String
         let action: String
         switch (moment, session.waitingFor ?? .input) {
         case (.needsInput, .permission):
@@ -896,14 +896,22 @@ public struct BuiltInActivity: IslandActivity, Equatable {
         // name and the tool lead, the request follows on its own line, and "Allow or deny it in…"
         // goes — the buttons under it are where.
         let answerable = moment == .needsInput ? session.prompt : nil
+        let questions = answerable?.questions ?? []
         let detail: String
-        if let answerable {
+        if !questions.isEmpty {
+            // **A question is answered, not allowed.** The headline says it is one, the session's
+            // name is the line under it, and the question itself is drawn with its options by the
+            // open island — one at a time, so it is not part of this text.
+            headline = activityText("codingAgent.hasQuestion", "\(agent) has a question")
+            detail = name ?? ""
+        } else if let answerable {
             let lead = [name, answerable.toolName].compactMap { $0 }.joined(separator: " · ")
             detail = [lead.isEmpty ? nil : lead, answerable.detail].compactMap { $0 }.joined(separator: "\n")
         } else {
             detail = name.map { activityText("codingAgent.detail", "\($0) · \(action)") } ?? action
         }
-        let spoken = activityText("codingAgent.a11y", "\(headline): \(detail)")
+        let spoken = activityText(
+            "codingAgent.a11y", "\(headline): \(questions.first?.text ?? detail)")
         let mark = session.agent.mark
         return Self(
             id: session.activityID,
@@ -929,7 +937,8 @@ public struct BuiltInActivity: IslandActivity, Equatable {
                     tint: .neutral,
                     accessibilityLabel: spoken,
                     mark: mark,
-                    offersAllowDeny: answerable != nil
+                    offersAllowDeny: answerable != nil && questions.isEmpty,
+                    questions: questions
                 )
             )
         )

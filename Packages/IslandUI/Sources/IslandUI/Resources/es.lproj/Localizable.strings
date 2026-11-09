@@ -164,3 +164,6 @@
 /* A coding agent's permission prompt, answered from the open island. */
 "codingAgent.deny" = "Denegar";
 "codingAgent.allow" = "Permitir";
+"codingAgent.question.progress" = "%1$lld de %2$lld";
+"codingAgent.question.submit" = "Enviar";
+"codingAgent.question.next" = "Siguiente";

@@ -110,6 +110,22 @@ struct BuiltInActivityTests {
                                       waitingFor: .permission, prompt: CodingAgentPrompt(toolName: nil, detail: "~/notes.md"))
         #expect(BuiltInActivity.codingAgent(bare, moment: .needsInput).presentations.expanded.subtitle == "~/notes.md")
 
+        // **A question is answered with a choice, never allowed or denied.** The questions ride on
+        // the open island, and the line under the headline is the session's name.
+        let fruit = ActivityQuestion(text: "Pick a fruit", header: "Fruit", options: ["Apple", "Banana"])
+        let questioning = CodingAgentSession(
+            agent: .claudeCode, sessionID: "q", name: "isleta-6a", terminalApplicationName: "Terminal",
+            waitingFor: .permission,
+            prompt: CodingAgentPrompt(toolName: "AskUserQuestion", detail: nil, questions: [fruit]))
+        let question = BuiltInActivity.codingAgent(questioning, moment: .needsInput).presentations
+        #expect(question.expanded.title == "Claude Code has a question")
+        #expect(question.expanded.subtitle == "isleta-6a")
+        #expect(question.expanded.questions == [fruit])
+        #expect(question.expanded.offersAllowDeny == false)
+        #expect(question.compact.questions.isEmpty)
+        #expect(question.expanded.accessibilityLabel == "Claude Code has a question: Pick a fruit")
+        #expect(BuiltInActivity.codingAgent(questioning, moment: .finished).presentations.expanded.questions.isEmpty)
+
         // A second session is its own island.
         let other = CodingAgentSession(agent: .claudeCode, sessionID: "def", name: nil, terminalApplicationName: nil)
         #expect(BuiltInActivity.codingAgent(other, moment: .needsInput).id != waiting.id)

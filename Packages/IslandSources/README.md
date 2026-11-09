@@ -574,6 +574,15 @@ prompt in one and an explanation in the other.
   waits on the hook, so a Codex prompt is held only while its terminal is not frontmost and is let
   go when it comes forward or is clicked through to.
 
+  A question (`AskUserQuestion`) arrives through the same `PermissionRequest` and is **answered,
+  never allowed or denied**: allowing one only lets the agent show its own picker, and denying one
+  refuses to be asked. The script forwards each question's text, header, multi-select flag and
+  option labels — not the descriptions — and sends none past the agent's own limits of four
+  questions and four options. Isleta replies with one answer per question, in order, and the script
+  merges them into the tool's own input as `answers`, keyed by the agent's untrimmed question text.
+  Anything short of every question answered sends nothing and leaves the question to the terminal. A
+  question the island cannot offer as buttons is let go at once rather than shown as Allow and Deny.
+
 ## Will not own
 
 - **Notifications, in every form.** `NotificationSource` shipped via the Accessibility route —

@@ -90,6 +90,7 @@
 /* Section: a coding agent in a terminal. The agent's name ("Claude Code", "Codex") is the program's
    own and is not translated. */
 "codingAgent.needsInput" = "%@ te está esperando";
+"codingAgent.hasQuestion" = "%@ tiene una pregunta";
 "codingAgent.finished" = "%@ ha terminado";
 "codingAgent.a11y" = "%1$@: %2$@";
 "codingAgent.needsPermission" = "%@ necesita tu permiso";
