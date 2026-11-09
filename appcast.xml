@@ -20,10 +20,96 @@
 -->
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
-        <title>2.8.0</title>
+        <title>2.9.0</title>
         <link>https://tryisleta.com</link>
         <description>Updates for Isleta.</description>
         <language>en</language>
+        <item>
+            <title>2.9.0</title>
+            <pubDate>Mon, 09 Nov 2026 13:40:38 -0500</pubDate>
+            <link>https://github.com/idevtim/isleta</link>
+            <sparkle:fullReleaseNotesLink>https://github.com/idevtim/isleta/releases</sparkle:fullReleaseNotesLink>
+            <sparkle:version>2.9.0</sparkle:version>
+            <sparkle:shortVersionString>2.9.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Isleta 2.9.0
+
+When Claude Code asks you a question, you can answer it from the island: its choices appear as
+buttons, one question at a time.
+
+## New
+
+- **Answer Claude Code's questions from the island.** With "Answer prompts from the island" on
+  in Settings ▸ Sources, pick an option and the next question follows; where several answers are
+  allowed, tick them and press Submit. Claude carries on as if you had chosen in the terminal.
+
+- **Isleta speaks Japanese.** The island, Settings and the first-run window follow your Mac when
+  it is set to Japanese.
+
+## Improved
+
+- **The island says where the agent is working.** Under the headline it names the project's
+  folder, such as "Sites/my-app", instead of the session's own name.
+
+## Fixed
+
+- **A question is no longer offered as Allow or Deny.** Neither button answered it; the island
+  now shows the question itself, or leaves it to the terminal.
+
+## Requirements
+
+macOS 26 or later, on Apple Silicon. Displays with a real notch get the island; a Mac without one
+gets a floating island on the main display.
+
+## Known limitations
+
+- **Typing your own answer still happens in the terminal.** The island offers the listed choices,
+  and there is no going back to change an earlier one; the terminal's picker stays open until the
+  island has answered.
+- **Answering from the island edits the agents' own settings.** It adds one hook to
+  `~/.claude/settings.json` and `~/.codex/hooks.json`, keeps a backup, and takes exactly that
+  back out when you turn it off. Sessions already open then keep answering in the terminal.
+- **Codex needs one step of its own.** Type `/hooks` in Codex once and trust Isleta's hooks. Codex
+  waits for the island before showing its prompt, so the island lets go as soon as you're back at
+  the terminal.
+- **Clicking through finds the agent's window, not its tab.** In VS Code it finds the workspace
+  that holds the session's folder; a folder no window has open goes to VS Code's main window. A
+  session inside tmux has no window to bring forward.
+- **Keeping the menus clear needs Accessibility.** Without it, the island keeps its usual width
+  over the menu bar. A few apps change their menus without saying so; switching away and back
+  catches up.
+- **The island can still cover menu bar icons beside the notch.** It keeps the menus of the app
+  you are using clear, but macOS does not tell Isleta where other apps' icons are.
+- **The lean at the end of a range needs Accessibility.** Reaching the end of the volume or
+  brightness no longer moves the island on its own, and the press after it is only visible to Isleta
+  with that permission granted. The reading itself, and the bar filling and emptying, work either
+  way.
+- **A muted Mac's bar cannot be dragged.** It is drawn at nothing whatever the volume behind it is,
+  so pressing it opens the island instead. Unmute first.
+- **You cannot see who is calling.** macOS does not let apps outside Apple read that, or answer for
+  you. Isleta shows that a call is happening and nothing more.
+- **Weather needs your location, or a city you type.** Isleta asks for neither until you use it.
+- **A connected device's battery is read once, when it connects.** It does not tick down as you wear
+  them, and most non-Apple headphones report no level at all.
+- **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
+  started by hand in Clock is there immediately.
+- **Replacing the system HUDs is on by default, and it needs Accessibility.** Two switches in
+  Settings hand the keys back. Quitting Isleta hands them back too; if Isleta is force-quit, the
+  system HUD stays out of the way until Isleta next starts. Brightness covers the built-in display
+  only.
+- **Apple's own banner still appears when headphones connect.** It is drawn by the menu bar rather
+  than by the HUD helper Isleta can stand in for, so the island announces the connection alongside
+  it rather than instead of it.
+- **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
+  can sit over the middle of the space labels.
+- **Today and tomorrow show five entries and then a count.** A busy pair of days says how many it
+  could not fit rather than scrolling.
+- **The equalizer moves in a set pattern rather than to the song.** Its colors come from the cover;
+  its motion does not come from the audio.
+]]></description>
+            <enclosure url="https://github.com/idevtim/isleta/releases/download/v2.9.0/Isleta-2.9.0.zip" length="6802631" type="application/octet-stream" sparkle:edSignature="ER0XuekqGn5yoM1t64e8rV7iPsypKHG//rrISChj+EqGpwekfTQaPqx47ynbodzEWxyESAMvUNzDe7V/ZgZvBA=="/>
+        </item>
         <item>
             <title>2.8.0</title>
             <pubDate>Sat, 31 Oct 2026 16:16:26 -0400</pubDate>
@@ -178,74 +264,6 @@ gets a floating island on the main display.
   its motion does not come from the audio.
 ]]></description>
             <enclosure url="https://github.com/idevtim/isleta/releases/download/v2.7.1/Isleta-2.7.1.zip" length="6599434" type="application/octet-stream" sparkle:edSignature="DPV54nJ+er2Za6+ZbFtNi+PSsSGrZwIGnvbBBxyGwT1RfqT9Pj+lntAtPTCVVEeWPQ03EgrHLaFESWblqQ6yDA=="/>
-        </item>
-        <item>
-            <title>2.7.0</title>
-            <pubDate>Wed, 21 Oct 2026 12:07:06 -0400</pubDate>
-            <link>https://github.com/idevtim/isleta</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/idevtim/isleta/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>2.7.0</sparkle:version>
-            <sparkle:shortVersionString>2.7.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Isleta 2.7.0
-
-The island now steps out of the way of the menus of the app you are using, and clicking a song in
-the island shows it in Music.
-
-## Improved
-
-- **The island no longer covers the menus of the app you are using.** When something on the island
-  would sit over a menu, it narrows back to the notch. Point at it to see everything, and it widens
-  again in apps with menus that fit.
-
-## Fixed
-
-- **Clicking the song in the island shows it in Music.** macOS was refusing Isleta's requests to
-  Music, so the click only opened Music. The first click asks for permission to control Music.
-
-## Requirements
-
-macOS 26 or later, on Apple Silicon. Displays with a real notch get the island; a Mac without one
-gets a floating island on the main display.
-
-## Known limitations
-
-- **Keeping the menus clear needs Accessibility.** Without it, the island keeps its usual width
-  over the menu bar. A few apps change their menus without saying so; switching away and back
-  catches up.
-- **The island can still cover menu bar icons beside the notch.** It keeps the menus of the app
-  you are using clear, but macOS does not tell Isleta where other apps' icons are.
-- **The lean at the end of a range needs Accessibility.** Reaching the end of the volume or
-  brightness no longer moves the island on its own, and the press after it is only visible to Isleta
-  with that permission granted. The reading itself, and the bar filling and emptying, work either
-  way.
-- **A muted Mac's bar cannot be dragged.** It is drawn at nothing whatever the volume behind it is,
-  so pressing it opens the island instead. Unmute first.
-- **You cannot see who is calling.** macOS does not let apps outside Apple read that, or answer for
-  you. Isleta shows that a call is happening and nothing more.
-- **Weather needs your location, or a city you type.** Isleta asks for neither until you use it.
-- **A connected device's battery is read once, when it connects.** It does not tick down as you wear
-  them, and most non-Apple headphones report no level at all.
-- **A timer started by Siri, Shortcuts or Control Center can take a few seconds to appear.** One
-  started by hand in Clock is there immediately.
-- **Replacing the system HUDs is on by default, and it needs Accessibility.** Two switches in
-  Settings hand the keys back. Quitting Isleta hands them back too; if Isleta is force-quit, the
-  system HUD stays out of the way until Isleta next starts. Brightness covers the built-in display
-  only.
-- **Apple's own banner still appears when headphones connect.** It is drawn by the menu bar rather
-  than by the HUD helper Isleta can stand in for, so the island announces the connection alongside
-  it rather than instead of it.
-- **The island sits above Mission Control.** In a real notch it covers nothing; a floating island
-  can sit over the middle of the space labels.
-- **Today and tomorrow show five entries and then a count.** A busy pair of days says how many it
-  could not fit rather than scrolling.
-- **Swiping away from a meeting hides its Join button until the island next opens.** The meeting
-  stays in the island's edges, and the button is back the next time you open it.
-- **The equalizer moves in a set pattern rather than to the song.** Its colors come from the cover;
-  its motion does not come from the audio.
-]]></description>
-            <enclosure url="https://github.com/idevtim/isleta/releases/download/v2.7.0/Isleta-2.7.0.zip" length="6579915" type="application/octet-stream" sparkle:edSignature="fGRAZD6MODUQaFEtFgd5E27EqU62FnbUskvRDuq8VaPTlMfRu+yIXopnZHKQHQMN3TUeUaez9BGkWvUZbLGhAQ=="/>
         </item>
     </channel>
 </rss>
