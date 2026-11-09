@@ -185,7 +185,7 @@
 
 /* Sources ▸ Coding Agents: answering permission prompts from the island. */
 "sources.agents" = "Agents de code";
-"sources.agents.answer" = "Répondre aux demandes d’autorisation depuis l’îlot";
+"sources.agents.answer" = "Répondre aux demandes depuis l’îlot";
 "sources.agents.summary.off" = "Quand Claude Code demande l’autorisation d’exécuter quelque chose, l’îlot l’indique et vous répondez dans le terminal. Activez cette option pour répondre par Autoriser ou Refuser sur l’îlot, et pour y voir aussi Codex. Isleta ajoute son hook à ~/.claude/settings.json et à ~/.codex/hooks.json, et le retire quand vous la désactivez.";
 "sources.agents.summary.notInstalled" = "Ni Claude Code ni Codex n’a encore été lancé sur ce Mac, il n’y a donc nulle part où ajouter le hook. Lancez l’un des deux une fois, puis désactivez et réactivez cette option.";
 "sources.agents.summary.unreadable" = "Les réglages de hooks d’un agent ne sont pas un JSON valide, Isleta n’a donc pas touché à ce fichier. Corrigez-le, puis désactivez et réactivez cette option.";

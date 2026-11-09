@@ -11,7 +11,7 @@
 [tryisleta.com](https://tryisleta.com) &nbsp;·&nbsp; [What's new](release-notes/) &nbsp;·&nbsp; [Contributing](CONTRIBUTING.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-2.8.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.9.0-blue.svg)
 ![Platform](https://img.shields.io/badge/macOS-26%2B-lightgrey.svg)
 ![Silicon](https://img.shields.io/badge/silicon-Apple-black.svg)
 ![Price](https://img.shields.io/badge/price-free-brightgreen.svg)
@@ -132,10 +132,11 @@ you: your terminal's icon with a raised hand on one side of the notch, the agent
 other. Click once to read what it needs — permission to run something, an answer to a question, or
 just that it's finished — and again to go straight to its window, even on another desktop.
 
-Turn on **Answer permission prompts from the island** in Settings and the open island shows the
-command or file being asked about, with **Allow** and **Deny** under it. Allow approves that one
-request and changes none of your rules. Isleta adds one hook to the agent's own settings to do it,
-and takes exactly that back out when you turn it off.
+Turn on **Answer prompts from the island** in Settings and the open island shows the command or
+file being asked about, with **Allow** and **Deny** under it, and a question from Claude Code with
+its choices as buttons. Allow approves that one request and changes none of your rules. Isleta
+adds one hook to the agent's own settings to do it, and takes exactly that back out when you turn
+it off.
 
 Claude Code works with nothing to set up. Codex appears once the switch is on and you've trusted
 Isleta's hooks in Codex with `/hooks`.

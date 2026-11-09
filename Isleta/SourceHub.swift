@@ -1272,7 +1272,7 @@ final class SourceHub {
                 """
                 Tells you when Claude Code or Codex stops to wait for you, or finishes, while you’re \
                 in another app. Click the island to see what it needs, and again to go to its window. \
-                Codex shows here once “Answer permission prompts from the island” is on.
+                Codex shows here once “Answer prompts from the island” is on.
                 """
             )
         }
