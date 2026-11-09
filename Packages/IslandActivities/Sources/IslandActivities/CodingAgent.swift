@@ -95,8 +95,9 @@ public struct CodingAgentSession: Equatable, Sendable {
     /// The agent's own id for the session — opaque, and what keeps two sessions in one folder apart.
     public let sessionID: String
 
-    /// The agent's name for the session, when it has one ("isleta-6a"), else the folder's.
-    /// Shown on screen and **never logged**: it is derived from a path the user chose.
+    /// Where the session is running, as the folder and its parent ("Sites/isleta"), else the
+    /// agent's own name for it. Shown on screen and **never logged**: it is derived from a path the
+    /// user chose.
     public let name: String?
 
     /// The application that owns the terminal the session runs in — "Terminal", "iTerm2", "Ghostty"

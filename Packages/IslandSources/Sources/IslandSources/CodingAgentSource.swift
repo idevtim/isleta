@@ -577,7 +577,7 @@ public final class CodingAgentSource: ActivitySource {
         CodingAgentSession(
             agent: .codex,
             sessionID: sessionID,
-            name: codex.cwd.map { ($0 as NSString).lastPathComponent },
+            name: codex.cwd.flatMap { folderLabel(for: $0) },
             terminalApplicationName: codex.terminal.flatMap(Self.applicationName),
             waitingFor: codex.status == .waiting ? .permission : nil,
             prompt: prompt
@@ -691,11 +691,27 @@ public final class CodingAgentSource: ActivitySource {
         return CodingAgentSession(
             agent: .claudeCode,
             sessionID: tracked.record.sessionID,
-            name: tracked.record.name,
+            name: tracked.record.cwd.flatMap { Self.folderLabel(for: $0) } ?? tracked.record.name,
             terminalApplicationName: tracked.terminal.flatMap(Self.applicationName),
             waitingFor: held != nil ? .permission : tracked.record.wait,
             prompt: held?.prompt
         )
+    }
+
+    /// Where a session is running, the way a person would say it: the folder and the one it is in,
+    /// "Sites/itsworthmore-inventory". One folder name alone reads like the session's own name, and
+    /// a whole path does not fit the line. Home itself is "~", and a folder straight inside it
+    /// "~/Projects".
+    static func folderLabel(for cwd: String, home: String = NSHomeDirectory()) -> String? {
+        let path = (cwd as NSString).standardizingPath
+        guard !path.isEmpty, path != "/" else { return nil }
+        let home = (home as NSString).standardizingPath
+        if path == home { return "~" }
+        // A folder straight inside home is named from home, not from the user's own name.
+        if (path as NSString).deletingLastPathComponent == home {
+            return "~/" + (path as NSString).lastPathComponent
+        }
+        return path.split(separator: "/").suffix(2).joined(separator: "/")
     }
 
     /// The name a person knows the app by. A running app's `localizedName` is its process's, which

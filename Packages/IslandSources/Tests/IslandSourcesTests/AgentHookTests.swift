@@ -422,6 +422,17 @@ struct CodingAgentAnswerTests {
         #expect(CodingAgentSource.decision(for: answer, to: prompt) == nil)
     }
 
+    @Test("a session is named by its folder and the one it is in", arguments: [
+        ("/Users/someone/Sites/itsworthmore-inventory", "Sites/itsworthmore-inventory"),
+        ("/Users/someone/Sites/itsworthmore-inventory/", "Sites/itsworthmore-inventory"),
+        ("/Users/someone/Projects", "~/Projects"),
+        ("/Users/someone", "~"),
+        ("/tmp", "tmp"),
+    ])
+    func folderLabel(_ cwd: String, _ label: String) {
+        #expect(CodingAgentSource.folderLabel(for: cwd, home: "/Users/someone") == label)
+    }
+
     @Test("a permission takes Allow or Deny and nothing else")
     func permissionAnswers() throws {
         let prompt = try #require(CodingAgentSource.prompt(for: event(tool: "Bash")))
