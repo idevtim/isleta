@@ -73,6 +73,8 @@ public final class CodingAgentSource: ActivitySource {
     private var stream: FSEventStreamRef?
     private var activationObserver: NSObjectProtocol?
     private var attention = CodingAgentAttention()
+    /// What each session has on the island, by the id it went up with — see `ShownAgentActivities`.
+    private var onIsland = ShownAgentActivities()
 
     private let settingsURL: URL
     private let hookServer: AgentHookServer
@@ -184,22 +186,18 @@ public final class CodingAgentSource: ActivitySource {
             NSWorkspace.shared.notificationCenter.removeObserver(activationObserver)
         }
         activationObserver = nil
-        for (key, tracked) in sessions {
+        for tracked in sessions.values {
             tracked.exit.cancel()
             tracked.grace?.cancel()
-            if attention.showing(key) != nil {
-                onDismiss?(Self.activityID(for: tracked.record))
-            }
         }
         sessions = [:]
-        for (id, codex) in codexSessions {
+        for codex in codexSessions.values {
             codex.exit?.cancel()
             codex.grace?.cancel()
-            if attention.showing(Self.codexKey(id)) != nil {
-                onDismiss?(Self.codexSession(id, codex, prompt: nil).activityID)
-            }
         }
         codexSessions = [:]
+        for id in onIsland.all { onDismiss?(id) }
+        onIsland.removeAll()
         attention = CodingAgentAttention()
         isRunning = false
         updateServer()
@@ -220,7 +218,8 @@ public final class CodingAgentSource: ActivitySource {
     @discardableResult
     public func bringForward(_ id: ActivityID) -> Bool {
         if let (sessionID, codex) = codexSessions.first(where: {
-            Self.codexSession($0.key, $0.value, prompt: nil).activityID == id
+            onIsland.keys(showing: id).contains(Self.codexKey($0.key))
+                || Self.codexSession($0.key, $0.value, prompt: nil).activityID == id
         }) {
             guard let terminal = codex.terminal, !terminal.isTerminated else { return false }
             // Before the raise: Codex's own prompt appears only once the hook lets go, and the
@@ -231,7 +230,7 @@ public final class CodingAgentSource: ActivitySource {
             TerminalWindow.raise(terminal, names: names)
             return true
         }
-        guard let tracked = sessions.values.first(where: { Self.activityID(for: $0.record) == id }),
+        guard let tracked = trackedSession(showing: id),
               let terminal = tracked.terminal, !terminal.isTerminated
         else { return false }
         let names = TerminalWindow.names(
@@ -239,6 +238,22 @@ public final class CodingAgentSource: ActivitySource {
             bundleIdentifier: terminal.bundleIdentifier)
         TerminalWindow.raise(terminal, names: names)
         return true
+    }
+
+    /// The island took this activity down itself — a click through to the terminal, or an answer
+    /// given on it. Nothing re-says it in place afterwards (a prompt arriving, the reason for a wait
+    /// changing); the session's next moment puts up a new one.
+    public func retired(_ id: ActivityID) {
+        onIsland.retired(id)
+    }
+
+    /// The session behind an activity on the island: the one that put it up, or, failing that, the
+    /// one whose session id it carries.
+    private func trackedSession(showing id: ActivityID) -> Tracked? {
+        for key in onIsland.keys(showing: id) {
+            if let tracked = sessions[key] { return tracked }
+        }
+        return sessions.values.first { Self.activityID(for: $0.record) == id }
     }
 
     // MARK: - Answering from the island
@@ -312,7 +327,7 @@ public final class CodingAgentSource: ActivitySource {
     ///   first, which the caller treats the same way.
     @discardableResult
     public func answer(_ id: ActivityID, _ answer: CodingAgentAnswer) -> Bool {
-        let sessionID = sessions.values.first(where: { Self.activityID(for: $0.record) == id })?.record.sessionID
+        let sessionID = trackedSession(showing: id)?.record.sessionID
             ?? codexSessions.first(where: { Self.codexSession($0.key, $0.value, prompt: nil).activityID == id })?.key
         guard let sessionID, let held = prompts.removeValue(forKey: sessionID), held.request.isOpen
         else { return false }
@@ -432,15 +447,15 @@ public final class CodingAgentSource: ActivitySource {
     /// Re-say what a waiting session's island says, now that a prompt has arrived or gone.
     private func refresh(sessionID: String) {
         if let codex = codexSessions[sessionID] {
-            guard attention.showing(Self.codexKey(sessionID)) == .needsInput else { return }
-            onActivity?(BuiltInActivity.codingAgent(
-                Self.codexSession(sessionID, codex, prompt: prompts[sessionID]?.prompt), moment: .needsInput))
+            let key = Self.codexKey(sessionID)
+            guard attention.showing(key) == .needsInput, onIsland.isShowing(key) else { return }
+            show(Self.codexSession(sessionID, codex, prompt: prompts[sessionID]?.prompt), .needsInput, for: key)
             return
         }
         guard let (name, tracked) = sessions.first(where: { $0.value.record.sessionID == sessionID }),
-              attention.showing(name) == .needsInput
+              attention.showing(name) == .needsInput, onIsland.isShowing(name)
         else { return }
-        onActivity?(BuiltInActivity.codingAgent(session(for: tracked), moment: .needsInput))
+        show(session(for: tracked), .needsInput, for: name)
     }
 
     // MARK: - Codex, through its hooks
@@ -543,9 +558,8 @@ public final class CodingAgentSource: ActivitySource {
         release(sessionID: sessionID)
         codex.exit?.cancel()
         codex.grace?.cancel()
-        if attention.update(Self.codexKey(sessionID), status: nil, isFrontmost: false).contains(.dismiss) {
-            onDismiss?(Self.codexSession(sessionID, codex, prompt: nil).activityID)
-        }
+        _ = attention.update(Self.codexKey(sessionID), status: nil, isFrontmost: false)
+        takeDown(Self.codexKey(sessionID))
     }
 
     private func applyCodex(_ sessionID: String, cause: CodingAgentAttention.Cause = .stateChanged) {
@@ -557,10 +571,9 @@ public final class CodingAgentSource: ActivitySource {
             case .present(let moment):
                 announcementCount += 1
                 IslandLog.sources.info("coding agents: codex session \(moment == .needsInput ? "needs input" : "finished")")
-                onActivity?(BuiltInActivity.codingAgent(
-                    Self.codexSession(sessionID, codex, prompt: prompts[sessionID]?.prompt), moment: moment))
+                show(Self.codexSession(sessionID, codex, prompt: prompts[sessionID]?.prompt), moment, for: key)
             case .dismiss:
-                onDismiss?(Self.codexSession(sessionID, codex, prompt: nil).activityID)
+                takeDown(key)
             case .armGrace:
                 let work = DispatchWorkItem { [weak self] in
                     MainActor.assumeIsolated { self?.applyCodex(sessionID, cause: .graceElapsed) }
@@ -607,7 +620,11 @@ public final class CodingAgentSource: ActivitySource {
             return
         }
 
-        if var tracked = sessions[name], tracked.record.pid == record.pid {
+        // The same process *and* the same conversation. Claude Code rewrites `sessionId` in place
+        // when the conversation is replaced, and that is a new session to the island: the old one's
+        // activity comes down by the id it went up with, and the new one starts from a baseline.
+        if var tracked = sessions[name], tracked.record.pid == record.pid,
+           tracked.record.sessionID == record.sessionID {
             // Out of a wait means whatever the hook is holding was answered somewhere else.
             if tracked.record.status == .waiting, record.status != .waiting {
                 release(sessionID: record.sessionID)
@@ -618,8 +635,8 @@ public final class CodingAgentSource: ActivitySource {
             // A session can go from one reason to another without leaving `waiting` — a permission
             // prompt answered straight into a question — which the attention table rightly sees as
             // no change. The island's words are the reason, so they are refreshed in place.
-            if reasonChanged, record.wait != nil, attention.showing(name) == .needsInput {
-                onActivity?(BuiltInActivity.codingAgent(session(for: tracked), moment: .needsInput))
+            if reasonChanged, record.wait != nil, attention.showing(name) == .needsInput, onIsland.isShowing(name) {
+                show(session(for: tracked), .needsInput, for: name)
             }
         } else {
             forget(name)
@@ -645,9 +662,19 @@ public final class CodingAgentSource: ActivitySource {
         release(sessionID: tracked.record.sessionID)
         tracked.exit.cancel()
         tracked.grace?.cancel()
-        if attention.update(name, status: nil, isFrontmost: false).contains(.dismiss) {
-            onDismiss?(Self.activityID(for: tracked.record))
-        }
+        _ = attention.update(name, status: nil, isFrontmost: false)
+        takeDown(name)
+    }
+
+    /// Put a session's moment on the island, and remember the id it went up with.
+    private func show(_ session: CodingAgentSession, _ moment: CodingAgentMoment, for key: String) {
+        if let stale = onIsland.show(session.activityID, for: key) { onDismiss?(stale) }
+        onActivity?(BuiltInActivity.codingAgent(session, moment: moment))
+    }
+
+    /// Take down whatever `key` has on the island, by the id it went up with.
+    private func takeDown(_ key: String) {
+        if let id = onIsland.takeDown(key) { onDismiss?(id) }
     }
 
     private func frontmostChanged() {
@@ -671,9 +698,9 @@ public final class CodingAgentSource: ActivitySource {
             case .present(let moment):
                 announcementCount += 1
                 IslandLog.sources.info("coding agents: session \(moment == .needsInput ? "needs input" : "finished")")
-                onActivity?(BuiltInActivity.codingAgent(session(for: tracked), moment: moment))
+                show(session(for: tracked), moment, for: name)
             case .dismiss:
-                onDismiss?(Self.activityID(for: tracked.record))
+                takeDown(name)
             case .armGrace:
                 let work = DispatchWorkItem { [weak self] in
                     MainActor.assumeIsolated { self?.apply(name, cause: .graceElapsed) }
