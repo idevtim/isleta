@@ -527,8 +527,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // **A click on an open coding agent goes to its terminal.** The first click opens the
             // island, which says what the agent is asking for and where to answer (the owner's
             // call, after the flanks alone proved too little to act on); the second, on that body,
-            // raises the session's window. Falls through to opening when there is no terminal to
-            // raise — a session under tmux — so the click is never a dead one.
+            // raises the session's window. With no window to raise — a session under tmux, or one
+            // that has ended — the click still retires the activity and closes: on an island that is
+            // already open, falling through to "open" did nothing, and an activity whose session
+            // had gone stayed on stage under every click (reported against 2.9.0).
             if self.bringCodingAgentForward(on: screen) { return }
 
             // **Every click opens, including on an island with nothing on stage.**
@@ -1039,6 +1041,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.activities.noteInteraction()
             self.sources?.codingAgents.answer(id, answer)
             _ = self.activities.dismiss(id)
+            self.sources?.codingAgents.retired(id)
             for screen in self.controller?.screens ?? [] where self.models[screen.id]?.isExpanded == true {
                 self.transition(on: screen) { model, reduceMotion, completion in
                     model.setExpanded(false, reduceMotion: reduceMotion, completion: completion)
@@ -1773,18 +1776,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = activities.dismiss(primary.id)
     }
 
-    /// Raise the terminal behind the coding agent the open island is showing, retire its activity,
-    /// and close the island. Returns whether there was a terminal to raise.
+    /// Raise the terminal behind the coding agent the open island is showing, if there is one,
+    /// retire its activity, and close the island. Returns whether the click was the agent's —
+    /// which it is whether or not a terminal could be raised.
     ///
     /// Only on an open island, and not while the pages own its body: the click then landed on the
     /// calendar or the player, and the agent is only in the flanks it no longer draws.
     private func bringCodingAgentForward(on screen: IslandScreen) -> Bool {
         guard let primary = activities.stage?.primary, primary.kind == .codingAgent,
               let model = models[screen.id], !model.isStowed,
-              model.isExpanded, !model.pagesOwnBody,
-              sources?.codingAgents.bringForward(primary.id) == true
+              model.isExpanded, !model.pagesOwnBody
         else { return false }
+        if sources?.codingAgents.bringForward(primary.id) != true {
+            IslandLog.sources.info("coding agents: no terminal to raise, retiring the activity")
+        }
         _ = activities.dismiss(primary.id)
+        sources?.codingAgents.retired(primary.id)
         transition(on: screen) { model, reduceMotion, completion in
             model.setExpanded(false, reduceMotion: reduceMotion, completion: completion)
         }
